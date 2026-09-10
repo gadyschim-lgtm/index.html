@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Indirimbo Zisobanuye</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body{background:#020617;color:#e2e8f0}
+    .glass{background:rgba(15,23,42,.88);backdrop-filter:blur(14px);border:1px solid rgba(148,163,184,.14)}
+    .no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{scrollbar-width:none}
+    .hidden{display:none!important}
+    button:disabled{opacity:.5;cursor:not-allowed}
+    input,select,textarea{color-scheme:dark}
+  </style>
+</head>
+<body class="min-h-screen font-sans pb-28">
+<div id="toast" class="fixed top-4 right-4 z-[100] hidden max-w-sm rounded-xl px-4 py-3 text-sm shadow-2xl"></div>
+
+<!-- AUTH -->
+<div id="authOverlay" class="fixed inset-0 z-[90] bg-slate-950 flex items-center justify-center p-4 overflow-y-auto">
+  <div class="glass rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl">
+    <div class="text-center mb-6">
+      <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-rose-600 to-amber-500 flex items-center justify-center mx-auto">
+        <i class="fa-solid fa-music text-2xl"></i>
+      </div>
+      <h1 class="text-2xl font-black mt-3">Indirimbo <span class="text-rose-500">Zisobanuye</span></h1>
+      <p class="text-xs text-slate-400 mt-1">Translated music and video platform</p>
+    </div>
+
+    <div class="flex rounded-xl bg-slate-950 p-1 mb-5">
+      <button id="tabSignin" onclick="showAuth('signin')" class="flex-1 py-2 rounded-lg bg-rose-600 text-sm font-bold">Sign In</button>
+      <button id="tabSignup" onclick="showAuth('signup')" class="flex-1 py-2 rounded-lg text-sm text-slate-400">Sign Up</button>
+    </div>
+
+    <form id="signinForm" class="space-y-3" onsubmit="signIn(event)">
+      <input id="loginEmail" type="email" required placeholder="Email" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3">
+      <input id="loginPassword" type="password" required placeholder="Password" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3">
+      <button class="w-full py-3 rounded-xl bg-rose-600 font-bold">Sign In</button>
+      <button type="button" onclick="openForgot()" class="w-full text-xs text-rose-400 hover:underline">Forgot Password?</button>
+    </form>
+
+    <form id="signupForm" class="hidden space-y-3" onsubmit="signUp(event)">
+      <input id="regName" type="text" required placeholder="Full Name" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3">
+      <input id="regEmail" type="email" required placeholder="Email" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3">
+      <input id="regPhone" type="tel" required placeholder="Phone Number (e.g. 078xxxxxxx)" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3">
+      <select id="regRole" required class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3">
+        <option value="client">Client</option>
+        <option value="creator">Content Creator</option>
+      </select>
+      <input id="regPassword" type="password" minlength="8" required placeholder="Password (8+ characters)" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3">
+      <input id="regConfirm" type="password" minlength="8" required placeholder="Confirm Password" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3">
+      <button class="w-full py-3 rounded-xl bg-rose-600 font-bold">Create Account</button>
+      <p class="text-[11px] text-slate-400">A confirmation email will be sent before the account can be used.</p>
+    </form>
+  </div>
+</div>
+
+<!-- FORGOT PASSWORD -->
+<div id="forgotModal" class="fixed inset-0 z-[95] hidden bg-slate-950/90 items-center justify-center p-4">
+  <div class="glass rounded-3xl p-6 max-w-sm w-full">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="font-bold">Reset Password</h2>
+      <button onclick="closeForgot()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <p class="text-xs text-slate-400 mb-4">Enter your email. A secure password-reset email will be sent to you.</p>
+    <form onsubmit="forgotPassword(event)" class="space-y-3">
+      <input id="forgotEmail" type="email" required placeholder="Email" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3">
+      <button class="w-full py-3 rounded-xl bg-rose-600 font-bold">Send Reset Email</button>
+    </form>
+  </div>
+</div>
+
+<div id="mainApp" class="hidden">
+  <header class="sticky top-0 z-40 glass border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 h-16 flex items-center gap-3">
+      <button onclick="go('home')" class="flex items-center gap-2 shrink-0">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-rose-600 to-amber-500 flex items-center justify-center"><i class="fa-solid fa-music"></i></div>
+        <span class="font-black hidden sm:block">Indirimbo <span class="text-rose-500">Zisobanuye</span></span>
+      </button>
+      <div class="flex-1 max-w-xl mx-auto">
+        <div class="relative">
+          <i class="fa-solid fa-search absolute left-3 top-3 text-slate-500"></i>
+          <input id="search" oninput="renderMedia()" placeholder="Search songs, videos, creators..." class="w-full rounded-full bg-slate-950 border border-slate-800 pl-9 pr-4 py-2 text-sm">
+        </div>
+      </div>
+      <button onclick="openWallet()" class="rounded-full bg-slate-900 border border-slate-800 px-3 py-2 text-xs whitespace-nowrap">
+        <i class="fa-solid fa-wallet text-amber-400"></i> <span id="balance">0</span> FRW
+      </button>
+      <button onclick="go('chat')" class="w-9 h-9 rounded-full bg-slate-900 border border-slate-800"><i class="fa-regular fa-comments"></i></button>
+      <button onclick="signOut()" class="w-9 h-9 rounded-full bg-slate-900 border border-slate-800"><i class="fa-solid fa-right-from-bracket"></i></button>
+    </div>
+  </header>
+
+  <nav class="sticky top-16 z-30 bg-slate-900/90 border-b border-slate-800 overflow-x-auto no-scrollbar">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2 flex gap-2 min-w-max">
+      <button id="nav-home" onclick="go('home')" class="navbtn active"><i class="fa-solid fa-house"></i> Home</button>
+      <button id="nav-reels" onclick="go('reels')" class="navbtn"><i class="fa-solid fa-bolt"></i> Reels</button>
+      <button id="nav-chat" onclick="go('chat')" class="navbtn"><i class="fa-regular fa-comments"></i> Chat</button>
+      <button id="nav-dashboard" onclick="go('dashboard')" class="navbtn hidden"><i class="fa-solid fa-chart-line"></i> Creator Dashboard</button>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-3 sm:px-6 py-6">
+    <section id="view-home" class="space-y-6">
+      <div class="rounded-3xl p-6 sm:p-10 border border-slate-800 bg-gradient-to-r from-slate-900 via-rose-950/30 to-slate-900">
+        <span class="text-xs text-rose-400 font-bold">TRANSLATED ENTERTAINMENT</span>
+        <h2 class="text-3xl sm:text-5xl font-black mt-2">Discover songs and videos from creators.</h2>
+        <p class="text-sm text-slate-400 mt-3 max-w-2xl">Listen, watch, like, share, subscribe, comment and download creator content.</p>
+        <div class="flex flex-wrap gap-2 mt-5">
+          <button onclick="openWallet()" class="px-4 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-sm"><i class="fa-solid fa-plus"></i> Add Money</button>
+          <button onclick="go('reels')" class="px-4 py-2 rounded-xl bg-slate-800 font-bold text-sm"><i class="fa-solid fa-play"></i> Watch Reels</button>
+        </div>
+      </div>
+      <div>
+        <div class="flex justify-between items-center mb-3">
+          <h2 class="text-xl font-bold">Songs & Videos</h2>
+          <span id="contentCount" class="text-xs text-slate-500"></span>
+        </div>
+        <div id="mediaGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </div>
+    </section>
+
+    <section id="view-reels" class="hidden max-w-md mx-auto space-y-4">
+      <div class="flex items-center justify-between">
+        <div><h2 class="text-xl font-bold">Video Reels</h2><p class="text-xs text-slate-500">Creator short videos</p></div>
+        <button id="reelUploadBtn" onclick="openUpload()" class="hidden px-3 py-2 rounded-xl bg-rose-600 text-xs font-bold"><i class="fa-solid fa-upload"></i> Upload</button>
+      </div>
+      <div id="reelsList" class="space-y-4"></div>
+    </section>
+
+    <section id="view-chat" class="hidden">
+      <div class="max-w-3xl mx-auto glass rounded-3xl overflow-hidden">
+        <div class="p-4 border-b border-slate-800">
+          <h2 class="font-bold">Community Chat</h2>
+          <p class="text-xs text-slate-500">Clients and content creators can chat here.</p>
+        </div>
+        <div id="messages" class="h-[55vh] overflow-y-auto p-4 space-y-3"></div>
+        <form onsubmit="sendMessage(event)" class="p-3 border-t border-slate-800 flex gap-2">
+          <input id="chatInput" required maxlength="1000" placeholder="Write a message..." class="flex-1 rounded-xl bg-slate-950 border border-slate-800 p-3 text-sm">
+          <button class="px-4 rounded-xl bg-rose-600"><i class="fa-solid fa-paper-plane"></i></button>
+        </form>
+      </div>
+    </section>
+
+    <section id="view-dashboard" class="hidden space-y-5">
+      <div class="flex flex-wrap justify-between gap-3 items-center">
+        <div><h2 class="text-2xl font-black">Creator Dashboard</h2><p class="text-xs text-slate-500">Publish content and monitor views, likes, downloads and earnings.</p></div>
+        <button onclick="openUpload()" class="px-4 py-2 rounded-xl bg-rose-600 font-bold text-sm"><i class="fa-solid fa-upload"></i> Upload Content</button>
+      </div>
+      <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        <div class="stat"><span>Uploads</span><b id="statUploads">0</b></div>
+        <div class="stat"><span>Views</span><b id="statViews">0</b></div>
+        <div class="stat"><span>Likes</span><b id="statLikes">0</b></div>
+        <div class="stat"><span>Downloads</span><b id="statDownloads">0</b></div>
+        <div class="stat"><span>Earnings</span><b id="statEarnings">0 FRW</b></div>
+      </div>
+      <div id="creatorContent" class="space-y-3"></div>
+    </section>
+  </main>
+</div>
+
+<!-- WALLET -->
+<div id="walletModal" class="fixed inset-0 z-[80] hidden bg-slate-950/90 items-center justify-center p-4">
+  <div class="glass rounded-3xl p-6 max-w-md w-full">
+    <div class="flex justify-between"><h2 class="font-bold">Wallet</h2><button onclick="closeWallet()"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="mt-4 rounded-2xl bg-slate-950 p-4"><span class="text-xs text-slate-500">Current balance</span><div class="text-3xl font-black"><span id="walletBalance">0</span> FRW</div></div>
+    <form onsubmit="startPayment(event)" class="mt-4 space-y-3">
+      <input id="payPhone" required placeholder="MTN phone number e.g. 078xxxxxxx" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3">
+      <input id="payAmount" type="number" min="50" step="50" required placeholder="Amount (FRW)" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3">
+      <button class="w-full py-3 rounded-xl bg-amber-500 text-slate-950 font-black">Pay with MTN Mobile Money</button>
+    </form>
+    <p class="text-[11px] text-slate-500 mt-3">The payment is requested from the user's MTN wallet. The balance is credited only after the server verifies a successful MTN transaction.</p>
+  </div>
+</div>
+
+<!-- UPLOAD -->
+<div id="uploadModal" class="fixed inset-0 z-[80] hidden bg-slate-950/90 items-center justify-center p-4 overflow-y-auto">
+  <div class="glass rounded-3xl p-6 max-w-lg w-full">
+    <div class="flex justify-between"><h2 class="font-bold">Publish Content</h2><button onclick="closeUpload()"><i class="fa-solid fa-xmark"></i></button></div>
+    <form onsubmit="uploadContent(event)" class="mt-4 space-y-3">
+      <input id="upTitle" required placeholder="Title" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3">
+      <textarea id="upDescription" placeholder="Description" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3"></textarea>
+      <select id="upType" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3">
+        <option value="audio">Audio</option><option value="video">Video</option>
+      </select>
+      <input id="upPrice" type="number" min="0" value="50" step="10" placeholder="Download price (FRW)" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3">
+      <input id="upFile" type="file" accept="audio/*,video/*" required class="w-full text-sm">
+      <button class="w-full py-3 rounded-xl bg-rose-600 font-bold">Publish</button>
+    </form>
+  </div>
+</div>
+
+<!-- COMMENTS -->
+<div id="commentModal" class="fixed inset-0 z-[85] hidden bg-slate-950/90 items-center justify-center p-4">
+  <div class="glass rounded-3xl p-5 max-w-lg w-full max-h-[85vh] flex flex-col">
+    <div class="flex justify-between"><h2 class="font-bold">Comments</h2><button onclick="closeComments()"><i class="fa-solid fa-xmark"></i></button></div>
+    <div id="commentList" class="flex-1 overflow-y-auto space-y-3 my-4"></div>
+    <form onsubmit="postComment(event)" class="flex gap-2"><input id="commentInput" required placeholder="Write a comment..." class="flex-1 rounded-xl bg-slate-950 border border-slate-800 p-3"><button class="px-4 rounded-xl bg-rose-600"><i class="fa-solid fa-paper-plane"></i></button></form>
+  </div>
+</div>
+
+<div id="callPanel" class="fixed bottom-24 right-4 z-50 hidden glass rounded-2xl p-4 w-64 shadow-2xl">
+  <p class="font-bold text-sm">Call Center</p>
+  <p class="text-xs text-slate-400 mt-1">Support: +250 789 562 272</p>
+  <div class="flex gap-2 mt-3">
+    <a href="tel:+250789562272" class="flex-1 text-center py-2 rounded-xl bg-rose-600 text-xs font-bold"><i class="fa-solid fa-phone"></i> Call</a>
+    <a href="https://wa.me/250789562272" target="_blank" class="flex-1 text-center py-2 rounded-xl bg-green-600 text-xs font-bold"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+  </div>
+</div>
+<button onclick="toggleCall()" class="fixed bottom-4 right-4 z-50 w-14 h-14 rounded-full bg-rose-600 shadow-2xl"><i class="fa-solid fa-headset text-xl"></i></button>
+
+<audio id="audio" class="hidden"></audio>
+<div id="player" class="fixed bottom-0 left-0 right-0 z-60 hidden glass border-t border-slate-800">
+  <div class="max-w-7xl mx-auto p-3 flex flex-wrap items-center gap-3">
+    <div class="min-w-0 flex-1"><b id="playerTitle" class="block truncate text-sm">--</b><span id="playerArtist" class="text-xs text-slate-500">--</span></div>
+    <button onclick="prevTrack()" class="playerBtn"><i class="fa-solid fa-backward-step"></i></button>
+    <button onclick="togglePlay()" class="playerBtn bg-rose-600"><i id="playIcon" class="fa-solid fa-play"></i></button>
+    <button onclick="nextTrack()" class="playerBtn"><i class="fa-solid fa-forward-step"></i></button>
+    <button onclick="stopTrack()" class="playerBtn"><i class="fa-solid fa-stop"></i></button>
+    <label class="text-xs flex items-center gap-1">Speed
+      <select onchange="setSpeed(this.value)" class="bg-slate-950 rounded p-1"><option>0.5</option><option>0.75</option><option selected>1</option><option>1.25</option><option>1.5</option><option>2</option></select>
+    </label>
+    <span id="time" class="text-[10px] text-slate-500 w-20 text-right">0:00 / 0:00</span>
+  </div>
+</div>
+
+<style>
+.navbtn{padding:.45rem .8rem;border-radius:.7rem;color:#94a3b8;font-size:.75rem;font-weight:700;display:flex;gap:.45rem;align-items:center}
+.navbtn.active{background:#e11d48;color:white}
+.stat{background:#0f172a;border:1px solid #1e293b;border-radius:1rem;padding:1rem}.stat span{display:block;font-size:.7rem;color:#64748b}.stat b{display:block;font-size:1.3rem;margin-top:.25rem}
+.playerBtn{width:38px;height:38px;border-radius:999px;background:#1e293b;display:flex;align-items:center;justify-content:center}
+.media-card{background:#0f172a;border:1px solid #1e293b;border-radius:1.1rem;padding:1rem}
+</style>
+
+<script>
+const SUPABASE_URL = "https://hdblzeugfeftkutmqprl.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_yskMxVPr49-HJLubhXgPiA_qESKLUtN";
+const supabaseConfigured = !SUPABASE_URL.includes("YOUR_") && !SUPABASE_ANON_KEY.includes("YOUR_");
+const sb = supabaseConfigured ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+let session=null, profile=null, media=[], activeMedia=null, playerIndex=-1, currentCommentsMedia=null, chatChannel=null;
+
+function toast(msg, ok=true){const x=document.getElementById('toast');x.textContent=msg;x.className=`fixed top-4 right-4 z-[100] max-w-sm rounded-xl px-4 py-3 text-sm shadow-2xl ${ok?'bg-emerald-600':'bg-rose-600'}`;setTimeout(()=>x.classList.add('hidden'),3500)}
+function showAuth(mode){document.getElementById('signinForm').classList.toggle('hidden',mode!=='signin');document.getElementById('signupForm').classList.toggle('hidden',mode!=='signup');document.getElementById('tabSignin').className=mode==='signin'?'flex-1 py-2 rounded-lg bg-rose-600 text-sm font-bold':'flex-1 py-2 rounded-lg text-sm text-slate-400';document.getElementById('tabSignup').className=mode==='signup'?'flex-1 py-2 rounded-lg bg-rose-600 text-sm font-bold':'flex-1 py-2 rounded-lg text-sm text-slate-400'}
+function openForgot(){document.getElementById('forgotModal').classList.remove('hidden');document.getElementById('forgotModal').classList.add('flex')}
+function closeForgot(){document.getElementById('forgotModal').classList.add('hidden')}
+function openWallet(){document.getElementById('walletModal').classList.remove('hidden');document.getElementById('walletModal').classList.add('flex');document.getElementById('walletBalance').textContent=profile?.balance??0}
+function closeWallet(){document.getElementById('walletModal').classList.add('hidden')}
+function openUpload(){if(profile?.role!=='creator') return toast('Only Content Creators can upload.',false);document.getElementById('uploadModal').classList.remove('hidden');document.getElementById('uploadModal').classList.add('flex')}
+function closeUpload(){document.getElementById('uploadModal').classList.add('hidden')}
+function toggleCall(){document.getElementById('callPanel').classList.toggle('hidden')}
+function go(tab){['home','reels','chat','dashboard'].forEach(x=>{document.getElementById('view-'+x).classList.toggle('hidden',x!==tab);const n=document.getElementById('nav-'+x);if(n)n.classList.toggle('active',x===tab)});if(tab==='reels')renderReels();if(tab==='dashboard')renderCreator();if(tab==='chat')loadChat()}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function formatNum(n){return Number(n||0).toLocaleString()}
+
+async function signUp(e){
+  e.preventDefault();
+  if(!sb)return toast('Supabase is not configured.',false);
+
+  const name=regName.value.trim();
+  const email=regEmail.value.trim().toLowerCase();
+  const phone=regPhone.value.trim();
+  const role=regRole.value;
+  const pass=regPassword.value;
+  const conf=regConfirm.value;
+
+  if(pass!==conf)return toast('Passwords do not match.',false);
+  if(pass.length<8)return toast('Password must be at least 8 characters.',false);
+  if(!['client','creator'].includes(role))return toast('Invalid account role.',false);
+
+  const {data,error}=await sb.auth.signUp({
+    email,
+    password:pass,
+    options:{data:{full_name:name,phone,role}}
+  });
+
+  if(error){
+    // This error happens inside Supabase/Postgres, usually in the auth.users trigger.
+    // The database must be fixed with schema_fixed.sql; the browser cannot repair an Auth trigger.
+    const msg=String(error.message||'Registration failed.');
+    if(msg.toLowerCase().includes('database error saving new user')){
+      return toast('Database trigger error: run schema_fixed.sql in Supabase SQL Editor, then try again.',false);
+    }
+    return toast(msg,false);
+  }
+
+  if(!data?.user)return toast('Registration failed: Supabase did not return a user.',false);
+
+  // If email confirmation is disabled, make sure the profile exists.
+  if(data.session){
+    const {error:profileError}=await sb.from('profiles').upsert({
+      id:data.user.id,
+      full_name:name,
+      phone,
+      role,
+      balance:0
+    },{onConflict:'id'});
+
+    if(profileError){
+      return toast('Profile setup failed: '+profileError.message,false);
+    }
+
+    await boot(data.session);
+    return;
+  }
+
+  toast('Account created. Check your email and confirm it before signing in.');
+  showAuth('signin');
+}
+async function signIn(e){
+  e.preventDefault(); if(!sb)return toast('Configure Supabase first in index.html.',false);
+  const {data,error}=await sb.auth.signInWithPassword({email:loginEmail.value.trim().toLowerCase(),password:loginPassword.value});
+  if(error)return toast(error.message,false);
+  await boot(data.session);
+}
+async function forgotPassword(e){
+  e.preventDefault(); if(!sb)return toast('Configure Supabase first in index.html.',false);
+  const {error}=await sb.auth.resetPasswordForEmail(forgotEmail.value.trim().toLowerCase(),{redirectTo:location.origin+location.pathname+'#reset'});
+  if(error)return toast(error.message,false);
+  closeForgot();toast('Password reset instructions have been sent to your email.');
+}
+async function signOut(){if(sb)await sb.auth.signOut();session=null;profile=null;document.getElementById('mainApp').classList.add('hidden');document.getElementById('authOverlay').classList.remove('hidden');}
+
+async function boot(s){
+  session=s; if(!session)return;
+  const {data,error}=await sb.from('profiles').select('*').eq('id',session.user.id).single();
+  if(error){toast(error.message,false);return}
+  profile=data;
+  document.getElementById('authOverlay').classList.add('hidden');document.getElementById('mainApp').classList.remove('hidden');
+  document.getElementById('balance').textContent=formatNum(profile.balance);document.getElementById('walletBalance').textContent=formatNum(profile.balance);
+  const creator=profile.role==='creator';
+  document.getElementById('nav-dashboard').classList.toggle('hidden',!creator);
+  document.getElementById('reelUploadBtn').classList.toggle('hidden',!creator);
+  await loadMedia(); subscribeChat();
+}
+async function loadMedia(){
+  const {data,error}=await sb.from('media').select('*,profiles!media_creator_id_fkey(full_name)').eq('status','published').order('created_at',{ascending:false});
+  if(error){toast(error.message,false);return} media=data||[];renderMedia();
+}
+function filtered(){const q=(document.getElementById('search')?.value||'').trim().toLowerCase();return media.filter(m=>!q||m.title.toLowerCase().includes(q)||(m.description||'').toLowerCase().includes(q)||(m.profiles?.full_name||'').toLowerCase().includes(q))}
+function renderMedia(){
+  const list=filtered();document.getElementById('contentCount').textContent=`${list.length} items`;
+  document.getElementById('mediaGrid').innerHTML=list.length?list.map(m=>`
+    <article class="media-card">
+      <div class="flex gap-3">
+        <div class="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center text-rose-500"><i class="fa-solid ${m.type==='video'?'fa-video':'fa-music'}"></i></div>
+        <div class="min-w-0 flex-1"><h3 class="font-bold truncate">${esc(m.title)}</h3><p class="text-xs text-slate-500 truncate">${esc(m.profiles?.full_name||'Creator')}</p><p class="text-[11px] text-slate-500 mt-1">${formatNum(m.views)} views</p></div>
+      </div>
+      <div class="mt-3">${m.type==='video'?`<video controls playsinline class="w-full rounded-xl max-h-64 bg-black" src="${esc(m.file_url)}" onplay="countView('${m.id}')"></video>`:`<button onclick="playMedia('${m.id}')" class="w-full rounded-xl bg-slate-800 py-3 text-sm font-bold"><i class="fa-solid fa-play text-rose-500"></i> Play</button>`}</div>
+      <div class="flex flex-wrap gap-1 mt-3 text-[11px]">
+        <button onclick="toggleLike('${m.id}')" class="action"><i class="fa-regular fa-heart"></i> ${formatNum(m.likes_count)}</button>
+        <button onclick="shareMedia('${m.id}')" class="action"><i class="fa-solid fa-share"></i> Share</button>
+        <button onclick="subscribeCreator('${m.creator_id}')" class="action"><i class="fa-solid fa-user-plus"></i> Subscribe</button>
+        <button onclick="openComments('${m.id}')" class="action"><i class="fa-regular fa-comment"></i> Comment</button>
+        <button onclick="downloadMedia('${m.id}')" class="action bg-amber-500 text-slate-950">Download ${formatNum(m.price)} FRW</button>
+      </div>
+    </article>`).join(''):`<div class="col-span-full text-center py-16 text-slate-500">No published content found.</div>`;
+}
+async function countView(id){await sb.rpc('increment_media_view',{p_media_id:id});const m=media.find(x=>x.id===id);if(m)m.views++;renderMedia()}
+async function toggleLike(id){const {data:old}=await sb.from('media_likes').select('media_id').eq('media_id',id).eq('user_id',session.user.id).maybeSingle();if(old){await sb.from('media_likes').delete().match({media_id:id,user_id:session.user.id})}else{await sb.from('media_likes').insert({media_id:id,user_id:session.user.id})}await loadMedia()}
+async function subscribeCreator(id){if(id===session.user.id)return toast('You cannot subscribe to yourself.',false);const {data:old}=await sb.from('subscriptions').select('creator_id').match({creator_id:id,subscriber_id:session.user.id}).maybeSingle();if(old)await sb.from('subscriptions').delete().match({creator_id:id,subscriber_id:session.user.id});else await sb.from('subscriptions').insert({creator_id:id,subscriber_id:session.user.id});toast(old?'Unsubscribed.':'Subscribed.')}
+async function shareMedia(id){const url=location.origin+location.pathname+'?media='+encodeURIComponent(id);if(navigator.share)await navigator.share({title:'Indirimbo Zisobanuye',url});else{await navigator.clipboard.writeText(url);toast('Link copied.');}}
+async function openComments(id){currentCommentsMedia=id;document.getElementById('commentModal').classList.remove('hidden');document.getElementById('commentModal').classList.add('flex');const {data}=await sb.from('comments').select('*,profiles!comments_user_id_fkey(full_name)').eq('media_id',id).order('created_at');document.getElementById('commentList').innerHTML=(data||[]).map(c=>`<div class="rounded-xl bg-slate-950 p-3"><b class="text-xs">${esc(c.profiles?.full_name||'User')}</b><p class="text-sm mt-1">${esc(c.body)}</p></div>`).join('')||'<p class="text-xs text-slate-500">No comments yet.</p>'}
+function closeComments(){document.getElementById('commentModal').classList.add('hidden')}
+async function postComment(e){e.preventDefault();const body=document.getElementById('commentInput').value.trim();if(!body)return;await sb.from('comments').insert({media_id:currentCommentsMedia,user_id:session.user.id,body});document.getElementById('commentInput').value='';openComments(currentCommentsMedia)}
+async function downloadMedia(id){
+  const m=media.find(x=>x.id===id);if(!m)return;
+  const {data,error}=await sb.rpc('buy_media',{p_media_id:id});if(error)return toast(error.message,false);
+  if(data?.error)return toast(data.error,false);
+  document.getElementById('balance').textContent=formatNum(data.balance);profile.balance=data.balance;
+  const a=document.createElement('a');a.href=m.file_url;a.download=m.title;a.target='_blank';a.click();toast('Download recorded and payment completed.');
+}
+function playMedia(id){activeMedia=media.find(m=>m.id===id);if(!activeMedia)return;const aud=document.getElementById('audio');aud.src=activeMedia.file_url;aud.play();playerIndex=media.findIndex(m=>m.id===id);document.getElementById('playerTitle').textContent=activeMedia.title;document.getElementById('playerArtist').textContent=activeMedia.profiles?.full_name||'Creator';document.getElementById('player').classList.remove('hidden');countView(id)}
+function togglePlay(){const a=document.getElementById('audio');if(a.paused)a.play();else a.pause()}
+function stopTrack(){const a=document.getElementById('audio');a.pause();a.currentTime=0}
+function nextTrack(){if(!media.length)return;playerIndex=(playerIndex+1)%media.length;playMedia(media[playerIndex].id)}
+function prevTrack(){if(!media.length)return;playerIndex=(playerIndex-1+media.length)%media.length;playMedia(media[playerIndex].id)}
+function setSpeed(v){document.getElementById('audio').playbackRate=Number(v)}
+document.getElementById('audio').addEventListener('play',()=>document.getElementById('playIcon').className='fa-solid fa-pause');
+document.getElementById('audio').addEventListener('pause',()=>document.getElementById('playIcon').className='fa-solid fa-play');
+document.getElementById('audio').addEventListener('timeupdate',()=>{const a=document.getElementById('audio');document.getElementById('time').textContent=`${fmt(a.currentTime)} / ${fmt(a.duration)}`});document.getElementById('audio').addEventListener('ended',nextTrack);
+function fmt(s){if(!isFinite(s))return'0:00';return Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0')}
+
+async function uploadContent(e){
+  e.preventDefault();if(profile?.role!=='creator')return toast('Creator account required.',false);
+  const f=document.getElementById('upFile').files[0];if(!f)return;
+  const ext=f.name.split('.').pop();const path=`${session.user.id}/${crypto.randomUUID()}.${ext}`;
+  const {error:upErr}=await sb.storage.from('media').upload(path,f,{upsert:false});if(upErr)return toast(upErr.message,false);
+  const {data:{publicUrl}}=sb.storage.from('media').getPublicUrl(path);
+  const {error}=await sb.from('media').insert({creator_id:session.user.id,title:upTitle.value.trim(),description:upDescription.value.trim(),type:upType.value,price:Number(upPrice.value||50),file_url:publicUrl,status:'published'});
+  if(error)return toast(error.message,false);
+  closeUpload();e.target.reset();await loadMedia();renderCreator();toast('Content published successfully.');
+}
+function renderReels(){const rs=media.filter(m=>m.type==='video');document.getElementById('reelsList').innerHTML=rs.map(m=>`<article class="media-card"><video controls playsinline class="w-full rounded-2xl max-h-[70vh] bg-black" src="${esc(m.file_url)}" onplay="countView('${m.id}')"></video><h3 class="font-bold mt-2">${esc(m.title)}</h3><p class="text-xs text-slate-500">${formatNum(m.views)} views</p><div class="flex gap-1 mt-2"><button onclick="toggleLike('${m.id}')" class="action">Like ${formatNum(m.likes_count)}</button><button onclick="shareMedia('${m.id}')" class="action">Share</button><button onclick="openComments('${m.id}')" class="action">Comment</button></div></article>`).join('')||'<p class="text-center text-slate-500 py-10">No reels yet.</p>'}
+async function renderCreator(){if(profile?.role!=='creator')return;const own=media.filter(m=>m.creator_id===session.user.id);document.getElementById('statUploads').textContent=own.length;document.getElementById('statViews').textContent=formatNum(own.reduce((a,m)=>a+Number(m.views||0),0));document.getElementById('statLikes').textContent=formatNum(own.reduce((a,m)=>a+Number(m.likes_count||0),0));document.getElementById('statDownloads').textContent=formatNum(own.reduce((a,m)=>a+Number(m.downloads||0),0));document.getElementById('statEarnings').textContent=formatNum(own.reduce((a,m)=>a+Number(m.earnings||0),0))+' FRW';document.getElementById('creatorContent').innerHTML=own.map(m=>`<div class="media-card flex flex-wrap gap-3 items-center justify-between"><div><b>${esc(m.title)}</b><p class="text-xs text-slate-500">${m.type} · ${formatNum(m.views)} views · ${formatNum(m.downloads)} downloads</p></div><button onclick="deleteContent('${m.id}')" class="text-rose-500"><i class="fa-solid fa-trash"></i></button></div>`).join('')}
+async function deleteContent(id){if(!confirm('Delete this content?'))return;await sb.from('media').update({status:'deleted'}).eq('id',id).eq('creator_id',session.user.id);await loadMedia();renderCreator()}
+
+async function loadChat(){if(!session)return;const {data}=await sb.from('messages').select('*,profiles!messages_sender_id_fkey(full_name,role)').order('created_at').limit(200);document.getElementById('messages').innerHTML=(data||[]).map(renderMessage).join('');const box=document.getElementById('messages');box.scrollTop=box.scrollHeight}
+function renderMessage(m){const mine=m.sender_id===session.user.id;return `<div class="${mine?'text-right':''}"><div class="inline-block max-w-[85%] rounded-2xl px-3 py-2 ${mine?'bg-rose-600':'bg-slate-800'}"><div class="text-[10px] opacity-70">${esc(m.profiles?.full_name||'User')} · ${esc(m.profiles?.role||'')}</div><div class="text-sm">${esc(m.body)}</div></div></div>`}
+async function sendMessage(e){e.preventDefault();const body=document.getElementById('chatInput').value.trim();if(!body)return;const {error}=await sb.from('messages').insert({sender_id:session.user.id,body});if(error)return toast(error.message,false);document.getElementById('chatInput').value='';}
+function subscribeChat(){if(!sb||chatChannel)return;chatChannel=sb.channel('public-chat').on('postgres_changes',{event:'INSERT',schema:'public',table:'messages'},payload=>{const box=document.getElementById('messages');if(!box)return;loadChat()}).subscribe()}
+
+async function startPayment(e){
+  e.preventDefault();if(!session)return;const phone=document.getElementById('payPhone').value.trim(),amount=Number(document.getElementById('payAmount').value);
+  try{const r=await fetch('/api/payments/request',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},body:JSON.stringify({phone,amount})});const j=await r.json();if(!r.ok)throw Error(j.error||'Payment request failed');toast('Payment request sent. Approve it on your MTN phone, then wait for confirmation.');pollPayment(j.transactionId)}catch(err){toast(err.message,false)}
+}
+async function pollPayment(tx){for(let i=0;i<30;i++){await new Promise(r=>setTimeout(r,5000));try{const r=await fetch('/api/payments/status/'+tx,{headers:{'Authorization':'Bearer '+session.access_token}});const j=await r.json();if(j.status==='SUCCESSFUL'){await refreshProfile();toast('Payment successful. Your wallet has been credited.');closeWallet();return}if(['FAILED','REJECTED'].includes(j.status)){toast('Payment was not completed.',false);return}}catch(e){}}toast('Payment is still pending. Your balance will update after MTN confirms it.',false)}
+async function refreshProfile(){const {data}=await sb.from('profiles').select('*').eq('id',session.user.id).single();profile=data;document.getElementById('balance').textContent=formatNum(data.balance);document.getElementById('walletBalance').textContent=formatNum(data.balance)}
+
+window.addEventListener('load',async()=>{
+  if(!supabaseConfigured){toast('Open README.md and configure Supabase + server credentials.',false);return}
+  const {data}=await sb.auth.getSession();if(data.session)await boot(data.session);
+  sb.auth.onAuthStateChange(async(event,s)=>{if(event==='SIGNED_IN'&&s)await boot(s);});
+});
+</script>
+</body>
+</html>
