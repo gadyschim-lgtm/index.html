@@ -1,448 +1,665 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-  <head>
-
-```
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Indirimbo Zisobanuye - Song Meanings and Explanations</title>
-
-<meta name="description" content="Indirimbo Zisobanuye is a website that helps you discover the meanings, messages, stories, and background of different songs.">
-
-<meta name="robots" content="index, follow">
-
-<link rel="canonical" href="https://indirimbozisobanuye.netlify.app/">
-
-<!-- Open Graph -->
-<meta property="og:title" content="Indirimbo Zisobanuye - Song Meanings and Explanations">
-<meta property="og:description" content="Discover the meanings, messages, stories, and background of different songs.">
-<meta property="og:url" content="https://indirimbozisobanuye.netlify.app/">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Indirimbo Zisobanuye">
-
-<!-- Twitter -->
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Indirimbo Zisobanuye - Song Meanings and Explanations">
-<meta name="twitter:description" content="Discover the meanings, messages, stories, and background of different songs.">
-```
-
-</head>
-
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Indirimbo Zisobanuye</title>
+
+  <!-- GOOGLE SEARCH CONSOLE VERIFICATION META TAG -->
+  <meta name="google-site-verification" content="YOUR_GOOGLE_CONSOLE_CODE_HERE" />
+
+  <!-- TAILWIND CSS, FONT-AWESOME & SUPABASE JS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
   <style>
-    body{background:#020617;color:#e2e8f0}
-    .glass{background:rgba(15,23,42,.88);backdrop-filter:blur(14px);border:1px solid rgba(148,163,184,.14)}
-    .no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{scrollbar-width:none}
-    .hidden{display:none!important}
-    button:disabled{opacity:.5;cursor:not-allowed}
-    input,select,textarea{color-scheme:dark}
+    body { background: #020617; color: #e2e8f0; font-family: system-ui, -apple-system, sans-serif; }
+    .glass { background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(14px); border: 1px solid rgba(148, 163, 184, 0.14); }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { scrollbar-width: none; }
+    .hidden { display: none !important; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* Snap Scrolling Container for Reels */
+    .reels-container {
+      height: calc(100vh - 180px);
+      scroll-snap-type: y mandatory;
+      overflow-y: scroll;
+    }
+    .reel-card {
+      height: calc(100vh - 180px);
+      scroll-snap-align: start;
+      position: relative;
+    }
   </style>
 </head>
-<body class="min-h-screen font-sans pb-28">
-<div id="toast" class="fixed top-4 right-4 z-[100] hidden max-w-sm rounded-xl px-4 py-3 text-sm shadow-2xl"></div>
+<body class="min-h-screen font-sans pb-28 select-none">
 
-<!-- AUTH -->
+<!-- TOAST NOTIFICATION -->
+<div id="toast" class="fixed top-4 right-4 z-[100] hidden max-w-sm rounded-xl px-5 py-3 text-sm font-medium shadow-2xl transition-all"></div>
+
+<!-- AUTHENTICATION OVERLAY -->
 <div id="authOverlay" class="fixed inset-0 z-[90] bg-slate-950 flex items-center justify-center p-4 overflow-y-auto">
-  <div class="glass rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl">
+  <div class="glass rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-rose-500/20">
     <div class="text-center mb-6">
-      <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-rose-600 to-amber-500 flex items-center justify-center mx-auto">
-        <i class="fa-solid fa-music text-2xl"></i>
+      <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-rose-600 to-amber-500 flex items-center justify-center mx-auto shadow-lg shadow-rose-500/30">
+        <i class="fa-solid fa-music text-2xl text-white"></i>
       </div>
       <h1 class="text-2xl font-black mt-3">Indirimbo <span class="text-rose-500">Zisobanuye</span></h1>
-      <p class="text-xs text-slate-400 mt-1">Translated music and video platform</p>
+      <p class="text-xs text-slate-400 mt-1">Discover, Watch, Stream & Chat with Creators</p>
     </div>
 
     <div class="flex rounded-xl bg-slate-950 p-1 mb-5">
-      <button id="tabSignin" onclick="showAuth('signin')" class="flex-1 py-2 rounded-lg bg-rose-600 text-sm font-bold">Sign In</button>
+      <button id="tabSignin" onclick="showAuth('signin')" class="flex-1 py-2 rounded-lg bg-rose-600 text-sm font-bold text-white">Sign In</button>
       <button id="tabSignup" onclick="showAuth('signup')" class="flex-1 py-2 rounded-lg text-sm text-slate-400">Sign Up</button>
     </div>
 
     <form id="signinForm" class="space-y-3" onsubmit="signIn(event)">
-      <input id="loginEmail" type="email" required placeholder="Email" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3">
-      <input id="loginPassword" type="password" required placeholder="Password" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3">
-      <button class="w-full py-3 rounded-xl bg-rose-600 font-bold">Sign In</button>
-      <button type="button" onclick="openForgot()" class="w-full text-xs text-rose-400 hover:underline">Forgot Password?</button>
+      <input id="loginEmail" type="email" required placeholder="Email address" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3 text-sm text-white focus:outline-none focus:border-rose-500">
+      <input id="loginPassword" type="password" required placeholder="Password" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3 text-sm text-white focus:outline-none focus:border-rose-500">
+      <button class="w-full py-3 rounded-xl bg-rose-600 font-bold text-white shadow-lg shadow-rose-600/30">Sign In</button>
     </form>
 
     <form id="signupForm" class="hidden space-y-3" onsubmit="signUp(event)">
-      <input id="regName" type="text" required placeholder="Full Name" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3">
-      <input id="regEmail" type="email" required placeholder="Email" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3">
-      <input id="regPhone" type="tel" required placeholder="Phone Number (e.g. 078xxxxxxx)" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3">
-      <select id="regRole" required class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3">
-        <option value="client">Client</option>
+      <input id="regName" type="text" required placeholder="Full Name" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3 text-sm">
+      <input id="regEmail" type="email" required placeholder="Email address" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3 text-sm">
+      <select id="regRole" required class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3 text-sm">
+        <option value="client">Client (Viewer)</option>
         <option value="creator">Content Creator</option>
       </select>
-      <input id="regPassword" type="password" minlength="8" required placeholder="Password (8+ characters)" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3">
-      <input id="regConfirm" type="password" minlength="8" required placeholder="Confirm Password" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3">
-      <button class="w-full py-3 rounded-xl bg-rose-600 font-bold">Create Account</button>
-      <p class="text-[11px] text-slate-400">A confirmation email will be sent before the account can be used.</p>
+      <input id="regPassword" type="password" minlength="8" required placeholder="Password (8+ characters)" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3 text-sm">
+      <button class="w-full py-3 rounded-xl bg-rose-600 font-bold text-white">Create Account</button>
     </form>
   </div>
 </div>
 
-<!-- FORGOT PASSWORD -->
-<div id="forgotModal" class="fixed inset-0 z-[95] hidden bg-slate-950/90 items-center justify-center p-4">
-  <div class="glass rounded-3xl p-6 max-w-sm w-full">
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="font-bold">Reset Password</h2>
-      <button onclick="closeForgot()"><i class="fa-solid fa-xmark"></i></button>
-    </div>
-    <p class="text-xs text-slate-400 mb-4">Enter your email. A secure password-reset email will be sent to you.</p>
-    <form onsubmit="forgotPassword(event)" class="space-y-3">
-      <input id="forgotEmail" type="email" required placeholder="Email" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3">
-      <button class="w-full py-3 rounded-xl bg-rose-600 font-bold">Send Reset Email</button>
-    </form>
-  </div>
-</div>
-
+<!-- MAIN APPLICATION -->
 <div id="mainApp" class="hidden">
+  
+  <!-- HEADER -->
   <header class="sticky top-0 z-40 glass border-b border-slate-800">
-    <div class="max-w-7xl mx-auto px-3 sm:px-6 h-16 flex items-center gap-3">
-      <button onclick="go('home')" class="flex items-center gap-2 shrink-0">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-rose-600 to-amber-500 flex items-center justify-center"><i class="fa-solid fa-music"></i></div>
-        <span class="font-black hidden sm:block">Indirimbo <span class="text-rose-500">Zisobanuye</span></span>
-      </button>
-      <div class="flex-1 max-w-xl mx-auto">
+    <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
+      
+      <div class="flex items-center gap-3">
+        <!-- GLOBAL BACK BUTTON -->
+        <button id="globalBackBtn" onclick="goBack()" class="w-9 h-9 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:text-white hover:border-rose-500 transition">
+          <i class="fa-solid fa-arrow-left text-sm"></i>
+        </button>
+        <button onclick="go('home')" class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-rose-600 to-amber-500 flex items-center justify-center"><i class="fa-solid fa-music text-white text-sm"></i></div>
+          <span class="font-black text-lg hidden sm:block text-white">Indirimbo <span class="text-rose-500">Zisobanuye</span></span>
+        </button>
+      </div>
+
+      <!-- SEARCH BAR -->
+      <div class="flex-1 max-w-md">
         <div class="relative">
-          <i class="fa-solid fa-search absolute left-3 top-3 text-slate-500"></i>
-          <input id="search" oninput="renderMedia()" placeholder="Search songs, videos, creators..." class="w-full rounded-full bg-slate-950 border border-slate-800 pl-9 pr-4 py-2 text-sm">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-500 text-xs"></i>
+          <input id="search" oninput="renderMedia()" placeholder="Search songs, videos, creators..." class="w-full rounded-full bg-slate-950 border border-slate-800 pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-rose-500">
         </div>
       </div>
-      <button onclick="openWallet()" class="rounded-full bg-slate-900 border border-slate-800 px-3 py-2 text-xs whitespace-nowrap">
-        <i class="fa-solid fa-wallet text-amber-400"></i> <span id="balance">0</span> FRW
-      </button>
-      <button onclick="go('chat')" class="w-9 h-9 rounded-full bg-slate-900 border border-slate-800"><i class="fa-regular fa-comments"></i></button>
-      <button onclick="signOut()" class="w-9 h-9 rounded-full bg-slate-900 border border-slate-800"><i class="fa-solid fa-right-from-bracket"></i></button>
+
+      <div class="flex items-center gap-2">
+        <!-- NOTIFICATIONS BUTTON -->
+        <button onclick="toggleNotifications()" class="relative w-9 h-9 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center">
+          <i class="fa-regular fa-bell text-slate-300 text-sm"></i>
+          <span id="notifBadge" class="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500 hidden"></span>
+        </button>
+
+        <!-- GO LIVE STREAM BUTTON -->
+        <button id="liveStreamBtn" onclick="startLiveStream()" class="hidden px-3 py-1.5 rounded-full bg-rose-600 hover:bg-rose-500 text-xs font-bold text-white flex items-center gap-1.5 animate-pulse">
+          <i class="fa-solid fa-tower-broadcast"></i> Go LIVE
+        </button>
+
+        <button onclick="go('settings')" class="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 overflow-hidden">
+          <img id="myAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=User" class="w-full h-full object-cover">
+        </button>
+      </div>
     </div>
   </header>
 
-  <nav class="sticky top-16 z-30 bg-slate-900/90 border-b border-slate-800 overflow-x-auto no-scrollbar">
-    <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2 flex gap-2 min-w-max">
+  <!-- NOTIFICATIONS PANEL -->
+  <div id="notifPanel" class="fixed top-16 right-4 z-50 hidden glass rounded-2xl p-4 w-80 shadow-2xl border border-slate-800">
+    <div class="flex justify-between items-center mb-2">
+      <h3 class="font-bold text-sm text-white">Notifications</h3>
+      <button onclick="toggleNotifications()"><i class="fa-solid fa-xmark text-slate-400"></i></button>
+    </div>
+    <div id="notifList" class="space-y-2 text-xs max-h-60 overflow-y-auto">
+      <p class="text-slate-500">No new notifications.</p>
+    </div>
+  </div>
+
+  <!-- NAVIGATION TABS -->
+  <nav class="sticky top-16 z-30 bg-slate-950/90 border-b border-slate-800 overflow-x-auto no-scrollbar">
+    <div class="max-w-7xl mx-auto px-4 py-2 flex gap-2 min-w-max">
       <button id="nav-home" onclick="go('home')" class="navbtn active"><i class="fa-solid fa-house"></i> Home</button>
-      <button id="nav-reels" onclick="go('reels')" class="navbtn"><i class="fa-solid fa-bolt"></i> Reels</button>
-      <button id="nav-chat" onclick="go('chat')" class="navbtn"><i class="fa-regular fa-comments"></i> Chat</button>
-      <button id="nav-dashboard" onclick="go('dashboard')" class="navbtn hidden"><i class="fa-solid fa-chart-line"></i> Creator Dashboard</button>
+      <button id="nav-reels" onclick="go('reels')" class="navbtn"><i class="fa-solid fa-bolt text-amber-400"></i> Reels</button>
+      <button id="nav-inbox" onclick="go('inbox')" class="navbtn"><i class="fa-solid fa-paper-plane"></i> Private Inbox</button>
+      <button id="nav-dashboard" onclick="go('dashboard')" class="navbtn hidden"><i class="fa-solid fa-chart-line"></i> Creator Studio</button>
+      <button id="nav-admin" onclick="go('admin')" class="navbtn hidden text-rose-400"><i class="fa-solid fa-shield-halved"></i> Admin Panel</button>
+      <button id="nav-settings" onclick="go('settings')" class="navbtn"><i class="fa-solid fa-gear"></i> Settings</button>
     </div>
   </nav>
 
-  <main class="max-w-7xl mx-auto px-3 sm:px-6 py-6">
+  <!-- MAIN VIEW CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 py-4">
+
+    <!-- HOME FEED -->
     <section id="view-home" class="space-y-6">
       <div class="rounded-3xl p-6 sm:p-10 border border-slate-800 bg-gradient-to-r from-slate-900 via-rose-950/30 to-slate-900">
-        <span class="text-xs text-rose-400 font-bold">TRANSLATED ENTERTAINMENT</span>
-        <h2 class="text-3xl sm:text-5xl font-black mt-2">Discover songs and videos from creators.</h2>
-        <p class="text-sm text-slate-400 mt-3 max-w-2xl">Listen, watch, like, share, subscribe, comment and download creator content.</p>
+        <span class="text-xs text-rose-400 font-bold">TRANSLATED ENTERTAINMENT PLATFORM</span>
+        <h2 class="text-3xl sm:text-5xl font-black mt-2 text-white">Discover songs & videos from creators.</h2>
         <div class="flex flex-wrap gap-2 mt-5">
-          <button onclick="openWallet()" class="px-4 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-sm"><i class="fa-solid fa-plus"></i> Add Money</button>
-          <button onclick="go('reels')" class="px-4 py-2 rounded-xl bg-slate-800 font-bold text-sm"><i class="fa-solid fa-play"></i> Watch Reels</button>
+          <button onclick="go('reels')" class="px-5 py-2.5 rounded-xl bg-rose-600 font-bold text-sm text-white hover:bg-rose-500 transition"><i class="fa-solid fa-play"></i> Watch Reels</button>
         </div>
       </div>
+
       <div>
         <div class="flex justify-between items-center mb-3">
-          <h2 class="text-xl font-bold">Songs & Videos</h2>
-          <span id="contentCount" class="text-xs text-slate-500"></span>
+          <h3 class="text-xl font-bold text-white">Explore Trending Content</h3>
         </div>
         <div id="mediaGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
       </div>
     </section>
 
-    <section id="view-reels" class="hidden max-w-md mx-auto space-y-4">
-      <div class="flex items-center justify-between">
-        <div><h2 class="text-xl font-bold">Video Reels</h2><p class="text-xs text-slate-500">Creator short videos</p></div>
-        <button id="reelUploadBtn" onclick="openUpload()" class="hidden px-3 py-2 rounded-xl bg-rose-600 text-xs font-bold"><i class="fa-solid fa-upload"></i> Upload</button>
+    <!-- REELS VIEWPORT -->
+    <section id="view-reels" class="hidden">
+      <div class="max-w-md mx-auto bg-black rounded-3xl overflow-hidden relative border border-slate-800 shadow-2xl">
+        <!-- SCROLL OVERLAY BUTTONS -->
+        <div class="absolute top-4 right-4 z-20 flex flex-col gap-2">
+          <button onclick="scrollReel(-1)" title="Scroll Up" class="w-9 h-9 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-rose-600 transition"><i class="fa-solid fa-chevron-up"></i></button>
+          <button onclick="scrollReel(1)" title="Scroll Down" class="w-9 h-9 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-rose-600 transition"><i class="fa-solid fa-chevron-down"></i></button>
+        </div>
+        <div id="reelsContainer" class="reels-container no-scrollbar"></div>
       </div>
-      <div id="reelsList" class="space-y-4"></div>
     </section>
 
-    <section id="view-chat" class="hidden">
-      <div class="max-w-3xl mx-auto glass rounded-3xl overflow-hidden">
-        <div class="p-4 border-b border-slate-800">
-          <h2 class="font-bold">Community Chat</h2>
-          <p class="text-xs text-slate-500">Clients and content creators can chat here.</p>
+    <!-- PRIVATE INBOX CHAT -->
+    <section id="view-inbox" class="hidden">
+      <div class="max-w-4xl mx-auto glass rounded-3xl border border-slate-800 overflow-hidden grid grid-cols-1 md:grid-cols-3 h-[75vh]">
+        <div class="border-r border-slate-800 p-4 space-y-3 overflow-y-auto">
+          <h3 class="font-bold text-base text-white">Conversations</h3>
+          <div id="inboxUsersList" class="space-y-2"></div>
         </div>
-        <div id="messages" class="h-[55vh] overflow-y-auto p-4 space-y-3"></div>
-        <form onsubmit="sendMessage(event)" class="p-3 border-t border-slate-800 flex gap-2">
-          <input id="chatInput" required maxlength="1000" placeholder="Write a message..." class="flex-1 rounded-xl bg-slate-950 border border-slate-800 p-3 text-sm">
-          <button class="px-4 rounded-xl bg-rose-600"><i class="fa-solid fa-paper-plane"></i></button>
+        <div class="md:col-span-2 flex flex-col h-full bg-slate-950/50">
+          <div id="chatHeader" class="p-4 border-b border-slate-800 flex items-center justify-between">
+            <h4 id="chatTargetName" class="font-bold text-sm text-white">Select a user to chat</h4>
+          </div>
+          <div id="privateMessagesList" class="flex-1 p-4 overflow-y-auto space-y-3">
+            <p class="text-center text-xs text-slate-500 mt-10">Private Messaging (End-to-End Chat)</p>
+          </div>
+          <form id="privateChatForm" onsubmit="sendPrivateMessage(event)" class="p-3 border-t border-slate-800 flex items-center gap-2">
+            <input id="privateInput" placeholder="Type a message..." class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none">
+            <button type="button" id="recordVoiceBtn" onclick="toggleVoiceRecord()" class="w-9 h-9 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center hover:bg-slate-700">
+              <i class="fa-solid fa-microphone"></i>
+            </button>
+            <button class="w-9 h-9 rounded-xl bg-rose-600 text-white flex items-center justify-center"><i class="fa-solid fa-paper-plane text-xs"></i></button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- PUBLIC USER PROFILE VIEW -->
+    <section id="view-profile" class="hidden space-y-6">
+      <div class="glass p-6 rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4 border border-slate-800">
+        <div class="flex items-center gap-4">
+          <img id="profAvatar" src="" class="w-20 h-20 rounded-full border-2 border-rose-500 object-cover">
+          <div>
+            <h2 id="profName" class="text-xl font-bold text-white">--</h2>
+            <p id="profRole" class="text-xs text-rose-400 capitalize">--</p>
+            <p id="profBio" class="text-xs text-slate-400 mt-1">--</p>
+          </div>
+        </div>
+        <div class="flex gap-2 w-full sm:w-auto">
+          <button id="profFollowBtn" onclick="toggleFollowCurrentProfile()" class="flex-1 sm:flex-initial px-5 py-2 rounded-full bg-rose-600 hover:bg-rose-500 text-xs font-bold text-white"><i class="fa-solid fa-user-plus"></i> Follow</button>
+          <button id="profMsgBtn" onclick="startDirectChatFromProfile()" class="flex-1 sm:flex-initial px-5 py-2 rounded-full bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white"><i class="fa-solid fa-envelope"></i> Message</button>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="font-bold text-sm text-white mb-3">User Uploaded Content</h3>
+        <div id="profMediaGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </div>
+
+      <div class="glass p-5 rounded-3xl space-y-4">
+        <h3 class="font-bold text-sm text-white">Profile Discussion</h3>
+        <div id="profCommentsList" class="space-y-2 max-h-48 overflow-y-auto text-xs"></div>
+        <form onsubmit="postProfileComment(event)" class="flex gap-2">
+          <input id="profCommentInput" required placeholder="Leave a comment on profile..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white">
+          <button class="px-4 py-2 rounded-xl bg-rose-600 text-xs font-bold text-white">Post</button>
         </form>
       </div>
     </section>
 
+    <!-- ADMIN DASHBOARD -->
+    <section id="view-admin" class="hidden space-y-6">
+      <div class="glass p-6 rounded-3xl border border-rose-500/30">
+        <h2 class="text-xl font-black text-rose-500"><i class="fa-solid fa-shield-halved"></i> Admin Moderation Dashboard</h2>
+        <p class="text-xs text-slate-400 mt-1">Delete non-compliant media or message any registered user.</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="glass p-4 rounded-2xl">
+          <h3 class="font-bold text-sm text-white mb-3">Moderate Content (Delete)</h3>
+          <div id="adminContentList" class="space-y-2 max-h-96 overflow-y-auto"></div>
+        </div>
+        <div class="glass p-4 rounded-2xl">
+          <h3 class="font-bold text-sm text-white mb-3">All Accounts (Direct Message)</h3>
+          <div id="adminUsersList" class="space-y-2 max-h-96 overflow-y-auto"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETTINGS VIEW -->
+    <section id="view-settings" class="hidden max-w-lg mx-auto glass p-6 rounded-3xl space-y-6 border border-slate-800">
+      <h2 class="text-lg font-bold text-white">Account Settings</h2>
+      
+      <!-- PROFILE PICTURE DEVICE FILE UPLOAD -->
+      <div class="space-y-2">
+        <label class="text-xs text-slate-400 block font-bold">Profile Picture (Upload from Device)</label>
+        <div class="flex items-center gap-3">
+          <input id="setAvatarFile" type="file" accept="image/*" class="text-xs text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-rose-600 file:text-white file:font-bold file:text-xs">
+          <button onclick="uploadAvatarFile()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">Upload</button>
+        </div>
+      </div>
+
+      <div class="space-y-3 pt-4 border-t border-slate-800">
+        <div>
+          <label class="text-xs text-slate-400 block mb-1">Display Name</label>
+          <input id="setNameInput" type="text" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white">
+        </div>
+        <div>
+          <label class="text-xs text-slate-400 block mb-1">Bio</label>
+          <textarea id="setBioInput" rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white"></textarea>
+        </div>
+        <button onclick="updateProfileDetails()" class="w-full py-2.5 rounded-xl bg-rose-600 text-xs font-bold text-white">Save Profile Details</button>
+      </div>
+
+      <!-- SWITCH ROLE BUTTON -->
+      <div class="pt-4 border-t border-slate-800 space-y-2">
+        <label class="text-xs text-slate-400 block font-bold">Switch Account Role</label>
+        <p class="text-xs">Current Role: <b id="currentRoleDisplay" class="text-rose-400 uppercase">--</b></p>
+        <button id="switchRoleBtn" onclick="toggleAccountRole()" class="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">
+          Switch Role
+        </button>
+      </div>
+
+      <button onclick="signOut()" class="w-full py-3 rounded-xl bg-rose-600/20 text-rose-400 hover:bg-rose-600 hover:text-white transition text-xs font-bold">
+        Sign Out
+      </button>
+    </section>
+
+    <!-- CREATOR STUDIO DASHBOARD -->
     <section id="view-dashboard" class="hidden space-y-5">
       <div class="flex flex-wrap justify-between gap-3 items-center">
-        <div><h2 class="text-2xl font-black">Creator Dashboard</h2><p class="text-xs text-slate-500">Publish content and monitor views, likes, downloads and earnings.</p></div>
-        <button onclick="openUpload()" class="px-4 py-2 rounded-xl bg-rose-600 font-bold text-sm"><i class="fa-solid fa-upload"></i> Upload Content</button>
-      </div>
-      <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
-        <div class="stat"><span>Uploads</span><b id="statUploads">0</b></div>
-        <div class="stat"><span>Views</span><b id="statViews">0</b></div>
-        <div class="stat"><span>Likes</span><b id="statLikes">0</b></div>
-        <div class="stat"><span>Downloads</span><b id="statDownloads">0</b></div>
-        <div class="stat"><span>Earnings</span><b id="statEarnings">0 FRW</b></div>
+        <div><h2 class="text-2xl font-black text-white">Creator Studio</h2><p class="text-xs text-slate-500">Upload songs & short videos.</p></div>
+        <button onclick="openUpload()" class="px-4 py-2 rounded-xl bg-rose-600 font-bold text-sm text-white"><i class="fa-solid fa-upload"></i> Upload Media</button>
       </div>
       <div id="creatorContent" class="space-y-3"></div>
     </section>
+
   </main>
 </div>
 
-<!-- WALLET -->
-<div id="walletModal" class="fixed inset-0 z-[80] hidden bg-slate-950/90 items-center justify-center p-4">
-  <div class="glass rounded-3xl p-6 max-w-md w-full">
-    <div class="flex justify-between"><h2 class="font-bold">Wallet</h2><button onclick="closeWallet()"><i class="fa-solid fa-xmark"></i></button></div>
-    <div class="mt-4 rounded-2xl bg-slate-950 p-4"><span class="text-xs text-slate-500">Current balance</span><div class="text-3xl font-black"><span id="walletBalance">0</span> FRW</div></div>
-    <form onsubmit="startPayment(event)" class="mt-4 space-y-3">
-      <input id="payPhone" required placeholder="MTN phone number e.g. 078xxxxxxx" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3">
-      <input id="payAmount" type="number" min="50" step="50" required placeholder="Amount (FRW)" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3">
-      <button class="w-full py-3 rounded-xl bg-amber-500 text-slate-950 font-black">Pay with MTN Mobile Money</button>
-    </form>
-    <p class="text-[11px] text-slate-500 mt-3">The payment is requested from the user's MTN wallet. The balance is credited only after the server verifies a successful MTN transaction.</p>
+<!-- GLOBAL MEDIA PLAYER CONTROLLER -->
+<div id="globalPlayerBar" class="fixed bottom-0 left-0 right-0 z-50 glass border-t border-slate-800 px-4 py-3 flex items-center justify-between gap-4">
+  <div class="flex items-center gap-3 min-w-0 max-w-[30%]">
+    <div class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center shrink-0"><i class="fa-solid fa-compact-disc text-rose-500 animate-spin"></i></div>
+    <div class="min-w-0">
+      <h5 id="playerTitle" class="text-xs font-bold text-white truncate">No track playing</h5>
+      <p id="playerArtist" class="text-[10px] text-slate-400 truncate">Indirimbo Zisobanuye</p>
+    </div>
   </div>
+
+  <!-- PLAYER BUTTONS: BACK, PLAY/STOP, NEXT -->
+  <div class="flex items-center gap-4">
+    <button onclick="playPrevTrack()" title="Previous Track" class="text-slate-400 hover:text-white"><i class="fa-solid fa-backward-step text-base"></i></button>
+    <button onclick="toggleGlobalPlay()" id="globalPlayBtn" title="Play/Stop" class="w-10 h-10 rounded-full bg-rose-600 text-white flex items-center justify-center shadow-lg"><i class="fa-solid fa-play"></i></button>
+    <button onclick="playNextTrack()" title="Next Track" class="text-slate-400 hover:text-white"><i class="fa-solid fa-forward-step text-base"></i></button>
+  </div>
+
+  <audio id="globalAudioPlayer" class="hidden"></audio>
 </div>
 
-<!-- UPLOAD -->
-<div id="uploadModal" class="fixed inset-0 z-[80] hidden bg-slate-950/90 items-center justify-center p-4 overflow-y-auto">
+<!-- MODALS (UPLOAD & NO-SAVE LIVE STREAM) -->
+<div id="uploadModal" class="fixed inset-0 z-[80] hidden bg-slate-950/90 flex items-center justify-center p-4 overflow-y-auto">
   <div class="glass rounded-3xl p-6 max-w-lg w-full">
-    <div class="flex justify-between"><h2 class="font-bold">Publish Content</h2><button onclick="closeUpload()"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="flex justify-between"><h3 class="font-bold text-white">Publish Content</h3><button onclick="closeUpload()"><i class="fa-solid fa-xmark text-slate-400"></i></button></div>
     <form onsubmit="uploadContent(event)" class="mt-4 space-y-3">
-      <input id="upTitle" required placeholder="Title" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3">
-      <textarea id="upDescription" placeholder="Description" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3"></textarea>
-      <select id="upType" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3">
-        <option value="audio">Audio</option><option value="video">Video</option>
+      <input id="upTitle" required placeholder="Track / Reel Title" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3 text-sm text-white">
+      <select id="upType" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3 text-sm text-white">
+        <option value="video">Short Video / Reel</option>
+        <option value="audio">Audio Track</option>
       </select>
-      <input id="upPrice" type="number" min="0" value="50" step="10" placeholder="Download price (FRW)" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3">
-      <input id="upFile" type="file" accept="audio/*,video/*" required class="w-full text-sm">
-      <button class="w-full py-3 rounded-xl bg-rose-600 font-bold">Publish</button>
+      <input id="upFile" type="file" accept="audio/*,video/*" required class="w-full text-xs text-slate-400">
+      <button class="w-full py-3 rounded-xl bg-rose-600 font-bold text-xs text-white">Publish Now</button>
     </form>
   </div>
 </div>
 
-<!-- COMMENTS -->
-<div id="commentModal" class="fixed inset-0 z-[85] hidden bg-slate-950/90 items-center justify-center p-4">
-  <div class="glass rounded-3xl p-5 max-w-lg w-full max-h-[85vh] flex flex-col">
-    <div class="flex justify-between"><h2 class="font-bold">Comments</h2><button onclick="closeComments()"><i class="fa-solid fa-xmark"></i></button></div>
-    <div id="commentList" class="flex-1 overflow-y-auto space-y-3 my-4"></div>
-    <form onsubmit="postComment(event)" class="flex gap-2"><input id="commentInput" required placeholder="Write a comment..." class="flex-1 rounded-xl bg-slate-950 border border-slate-800 p-3"><button class="px-4 rounded-xl bg-rose-600"><i class="fa-solid fa-paper-plane"></i></button></form>
-  </div>
-</div>
-
-<div id="callPanel" class="fixed bottom-24 right-4 z-50 hidden glass rounded-2xl p-4 w-64 shadow-2xl">
-  <p class="font-bold text-sm">Call Center</p>
-  <p class="text-xs text-slate-400 mt-1">Support: +250 789 562 272</p>
-  <div class="flex gap-2 mt-3">
-    <a href="tel:+250789562272" class="flex-1 text-center py-2 rounded-xl bg-rose-600 text-xs font-bold"><i class="fa-solid fa-phone"></i> Call</a>
-    <a href="https://wa.me/250789562272" target="_blank" class="flex-1 text-center py-2 rounded-xl bg-green-600 text-xs font-bold"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
-  </div>
-</div>
-<button onclick="toggleCall()" class="fixed bottom-4 right-4 z-50 w-14 h-14 rounded-full bg-rose-600 shadow-2xl"><i class="fa-solid fa-headset text-xl"></i></button>
-
-<audio id="audio" class="hidden"></audio>
-<div id="player" class="fixed bottom-0 left-0 right-0 z-60 hidden glass border-t border-slate-800">
-  <div class="max-w-7xl mx-auto p-3 flex flex-wrap items-center gap-3">
-    <div class="min-w-0 flex-1"><b id="playerTitle" class="block truncate text-sm">--</b><span id="playerArtist" class="text-xs text-slate-500">--</span></div>
-    <button onclick="prevTrack()" class="playerBtn"><i class="fa-solid fa-backward-step"></i></button>
-    <button onclick="togglePlay()" class="playerBtn bg-rose-600"><i id="playIcon" class="fa-solid fa-play"></i></button>
-    <button onclick="nextTrack()" class="playerBtn"><i class="fa-solid fa-forward-step"></i></button>
-    <button onclick="stopTrack()" class="playerBtn"><i class="fa-solid fa-stop"></i></button>
-    <label class="text-xs flex items-center gap-1">Speed
-      <select onchange="setSpeed(this.value)" class="bg-slate-950 rounded p-1"><option>0.5</option><option>0.75</option><option selected>1</option><option>1.25</option><option>1.5</option><option>2</option></select>
-    </label>
-    <span id="time" class="text-[10px] text-slate-500 w-20 text-right">0:00 / 0:00</span>
+<div id="liveModal" class="fixed inset-0 z-[95] hidden bg-black flex flex-col items-center justify-center p-4">
+  <div class="relative w-full max-w-md bg-slate-900 rounded-3xl overflow-hidden border border-rose-500/50">
+    <button onclick="stopLiveStream()" class="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+    <video id="liveVideo" autoplay playsinline muted class="w-full h-[60vh] object-cover bg-black"></video>
+    <div class="p-3 bg-slate-950 flex justify-between items-center text-xs">
+      <span class="text-rose-500 font-bold flex items-center gap-1.5"><i class="fa-solid fa-circle text-[8px] animate-ping"></i> LIVE (Unsaved Camera Stream)</span>
+    </div>
   </div>
 </div>
 
 <style>
-.navbtn{padding:.45rem .8rem;border-radius:.7rem;color:#94a3b8;font-size:.75rem;font-weight:700;display:flex;gap:.45rem;align-items:center}
-.navbtn.active{background:#e11d48;color:white}
-.stat{background:#0f172a;border:1px solid #1e293b;border-radius:1rem;padding:1rem}.stat span{display:block;font-size:.7rem;color:#64748b}.stat b{display:block;font-size:1.3rem;margin-top:.25rem}
-.playerBtn{width:38px;height:38px;border-radius:999px;background:#1e293b;display:flex;align-items:center;justify-content:center}
-.media-card{background:#0f172a;border:1px solid #1e293b;border-radius:1.1rem;padding:1rem}
+  .navbtn { padding: .5rem .9rem; border-radius: .8rem; color: #94a3b8; font-size: .75rem; font-weight: 700; display: flex; gap: .4rem; align-items: center; background: rgba(15, 23, 42, 0.6); }
+  .navbtn.active { background: #e11d48; color: white; }
 </style>
 
 <script>
 const SUPABASE_URL = "https://hdblzeugfeftkutmqprl.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_yskMxVPr49-HJLubhXgPiA_qESKLUtN";
-const supabaseConfigured = !SUPABASE_URL.includes("YOUR_") && !SUPABASE_ANON_KEY.includes("YOUR_");
-const sb = supabaseConfigured ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-let session=null, profile=null, media=[], activeMedia=null, playerIndex=-1, currentCommentsMedia=null, chatChannel=null;
+let session = null, profile = null, media = [], selectedProfileId = null, currentChatTarget = null;
+let navigationHistory = ['home'], currentMediaIndex = 0, mediaRecorder = null, audioChunks = [], liveStreamMedia = null;
 
-function toast(msg, ok=true){const x=document.getElementById('toast');x.textContent=msg;x.className=`fixed top-4 right-4 z-[100] max-w-sm rounded-xl px-4 py-3 text-sm shadow-2xl ${ok?'bg-emerald-600':'bg-rose-600'}`;setTimeout(()=>x.classList.add('hidden'),3500)}
-function showAuth(mode){document.getElementById('signinForm').classList.toggle('hidden',mode!=='signin');document.getElementById('signupForm').classList.toggle('hidden',mode!=='signup');document.getElementById('tabSignin').className=mode==='signin'?'flex-1 py-2 rounded-lg bg-rose-600 text-sm font-bold':'flex-1 py-2 rounded-lg text-sm text-slate-400';document.getElementById('tabSignup').className=mode==='signup'?'flex-1 py-2 rounded-lg bg-rose-600 text-sm font-bold':'flex-1 py-2 rounded-lg text-sm text-slate-400'}
-function openForgot(){document.getElementById('forgotModal').classList.remove('hidden');document.getElementById('forgotModal').classList.add('flex')}
-function closeForgot(){document.getElementById('forgotModal').classList.add('hidden')}
-function openWallet(){document.getElementById('walletModal').classList.remove('hidden');document.getElementById('walletModal').classList.add('flex');document.getElementById('walletBalance').textContent=profile?.balance??0}
-function closeWallet(){document.getElementById('walletModal').classList.add('hidden')}
-function openUpload(){if(profile?.role!=='creator') return toast('Only Content Creators can upload.',false);document.getElementById('uploadModal').classList.remove('hidden');document.getElementById('uploadModal').classList.add('flex')}
-function closeUpload(){document.getElementById('uploadModal').classList.add('hidden')}
-function toggleCall(){document.getElementById('callPanel').classList.toggle('hidden')}
-function go(tab){['home','reels','chat','dashboard'].forEach(x=>{document.getElementById('view-'+x).classList.toggle('hidden',x!==tab);const n=document.getElementById('nav-'+x);if(n)n.classList.toggle('active',x===tab)});if(tab==='reels')renderReels();if(tab==='dashboard')renderCreator();if(tab==='chat')loadChat()}
-function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
-function formatNum(n){return Number(n||0).toLocaleString()}
+function toast(msg, ok=true){
+  const x = document.getElementById('toast');
+  x.textContent = msg;
+  x.className = `fixed top-4 right-4 z-[100] max-w-sm rounded-xl px-5 py-3 text-sm shadow-2xl ${ok?'bg-emerald-600 text-white':'bg-rose-600 text-white'}`;
+  x.classList.remove('hidden');
+  setTimeout(()=>x.classList.add('hidden'), 3500);
+}
+function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])) }
+
+function go(tab, pushHistory = true){
+  if(pushHistory && navigationHistory[navigationHistory.length - 1] !== tab){
+    navigationHistory.push(tab);
+  }
+  ['home','reels','inbox','dashboard','admin','settings','profile'].forEach(x=>{
+    const el = document.getElementById('view-'+x);
+    if(el) el.classList.toggle('hidden', x!==tab);
+    const n = document.getElementById('nav-'+x);
+    if(n) n.classList.toggle('active', x===tab);
+  });
+  if(tab==='reels') renderReels();
+  if(tab==='admin') loadAdminPanel();
+  if(tab==='inbox') loadInboxList();
+}
+
+function goBack(){
+  if(navigationHistory.length > 1){
+    navigationHistory.pop();
+    go(navigationHistory[navigationHistory.length - 1], false);
+  }
+}
+
+function showAuth(mode){
+  document.getElementById('signinForm').classList.toggle('hidden', mode!=='signin');
+  document.getElementById('signupForm').classList.toggle('hidden', mode!=='signup');
+}
 
 async function signUp(e){
   e.preventDefault();
-  if(!sb)return toast('Supabase is not configured.',false);
-
-  const name=regName.value.trim();
-  const email=regEmail.value.trim().toLowerCase();
-  const phone=regPhone.value.trim();
-  const role=regRole.value;
-  const pass=regPassword.value;
-  const conf=regConfirm.value;
-
-  if(pass!==conf)return toast('Passwords do not match.',false);
-  if(pass.length<8)return toast('Password must be at least 8 characters.',false);
-  if(!['client','creator'].includes(role))return toast('Invalid account role.',false);
-
-  const {data,error}=await sb.auth.signUp({
-    email,
-    password:pass,
-    options:{data:{full_name:name,phone,role}}
-  });
-
-  if(error){
-    // This error happens inside Supabase/Postgres, usually in the auth.users trigger.
-    // The database must be fixed with schema_fixed.sql; the browser cannot repair an Auth trigger.
-    const msg=String(error.message||'Registration failed.');
-    if(msg.toLowerCase().includes('database error saving new user')){
-      return toast('Database trigger error: run schema_fixed.sql in Supabase SQL Editor, then try again.',false);
-    }
-    return toast(msg,false);
-  }
-
-  if(!data?.user)return toast('Registration failed: Supabase did not return a user.',false);
-
-  // If email confirmation is disabled, make sure the profile exists.
-  if(data.session){
-    const {error:profileError}=await sb.from('profiles').upsert({
-      id:data.user.id,
-      full_name:name,
-      phone,
-      role,
-      balance:0
-    },{onConflict:'id'});
-
-    if(profileError){
-      return toast('Profile setup failed: '+profileError.message,false);
-    }
-
-    await boot(data.session);
-    return;
-  }
-
-  toast('Account created. Check your email and confirm it before signing in.');
+  const name=regName.value.trim(), email=regEmail.value.trim().toLowerCase(), role=regRole.value, pass=regPassword.value;
+  const {data, error} = await sb.auth.signUp({ email, password: pass, options:{ data:{ full_name: name, role } } });
+  if(error) return toast(error.message, false);
+  toast('Account created! Proceed to Sign In.');
   showAuth('signin');
 }
+
 async function signIn(e){
-  e.preventDefault(); if(!sb)return toast('Configure Supabase first in index.html.',false);
-  const {data,error}=await sb.auth.signInWithPassword({email:loginEmail.value.trim().toLowerCase(),password:loginPassword.value});
-  if(error)return toast(error.message,false);
+  e.preventDefault();
+  const {data, error} = await sb.auth.signInWithPassword({ email: loginEmail.value.trim().toLowerCase(), password: loginPassword.value });
+  if(error) return toast(error.message, false);
   await boot(data.session);
 }
-async function forgotPassword(e){
-  e.preventDefault(); if(!sb)return toast('Configure Supabase first in index.html.',false);
-  const {error}=await sb.auth.resetPasswordForEmail(forgotEmail.value.trim().toLowerCase(),{redirectTo:location.origin+location.pathname+'#reset'});
-  if(error)return toast(error.message,false);
-  closeForgot();toast('Password reset instructions have been sent to your email.');
-}
-async function signOut(){if(sb)await sb.auth.signOut();session=null;profile=null;document.getElementById('mainApp').classList.add('hidden');document.getElementById('authOverlay').classList.remove('hidden');}
+
+async function signOut(){ await sb.auth.signOut(); location.reload(); }
 
 async function boot(s){
-  session=s; if(!session)return;
-  const {data,error}=await sb.from('profiles').select('*').eq('id',session.user.id).single();
-  if(error){toast(error.message,false);return}
-  profile=data;
-  document.getElementById('authOverlay').classList.add('hidden');document.getElementById('mainApp').classList.remove('hidden');
-  document.getElementById('balance').textContent=formatNum(profile.balance);document.getElementById('walletBalance').textContent=formatNum(profile.balance);
-  const creator=profile.role==='creator';
-  document.getElementById('nav-dashboard').classList.toggle('hidden',!creator);
-  document.getElementById('reelUploadBtn').classList.toggle('hidden',!creator);
-  await loadMedia(); subscribeChat();
+  session = s; if(!session) return;
+  const {data} = await sb.from('profiles').select('*').eq('id', session.user.id).single();
+  profile = data || { id: session.user.id, role: 'client', full_name: 'User' };
+  
+  document.getElementById('authOverlay').classList.add('hidden');
+  document.getElementById('mainApp').classList.remove('hidden');
+  document.getElementById('myAvatar').src = profile.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${profile.id}`;
+  document.getElementById('currentRoleDisplay').textContent = profile.role;
+  document.getElementById('setNameInput').value = profile.full_name || '';
+  document.getElementById('setBioInput').value = profile.bio || '';
+
+  const isCreator = profile.role==='creator' || profile.role==='admin';
+  const isAdmin = profile.role==='admin';
+
+  document.getElementById('nav-dashboard').classList.toggle('hidden', !isCreator);
+  document.getElementById('liveStreamBtn').classList.toggle('hidden', !isCreator);
+  document.getElementById('nav-admin').classList.toggle('hidden', !isAdmin);
+
+  await loadMedia();
 }
+
+/* MEDIA & PUBLIC FEED */
 async function loadMedia(){
-  const {data,error}=await sb.from('media').select('*,profiles!media_creator_id_fkey(full_name)').eq('status','published').order('created_at',{ascending:false});
-  if(error){toast(error.message,false);return} media=data||[];renderMedia();
+  const {data} = await sb.from('media').select('*, profiles!media_creator_id_fkey(*)').eq('status','published').order('created_at', {ascending:false});
+  media = data || [];
+  renderMedia();
 }
-function filtered(){const q=(document.getElementById('search')?.value||'').trim().toLowerCase();return media.filter(m=>!q||m.title.toLowerCase().includes(q)||(m.description||'').toLowerCase().includes(q)||(m.profiles?.full_name||'').toLowerCase().includes(q))}
+
 function renderMedia(){
-  const list=filtered();document.getElementById('contentCount').textContent=`${list.length} items`;
-  document.getElementById('mediaGrid').innerHTML=list.length?list.map(m=>`
-    <article class="media-card">
-      <div class="flex gap-3">
-        <div class="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center text-rose-500"><i class="fa-solid ${m.type==='video'?'fa-video':'fa-music'}"></i></div>
-        <div class="min-w-0 flex-1"><h3 class="font-bold truncate">${esc(m.title)}</h3><p class="text-xs text-slate-500 truncate">${esc(m.profiles?.full_name||'Creator')}</p><p class="text-[11px] text-slate-500 mt-1">${formatNum(m.views)} views</p></div>
+  const grid = document.getElementById('mediaGrid');
+  grid.innerHTML = media.map((m, idx)=>`
+    <div class="glass p-4 rounded-2xl border border-slate-800 flex flex-col justify-between space-y-3">
+      <div class="flex items-center justify-between">
+        <button onclick="openProfile('${m.creator_id}')" class="flex items-center gap-2 text-xs font-bold text-white hover:text-rose-400">
+          <img src="${m.profiles?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${m.creator_id}`}" class="w-8 h-8 rounded-full object-cover">
+          <span>${esc(m.profiles?.full_name||'Creator')}</span>
+        </button>
       </div>
-      <div class="mt-3">${m.type==='video'?`<video controls playsinline class="w-full rounded-xl max-h-64 bg-black" src="${esc(m.file_url)}" onplay="countView('${m.id}')"></video>`:`<button onclick="playMedia('${m.id}')" class="w-full rounded-xl bg-slate-800 py-3 text-sm font-bold"><i class="fa-solid fa-play text-rose-500"></i> Play</button>`}</div>
-      <div class="flex flex-wrap gap-1 mt-3 text-[11px]">
-        <button onclick="toggleLike('${m.id}')" class="action"><i class="fa-regular fa-heart"></i> ${formatNum(m.likes_count)}</button>
-        <button onclick="shareMedia('${m.id}')" class="action"><i class="fa-solid fa-share"></i> Share</button>
-        <button onclick="subscribeCreator('${m.creator_id}')" class="action"><i class="fa-solid fa-user-plus"></i> Subscribe</button>
-        <button onclick="openComments('${m.id}')" class="action"><i class="fa-regular fa-comment"></i> Comment</button>
-        <button onclick="downloadMedia('${m.id}')" class="action bg-amber-500 text-slate-950">Download ${formatNum(m.price)} FRW</button>
+
+      <div>
+        <h4 class="font-bold text-sm truncate text-white">${esc(m.title)}</h4>
+        ${m.type==='video'? 
+          `<video onclick="playSelectedTrack(${idx})" class="w-full h-48 rounded-xl object-cover mt-2 bg-black cursor-pointer" src="${esc(m.file_url)}"></video>` : 
+          `<button onclick="playSelectedTrack(${idx})" class="w-full py-4 mt-2 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-center gap-2 text-rose-500 font-bold text-xs"><i class="fa-solid fa-circle-play text-lg"></i> Play Track</button>`
+        }
       </div>
-    </article>`).join(''):`<div class="col-span-full text-center py-16 text-slate-500">No published content found.</div>`;
-}
-async function countView(id){await sb.rpc('increment_media_view',{p_media_id:id});const m=media.find(x=>x.id===id);if(m)m.views++;renderMedia()}
-async function toggleLike(id){const {data:old}=await sb.from('media_likes').select('media_id').eq('media_id',id).eq('user_id',session.user.id).maybeSingle();if(old){await sb.from('media_likes').delete().match({media_id:id,user_id:session.user.id})}else{await sb.from('media_likes').insert({media_id:id,user_id:session.user.id})}await loadMedia()}
-async function subscribeCreator(id){if(id===session.user.id)return toast('You cannot subscribe to yourself.',false);const {data:old}=await sb.from('subscriptions').select('creator_id').match({creator_id:id,subscriber_id:session.user.id}).maybeSingle();if(old)await sb.from('subscriptions').delete().match({creator_id:id,subscriber_id:session.user.id});else await sb.from('subscriptions').insert({creator_id:id,subscriber_id:session.user.id});toast(old?'Unsubscribed.':'Subscribed.')}
-async function shareMedia(id){const url=location.origin+location.pathname+'?media='+encodeURIComponent(id);if(navigator.share)await navigator.share({title:'Indirimbo Zisobanuye',url});else{await navigator.clipboard.writeText(url);toast('Link copied.');}}
-async function openComments(id){currentCommentsMedia=id;document.getElementById('commentModal').classList.remove('hidden');document.getElementById('commentModal').classList.add('flex');const {data}=await sb.from('comments').select('*,profiles!comments_user_id_fkey(full_name)').eq('media_id',id).order('created_at');document.getElementById('commentList').innerHTML=(data||[]).map(c=>`<div class="rounded-xl bg-slate-950 p-3"><b class="text-xs">${esc(c.profiles?.full_name||'User')}</b><p class="text-sm mt-1">${esc(c.body)}</p></div>`).join('')||'<p class="text-xs text-slate-500">No comments yet.</p>'}
-function closeComments(){document.getElementById('commentModal').classList.add('hidden')}
-async function postComment(e){e.preventDefault();const body=document.getElementById('commentInput').value.trim();if(!body)return;await sb.from('comments').insert({media_id:currentCommentsMedia,user_id:session.user.id,body});document.getElementById('commentInput').value='';openComments(currentCommentsMedia)}
-async function downloadMedia(id){
-  const m=media.find(x=>x.id===id);if(!m)return;
-  const {data,error}=await sb.rpc('buy_media',{p_media_id:id});if(error)return toast(error.message,false);
-  if(data?.error)return toast(data.error,false);
-  document.getElementById('balance').textContent=formatNum(data.balance);profile.balance=data.balance;
-  const a=document.createElement('a');a.href=m.file_url;a.download=m.title;a.target='_blank';a.click();toast('Download recorded and payment completed.');
-}
-function playMedia(id){activeMedia=media.find(m=>m.id===id);if(!activeMedia)return;const aud=document.getElementById('audio');aud.src=activeMedia.file_url;aud.play();playerIndex=media.findIndex(m=>m.id===id);document.getElementById('playerTitle').textContent=activeMedia.title;document.getElementById('playerArtist').textContent=activeMedia.profiles?.full_name||'Creator';document.getElementById('player').classList.remove('hidden');countView(id)}
-function togglePlay(){const a=document.getElementById('audio');if(a.paused)a.play();else a.pause()}
-function stopTrack(){const a=document.getElementById('audio');a.pause();a.currentTime=0}
-function nextTrack(){if(!media.length)return;playerIndex=(playerIndex+1)%media.length;playMedia(media[playerIndex].id)}
-function prevTrack(){if(!media.length)return;playerIndex=(playerIndex-1+media.length)%media.length;playMedia(media[playerIndex].id)}
-function setSpeed(v){document.getElementById('audio').playbackRate=Number(v)}
-document.getElementById('audio').addEventListener('play',()=>document.getElementById('playIcon').className='fa-solid fa-pause');
-document.getElementById('audio').addEventListener('pause',()=>document.getElementById('playIcon').className='fa-solid fa-play');
-document.getElementById('audio').addEventListener('timeupdate',()=>{const a=document.getElementById('audio');document.getElementById('time').textContent=`${fmt(a.currentTime)} / ${fmt(a.duration)}`});document.getElementById('audio').addEventListener('ended',nextTrack);
-function fmt(s){if(!isFinite(s))return'0:00';return Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0')}
 
-async function uploadContent(e){
-  e.preventDefault();if(profile?.role!=='creator')return toast('Creator account required.',false);
-  const f=document.getElementById('upFile').files[0];if(!f)return;
-  const ext=f.name.split('.').pop();const path=`${session.user.id}/${crypto.randomUUID()}.${ext}`;
-  const {error:upErr}=await sb.storage.from('media').upload(path,f,{upsert:false});if(upErr)return toast(upErr.message,false);
-  const {data:{publicUrl}}=sb.storage.from('media').getPublicUrl(path);
-  const {error}=await sb.from('media').insert({creator_id:session.user.id,title:upTitle.value.trim(),description:upDescription.value.trim(),type:upType.value,price:Number(upPrice.value||50),file_url:publicUrl,status:'published'});
-  if(error)return toast(error.message,false);
-  closeUpload();e.target.reset();await loadMedia();renderCreator();toast('Content published successfully.');
+      <div class="flex items-center justify-between text-slate-400 text-xs pt-2 border-t border-slate-800">
+        <button onclick="toggleLike('${m.id}')" class="hover:text-rose-500 flex items-center gap-1"><i class="fa-regular fa-heart"></i> ${m.likes_count||0}</button>
+        <span class="text-[10px] text-slate-500 flex items-center gap-1"><i class="fa-regular fa-eye"></i> ${m.views_count||0}</span>
+        <button onclick="downloadMedia('${m.file_url}')" class="hover:text-emerald-400"><i class="fa-solid fa-download"></i></button>
+      </div>
+    </div>
+  `).join('');
 }
-function renderReels(){const rs=media.filter(m=>m.type==='video');document.getElementById('reelsList').innerHTML=rs.map(m=>`<article class="media-card"><video controls playsinline class="w-full rounded-2xl max-h-[70vh] bg-black" src="${esc(m.file_url)}" onplay="countView('${m.id}')"></video><h3 class="font-bold mt-2">${esc(m.title)}</h3><p class="text-xs text-slate-500">${formatNum(m.views)} views</p><div class="flex gap-1 mt-2"><button onclick="toggleLike('${m.id}')" class="action">Like ${formatNum(m.likes_count)}</button><button onclick="shareMedia('${m.id}')" class="action">Share</button><button onclick="openComments('${m.id}')" class="action">Comment</button></div></article>`).join('')||'<p class="text-center text-slate-500 py-10">No reels yet.</p>'}
-async function renderCreator(){if(profile?.role!=='creator')return;const own=media.filter(m=>m.creator_id===session.user.id);document.getElementById('statUploads').textContent=own.length;document.getElementById('statViews').textContent=formatNum(own.reduce((a,m)=>a+Number(m.views||0),0));document.getElementById('statLikes').textContent=formatNum(own.reduce((a,m)=>a+Number(m.likes_count||0),0));document.getElementById('statDownloads').textContent=formatNum(own.reduce((a,m)=>a+Number(m.downloads||0),0));document.getElementById('statEarnings').textContent=formatNum(own.reduce((a,m)=>a+Number(m.earnings||0),0))+' FRW';document.getElementById('creatorContent').innerHTML=own.map(m=>`<div class="media-card flex flex-wrap gap-3 items-center justify-between"><div><b>${esc(m.title)}</b><p class="text-xs text-slate-500">${m.type} · ${formatNum(m.views)} views · ${formatNum(m.downloads)} downloads</p></div><button onclick="deleteContent('${m.id}')" class="text-rose-500"><i class="fa-solid fa-trash"></i></button></div>`).join('')}
-async function deleteContent(id){if(!confirm('Delete this content?'))return;await sb.from('media').update({status:'deleted'}).eq('id',id).eq('creator_id',session.user.id);await loadMedia();renderCreator()}
 
-async function loadChat(){if(!session)return;const {data}=await sb.from('messages').select('*,profiles!messages_sender_id_fkey(full_name,role)').order('created_at').limit(200);document.getElementById('messages').innerHTML=(data||[]).map(renderMessage).join('');const box=document.getElementById('messages');box.scrollTop=box.scrollHeight}
-function renderMessage(m){const mine=m.sender_id===session.user.id;return `<div class="${mine?'text-right':''}"><div class="inline-block max-w-[85%] rounded-2xl px-3 py-2 ${mine?'bg-rose-600':'bg-slate-800'}"><div class="text-[10px] opacity-70">${esc(m.profiles?.full_name||'User')} · ${esc(m.profiles?.role||'')}</div><div class="text-sm">${esc(m.body)}</div></div></div>`}
-async function sendMessage(e){e.preventDefault();const body=document.getElementById('chatInput').value.trim();if(!body)return;const {error}=await sb.from('messages').insert({sender_id:session.user.id,body});if(error)return toast(error.message,false);document.getElementById('chatInput').value='';}
-function subscribeChat(){if(!sb||chatChannel)return;chatChannel=sb.channel('public-chat').on('postgres_changes',{event:'INSERT',schema:'public',table:'messages'},payload=>{const box=document.getElementById('messages');if(!box)return;loadChat()}).subscribe()}
+/* PUBLIC PROFILE & DISCUSSIONS */
+async function openProfile(userId){
+  selectedProfileId = userId;
+  const {data: u} = await sb.from('profiles').select('*').eq('id', userId).single();
+  if(!u) return;
 
-async function startPayment(e){
-  e.preventDefault();if(!session)return;const phone=document.getElementById('payPhone').value.trim(),amount=Number(document.getElementById('payAmount').value);
-  try{const r=await fetch('/api/payments/request',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},body:JSON.stringify({phone,amount})});const j=await r.json();if(!r.ok)throw Error(j.error||'Payment request failed');toast('Payment request sent. Approve it on your MTN phone, then wait for confirmation.');pollPayment(j.transactionId)}catch(err){toast(err.message,false)}
+  document.getElementById('profName').textContent = u.full_name || 'User';
+  document.getElementById('profRole').textContent = u.role;
+  document.getElementById('profBio').textContent = u.bio || 'No bio provided.';
+  document.getElementById('profAvatar').src = u.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${u.id}`;
+
+  const {data: profMedia} = await sb.from('media').select('*').eq('creator_id', userId);
+  document.getElementById('profMediaGrid').innerHTML = (profMedia||[]).map(m=>`
+    <div class="glass p-3 rounded-2xl border border-slate-800">
+      <h5 class="font-bold text-xs text-white truncate">${esc(m.title)}</h5>
+      ${m.type==='video'?`<video controls class="w-full h-32 rounded-lg mt-2 object-cover" src="${esc(m.file_url)}"></video>`:`<audio controls class="w-full mt-2" src="${esc(m.file_url)}"></audio>`}
+    </div>
+  `).join('');
+
+  go('profile');
 }
-async function pollPayment(tx){for(let i=0;i<30;i++){await new Promise(r=>setTimeout(r,5000));try{const r=await fetch('/api/payments/status/'+tx,{headers:{'Authorization':'Bearer '+session.access_token}});const j=await r.json();if(j.status==='SUCCESSFUL'){await refreshProfile();toast('Payment successful. Your wallet has been credited.');closeWallet();return}if(['FAILED','REJECTED'].includes(j.status)){toast('Payment was not completed.',false);return}}catch(e){}}toast('Payment is still pending. Your balance will update after MTN confirms it.',false)}
-async function refreshProfile(){const {data}=await sb.from('profiles').select('*').eq('id',session.user.id).single();profile=data;document.getElementById('balance').textContent=formatNum(data.balance);document.getElementById('walletBalance').textContent=formatNum(data.balance)}
 
-window.addEventListener('load',async()=>{
-  if(!supabaseConfigured){toast('Open README.md and configure Supabase + server credentials.',false);return}
-  const {data}=await sb.auth.getSession();if(data.session)await boot(data.session);
-  sb.auth.onAuthStateChange(async(event,s)=>{if(event==='SIGNED_IN'&&s)await boot(s);});
+function startDirectChatFromProfile(){
+  if(!selectedProfileId) return;
+  selectPrivateTarget(selectedProfileId, document.getElementById('profName').textContent);
+  go('inbox');
+}
+
+/* REELS CONTROL & GESTURES */
+function renderReels(){
+  const container = document.getElementById('reelsContainer');
+  const videos = media.filter(m=>m.type==='video');
+  container.innerHTML = videos.map((m, idx)=>`
+    <div class="reel-card flex items-center justify-center bg-black">
+      <video id="reelVideo-${idx}" onclick="toggleReelPlay(this)" loop playsinline class="w-full h-full object-cover cursor-pointer" src="${esc(m.file_url)}"></video>
+      <div class="absolute bottom-6 right-3 z-10 flex flex-col items-center gap-4 text-white">
+        <button onclick="openProfile('${m.creator_id}')" class="w-10 h-10 rounded-full border-2 border-rose-500 overflow-hidden shadow-lg"><img src="${m.profiles?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${m.creator_id}`}"></button>
+        <button onclick="toggleLike('${m.id}')" class="flex flex-col items-center"><i class="fa-solid fa-heart text-xl hover:text-rose-500"></i><span class="text-[10px]">${m.likes_count||0}</span></button>
+        <button onclick="openProfile('${m.creator_id}')" class="flex flex-col items-center"><i class="fa-solid fa-comment text-xl hover:text-rose-400"></i></button>
+        <button onclick="downloadMedia('${m.file_url}')" class="flex flex-col items-center"><i class="fa-solid fa-download text-xl hover:text-emerald-400"></i></button>
+      </div>
+    </div>
+  `).join('');
+}
+function toggleReelPlay(v){ v.paused ? v.play() : v.pause(); }
+function scrollReel(dir){ document.getElementById('reelsContainer').scrollBy({ top: dir * (window.innerHeight - 180), behavior: 'smooth' }); }
+
+/* GLOBAL PLAYER CONTROLS (PLAY/STOP, NEXT, BACK) */
+function playSelectedTrack(idx){
+  currentMediaIndex = idx;
+  const item = media[currentMediaIndex];
+  if(!item) return;
+  const player = document.getElementById('globalAudioPlayer');
+  player.src = item.file_url;
+  player.play();
+  document.getElementById('playerTitle').textContent = item.title;
+  document.getElementById('playerArtist').textContent = item.profiles?.full_name || 'Creator';
+  document.getElementById('globalPlayBtn').innerHTML = `<i class="fa-solid fa-pause"></i>`;
+}
+function toggleGlobalPlay(){
+  const player = document.getElementById('globalAudioPlayer');
+  if(!player.src) return;
+  if(player.paused){ player.play(); document.getElementById('globalPlayBtn').innerHTML = `<i class="fa-solid fa-pause"></i>`; }
+  else { player.pause(); document.getElementById('globalPlayBtn').innerHTML = `<i class="fa-solid fa-play"></i>`; }
+}
+function playNextTrack(){ if(currentMediaIndex < media.length - 1) playSelectedTrack(currentMediaIndex + 1); }
+function playPrevTrack(){ if(currentMediaIndex > 0) playSelectedTrack(currentMediaIndex - 1); }
+
+/* PRIVATE CHAT & VOICE NOTE */
+async function loadInboxList(){
+  const {data: users} = await sb.from('profiles').select('*').neq('id', session.user.id);
+  const container = document.getElementById('inboxUsersList');
+  container.innerHTML = (users||[]).map(u=>`
+    <button onclick="selectPrivateTarget('${u.id}', '${esc(u.full_name||'User')}')" class="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-slate-900 transition">
+      <img src="${u.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${u.id}`}" class="w-8 h-8 rounded-full">
+      <span class="text-xs font-bold text-white truncate">${esc(u.full_name||'User')}</span>
+    </button>
+  `).join('');
+}
+
+function selectPrivateTarget(id, name){
+  currentChatTarget = id;
+  document.getElementById('chatTargetName').textContent = name;
+  loadPrivateMessages();
+}
+
+async function loadPrivateMessages(){
+  if(!currentChatTarget) return;
+  const {data: msgs} = await sb.from('private_messages')
+    .select('*')
+    .or(`and(sender_id.eq.${session.user.id},receiver_id.eq.${currentChatTarget}),and(sender_id.eq.${currentChatTarget},receiver_id.eq.${session.user.id})`)
+    .order('created_at', {ascending: true});
+
+  const list = document.getElementById('privateMessagesList');
+  list.innerHTML = (msgs||[]).map(m=>{
+    const isMe = m.sender_id === session.user.id;
+    return `
+      <div class="flex ${isMe?'justify-end':'justify-start'}">
+        <div class="max-w-xs p-3 rounded-2xl text-xs ${isMe?'bg-rose-600 text-white rounded-br-none':'bg-slate-800 text-slate-200 rounded-bl-none'}">
+          ${m.audio_url ? `<audio controls src="${esc(m.audio_url)}" class="w-48"></audio>` : esc(m.message)}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function sendPrivateMessage(e){
+  e.preventDefault();
+  const input = document.getElementById('privateInput');
+  const txt = input.value.trim();
+  if(!txt || !currentChatTarget) return;
+  await sb.from('private_messages').insert([{ sender_id: session.user.id, receiver_id: currentChatTarget, message: txt }]);
+  input.value = '';
+  loadPrivateMessages();
+}
+
+/* SETTINGS & SWITCH ACCOUNT ROLE */
+async function uploadAvatarFile(){
+  const fileInput = document.getElementById('setAvatarFile');
+  if(!fileInput.files.length) return toast('Select a picture first', false);
+  const file = fileInput.files[0];
+  const path = `avatars/${session.user.id}_${Date.now()}.png`;
+  const {error} = await sb.storage.from('media').upload(path, file);
+  if(error) return toast(error.message, false);
+  const {data:{publicUrl}} = sb.storage.from('media').getPublicUrl(path);
+  await sb.from('profiles').update({ avatar_url: publicUrl }).eq('id', session.user.id);
+  document.getElementById('myAvatar').src = publicUrl;
+  toast('Profile image updated successfully!');
+}
+
+async function toggleAccountRole(){
+  const newRole = profile.role==='client' ? 'creator' : 'client';
+  await sb.from('profiles').update({ role: newRole }).eq('id', session.user.id);
+  profile.role = newRole;
+  document.getElementById('currentRoleDisplay').textContent = newRole;
+  toast(`Account mode switched to: ${newRole.toUpperCase()}`);
+  boot(session);
+}
+
+/* ADMIN MODERATION */
+async function loadAdminPanel(){
+  if(profile.role !== 'admin') return;
+  const {data: allMedia} = await sb.from('media').select('*');
+  document.getElementById('adminContentList').innerHTML = (allMedia||[]).map(m=>`
+    <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900 text-xs">
+      <span class="truncate max-w-[200px] text-white">${esc(m.title)}</span>
+      <button onclick="adminDeleteMedia('${m.id}')" class="px-2 py-1 bg-rose-600 text-white font-bold rounded-lg text-[10px]">Delete</button>
+    </div>
+  `).join('');
+
+  const {data: allUsers} = await sb.from('profiles').select('*');
+  document.getElementById('adminUsersList').innerHTML = (allUsers||[]).map(u=>`
+    <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900 text-xs">
+      <span class="text-white">${esc(u.full_name||'User')}</span>
+      <button onclick="selectPrivateTarget('${u.id}', '${esc(u.full_name||'User')}'); go('inbox');" class="px-2 py-1 bg-slate-800 text-white rounded-lg text-[10px]">Direct Message</button>
+    </div>
+  `).join('');
+}
+
+async function adminDeleteMedia(id){
+  await sb.from('media').delete().eq('id', id);
+  toast('Media deleted by admin.');
+  loadAdminPanel();
+}
+
+/* UNSAVED LIVE STREAM CONTROL */
+async function startLiveStream(){
+  try {
+    liveStreamMedia = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    document.getElementById('liveVideo').srcObject = liveStreamMedia;
+    document.getElementById('liveModal').classList.remove('hidden');
+  } catch(err) {
+    toast('Camera permission denied or unavailable', false);
+  }
+}
+function stopLiveStream(){
+  if(liveStreamMedia){ liveStreamMedia.getTracks().forEach(t=>t.stop()); }
+  document.getElementById('liveModal').classList.add('hidden');
+}
+
+/* NOTIFICATIONS TOGGLE */
+function toggleNotifications(){
+  document.getElementById('notifPanel').classList.toggle('hidden');
+}
+
+/* INITIALIZATION */
+window.addEventListener('load', async () => {
+  const {data} = await sb.auth.getSession();
+  if(data?.session) await boot(data.session);
 });
 </script>
 </body>
