@@ -6,7 +6,7 @@
   <title>Indirimbo Zisobanuye</title>
 
   <!-- GOOGLE SEARCH CONSOLE VERIFICATION META TAG -->
-  <meta name="google-site-verification" content="YOUR_GOOGLE_CONSOLE_CODE_HERE" />
+  <meta name="google-site-verification" content="ABC123_YOUR_REAL_CODE_HERE" />
 
   <!-- TAILWIND CSS, FONT-AWESOME & SUPABASE JS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -20,6 +20,7 @@
     .no-scrollbar { scrollbar-width: none; }
     .hidden { display: none !important; }
     button:disabled { opacity: .5; cursor: not-allowed; }
+    input, select, textarea { color-scheme: dark; }
 
     /* Snap Scrolling Container for Reels */
     .reels-container {
@@ -59,11 +60,12 @@
       <input id="loginEmail" type="email" required placeholder="Email address" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3 text-sm text-white focus:outline-none focus:border-rose-500">
       <input id="loginPassword" type="password" required placeholder="Password" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3 text-sm text-white focus:outline-none focus:border-rose-500">
       <button class="w-full py-3 rounded-xl bg-rose-600 font-bold text-white shadow-lg shadow-rose-600/30">Sign In</button>
+      <button type="button" onclick="openForgot()" class="w-full text-xs text-rose-400 hover:underline">Forgot Password?</button>
     </form>
 
     <form id="signupForm" class="hidden space-y-3" onsubmit="signUp(event)">
       <input id="regName" type="text" required placeholder="Full Name" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3 text-sm">
-      <input id="regEmail" type="email" required placeholder="Email address" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3 text-sm">
+      <input id="regEmail" type="email" required placeholder="Email" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3 text-sm">
       <select id="regRole" required class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3 text-sm">
         <option value="client">Client (Viewer)</option>
         <option value="creator">Content Creator</option>
@@ -82,17 +84,17 @@
     <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
       
       <div class="flex items-center gap-3">
-        <!-- GLOBAL BACK BUTTON -->
-        <button id="globalBackBtn" onclick="goBack()" class="w-9 h-9 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:text-white hover:border-rose-500 transition">
+        <!-- GLOBAL NAVIGATION BACK BUTTON -->
+        <button id="globalBackBtn" onclick="goBack()" class="w-9 h-9 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:text-white hover:border-rose-500 transition" title="Go Back">
           <i class="fa-solid fa-arrow-left text-sm"></i>
         </button>
+        
         <button onclick="go('home')" class="flex items-center gap-2">
           <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-rose-600 to-amber-500 flex items-center justify-center"><i class="fa-solid fa-music text-white text-sm"></i></div>
           <span class="font-black text-lg hidden sm:block text-white">Indirimbo <span class="text-rose-500">Zisobanuye</span></span>
         </button>
       </div>
 
-      <!-- SEARCH BAR -->
       <div class="flex-1 max-w-md">
         <div class="relative">
           <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-500 text-xs"></i>
@@ -101,19 +103,19 @@
       </div>
 
       <div class="flex items-center gap-2">
-        <!-- NOTIFICATIONS BUTTON -->
+        <!-- NOTIFICATION BUTTON -->
         <button onclick="toggleNotifications()" class="relative w-9 h-9 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center">
           <i class="fa-regular fa-bell text-slate-300 text-sm"></i>
-          <span id="notifBadge" class="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500 hidden"></span>
+          <span id="notifBadge" class="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-rose-500 hidden"></span>
         </button>
 
-        <!-- GO LIVE STREAM BUTTON -->
+        <!-- LIVE STREAM BUTTON (CREATORS / ADMINS) -->
         <button id="liveStreamBtn" onclick="startLiveStream()" class="hidden px-3 py-1.5 rounded-full bg-rose-600 hover:bg-rose-500 text-xs font-bold text-white flex items-center gap-1.5 animate-pulse">
           <i class="fa-solid fa-tower-broadcast"></i> Go LIVE
         </button>
 
         <button onclick="go('settings')" class="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 overflow-hidden">
-          <img id="myAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=User" class="w-full h-full object-cover">
+          <img id="myAvatar" src="" class="w-full h-full object-cover">
         </button>
       </div>
     </div>
@@ -148,16 +150,13 @@
     <!-- HOME FEED -->
     <section id="view-home" class="space-y-6">
       <div class="rounded-3xl p-6 sm:p-10 border border-slate-800 bg-gradient-to-r from-slate-900 via-rose-950/30 to-slate-900">
-        <span class="text-xs text-rose-400 font-bold">TRANSLATED ENTERTAINMENT PLATFORM</span>
-        <h2 class="text-3xl sm:text-5xl font-black mt-2 text-white">Discover songs & videos from creators.</h2>
-        <div class="flex flex-wrap gap-2 mt-5">
-          <button onclick="go('reels')" class="px-5 py-2.5 rounded-xl bg-rose-600 font-bold text-sm text-white hover:bg-rose-500 transition"><i class="fa-solid fa-play"></i> Watch Reels</button>
-        </div>
+        <span class="text-xs text-rose-400 font-bold">TRANSLATED ENTERTAINMENT</span>
+        <h2 class="text-3xl sm:text-5xl font-black mt-2">Discover songs and videos from creators.</h2>
       </div>
 
       <div>
         <div class="flex justify-between items-center mb-3">
-          <h3 class="text-xl font-bold text-white">Explore Trending Content</h3>
+          <h2 class="text-xl font-bold text-white">Songs & Videos</h2>
         </div>
         <div id="mediaGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
       </div>
@@ -166,7 +165,7 @@
     <!-- REELS VIEWPORT -->
     <section id="view-reels" class="hidden">
       <div class="max-w-md mx-auto bg-black rounded-3xl overflow-hidden relative border border-slate-800 shadow-2xl">
-        <!-- SCROLL OVERLAY BUTTONS -->
+        <!-- NON-INTRUSIVE CONTROL BUTTONS -->
         <div class="absolute top-4 right-4 z-20 flex flex-col gap-2">
           <button onclick="scrollReel(-1)" title="Scroll Up" class="w-9 h-9 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-rose-600 transition"><i class="fa-solid fa-chevron-up"></i></button>
           <button onclick="scrollReel(1)" title="Scroll Down" class="w-9 h-9 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-rose-600 transition"><i class="fa-solid fa-chevron-down"></i></button>
@@ -175,22 +174,24 @@
       </div>
     </section>
 
-    <!-- PRIVATE INBOX CHAT -->
+    <!-- PRIVATE INBOX CHAT (LIVE & VOICE NOTES) -->
     <section id="view-inbox" class="hidden">
       <div class="max-w-4xl mx-auto glass rounded-3xl border border-slate-800 overflow-hidden grid grid-cols-1 md:grid-cols-3 h-[75vh]">
         <div class="border-r border-slate-800 p-4 space-y-3 overflow-y-auto">
-          <h3 class="font-bold text-base text-white">Conversations</h3>
+          <h2 class="font-bold text-base text-white">Conversations</h2>
           <div id="inboxUsersList" class="space-y-2"></div>
         </div>
         <div class="md:col-span-2 flex flex-col h-full bg-slate-950/50">
           <div id="chatHeader" class="p-4 border-b border-slate-800 flex items-center justify-between">
-            <h4 id="chatTargetName" class="font-bold text-sm text-white">Select a user to chat</h4>
+            <h3 id="chatTargetName" class="font-bold text-sm text-white">Select a user to chat</h3>
           </div>
           <div id="privateMessagesList" class="flex-1 p-4 overflow-y-auto space-y-3">
-            <p class="text-center text-xs text-slate-500 mt-10">Private Messaging (End-to-End Chat)</p>
+            <p class="text-center text-xs text-slate-500 mt-10">Select a contact to begin end-to-end messaging.</p>
           </div>
           <form id="privateChatForm" onsubmit="sendPrivateMessage(event)" class="p-3 border-t border-slate-800 flex items-center gap-2">
             <input id="privateInput" placeholder="Type a message..." class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none">
+            
+            <!-- VOICE NOTE RECORD BUTTON -->
             <button type="button" id="recordVoiceBtn" onclick="toggleVoiceRecord()" class="w-9 h-9 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center hover:bg-slate-700">
               <i class="fa-solid fa-microphone"></i>
             </button>
@@ -200,7 +201,7 @@
       </div>
     </section>
 
-    <!-- PUBLIC USER PROFILE VIEW -->
+    <!-- PUBLIC USER / CREATOR PROFILE VIEW -->
     <section id="view-profile" class="hidden space-y-6">
       <div class="glass p-6 rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4 border border-slate-800">
         <div class="flex items-center gap-4">
@@ -218,12 +219,13 @@
       </div>
 
       <div>
-        <h3 class="font-bold text-sm text-white mb-3">User Uploaded Content</h3>
+        <h3 class="font-bold text-sm text-white mb-3">Uploaded Media</h3>
         <div id="profMediaGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
       </div>
 
+      <!-- PUBLIC PROFILE DISCUSSION SECTION -->
       <div class="glass p-5 rounded-3xl space-y-4">
-        <h3 class="font-bold text-sm text-white">Profile Discussion</h3>
+        <h3 class="font-bold text-sm text-white">Profile Wall Discussion</h3>
         <div id="profCommentsList" class="space-y-2 max-h-48 overflow-y-auto text-xs"></div>
         <form onsubmit="postProfileComment(event)" class="flex gap-2">
           <input id="profCommentInput" required placeholder="Leave a comment on profile..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white">
@@ -232,34 +234,34 @@
       </div>
     </section>
 
-    <!-- ADMIN DASHBOARD -->
+    <!-- ADMIN CONTROL DASHBOARD -->
     <section id="view-admin" class="hidden space-y-6">
       <div class="glass p-6 rounded-3xl border border-rose-500/30">
-        <h2 class="text-xl font-black text-rose-500"><i class="fa-solid fa-shield-halved"></i> Admin Moderation Dashboard</h2>
-        <p class="text-xs text-slate-400 mt-1">Delete non-compliant media or message any registered user.</p>
+        <h2 class="text-xl font-black text-rose-500"><i class="fa-solid fa-shield-halved"></i> Admin Control Center</h2>
+        <p class="text-xs text-slate-400 mt-1">Direct access to manage all platform accounts and moderate user media.</p>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="glass p-4 rounded-2xl">
-          <h3 class="font-bold text-sm text-white mb-3">Moderate Content (Delete)</h3>
+          <h3 class="font-bold text-sm text-white mb-3">Moderate Content</h3>
           <div id="adminContentList" class="space-y-2 max-h-96 overflow-y-auto"></div>
         </div>
         <div class="glass p-4 rounded-2xl">
-          <h3 class="font-bold text-sm text-white mb-3">All Accounts (Direct Message)</h3>
+          <h3 class="font-bold text-sm text-white mb-3">Registered Users</h3>
           <div id="adminUsersList" class="space-y-2 max-h-96 overflow-y-auto"></div>
         </div>
       </div>
     </section>
 
-    <!-- SETTINGS VIEW -->
+    <!-- FULL USER SETTINGS SECTION -->
     <section id="view-settings" class="hidden max-w-lg mx-auto glass p-6 rounded-3xl space-y-6 border border-slate-800">
       <h2 class="text-lg font-bold text-white">Account Settings</h2>
       
-      <!-- PROFILE PICTURE DEVICE FILE UPLOAD -->
+      <!-- AVATAR FILE UPLOAD -->
       <div class="space-y-2">
-        <label class="text-xs text-slate-400 block font-bold">Profile Picture (Upload from Device)</label>
+        <label class="text-xs text-slate-400 block font-bold">Update Profile Picture (From Device)</label>
         <div class="flex items-center gap-3">
-          <input id="setAvatarFile" type="file" accept="image/*" class="text-xs text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-rose-600 file:text-white file:font-bold file:text-xs">
-          <button onclick="uploadAvatarFile()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">Upload</button>
+          <input id="setAvatarFile" type="file" accept="image/*" class="text-xs text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-rose-600 file:text-white file:font-bold file:text-xs cursor-pointer">
+          <button onclick="uploadAvatarFile()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">Save</button>
         </div>
       </div>
 
@@ -272,15 +274,15 @@
           <label class="text-xs text-slate-400 block mb-1">Bio</label>
           <textarea id="setBioInput" rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white"></textarea>
         </div>
-        <button onclick="updateProfileDetails()" class="w-full py-2.5 rounded-xl bg-rose-600 text-xs font-bold text-white">Save Profile Details</button>
+        <button onclick="updateProfileDetails()" class="w-full py-2.5 rounded-xl bg-rose-600 text-xs font-bold text-white">Save Profile Info</button>
       </div>
 
-      <!-- SWITCH ROLE BUTTON -->
+      <!-- CLIENT TO CREATOR ROLE SWITCH -->
       <div class="pt-4 border-t border-slate-800 space-y-2">
-        <label class="text-xs text-slate-400 block font-bold">Switch Account Role</label>
+        <label class="text-xs text-slate-400 block font-bold">Account Role</label>
         <p class="text-xs">Current Role: <b id="currentRoleDisplay" class="text-rose-400 uppercase">--</b></p>
         <button id="switchRoleBtn" onclick="toggleAccountRole()" class="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">
-          Switch Role
+          Switch Account to Content Creator
         </button>
       </div>
 
@@ -292,8 +294,8 @@
     <!-- CREATOR STUDIO DASHBOARD -->
     <section id="view-dashboard" class="hidden space-y-5">
       <div class="flex flex-wrap justify-between gap-3 items-center">
-        <div><h2 class="text-2xl font-black text-white">Creator Studio</h2><p class="text-xs text-slate-500">Upload songs & short videos.</p></div>
-        <button onclick="openUpload()" class="px-4 py-2 rounded-xl bg-rose-600 font-bold text-sm text-white"><i class="fa-solid fa-upload"></i> Upload Media</button>
+        <div><h2 class="text-2xl font-black text-white">Creator Studio</h2><p class="text-xs text-slate-500">Publish content and monitor performance.</p></div>
+        <button onclick="openUpload()" class="px-4 py-2 rounded-xl bg-rose-600 font-bold text-sm text-white"><i class="fa-solid fa-upload"></i> Upload Content</button>
       </div>
       <div id="creatorContent" class="space-y-3"></div>
     </section>
@@ -301,8 +303,8 @@
   </main>
 </div>
 
-<!-- GLOBAL MEDIA PLAYER CONTROLLER -->
-<div id="globalPlayerBar" class="fixed bottom-0 left-0 right-0 z-50 glass border-t border-slate-800 px-4 py-3 flex items-center justify-between gap-4">
+<!-- GLOBAL MEDIA PLAYER CONTROLLER (CENTERED TRACK CONTROLS FOR AUDIO ONLY) -->
+<div id="globalPlayerBar" class="fixed bottom-0 left-0 right-0 z-50 hidden glass border-t border-slate-800 px-4 py-3 items-center justify-between gap-4">
   <div class="flex items-center gap-3 min-w-0 max-w-[30%]">
     <div class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center shrink-0"><i class="fa-solid fa-compact-disc text-rose-500 animate-spin"></i></div>
     <div class="min-w-0">
@@ -311,8 +313,8 @@
     </div>
   </div>
 
-  <!-- PLAYER BUTTONS: BACK, PLAY/STOP, NEXT -->
-  <div class="flex items-center gap-4">
+  <!-- CENTERED AUDIO PLAYER CONTROLS -->
+  <div class="flex items-center gap-4 mx-auto">
     <button onclick="playPrevTrack()" title="Previous Track" class="text-slate-400 hover:text-white"><i class="fa-solid fa-backward-step text-base"></i></button>
     <button onclick="toggleGlobalPlay()" id="globalPlayBtn" title="Play/Stop" class="w-10 h-10 rounded-full bg-rose-600 text-white flex items-center justify-center shadow-lg"><i class="fa-solid fa-play"></i></button>
     <button onclick="playNextTrack()" title="Next Track" class="text-slate-400 hover:text-white"><i class="fa-solid fa-forward-step text-base"></i></button>
@@ -321,29 +323,28 @@
   <audio id="globalAudioPlayer" class="hidden"></audio>
 </div>
 
-<!-- MODALS (UPLOAD & NO-SAVE LIVE STREAM) -->
-<div id="uploadModal" class="fixed inset-0 z-[80] hidden bg-slate-950/90 flex items-center justify-center p-4 overflow-y-auto">
+<!-- UPLOAD MODAL -->
+<div id="uploadModal" class="fixed inset-0 z-[80] hidden bg-slate-950/90 items-center justify-center p-4 overflow-y-auto">
   <div class="glass rounded-3xl p-6 max-w-lg w-full">
-    <div class="flex justify-between"><h3 class="font-bold text-white">Publish Content</h3><button onclick="closeUpload()"><i class="fa-solid fa-xmark text-slate-400"></i></button></div>
+    <div class="flex justify-between"><h2 class="font-bold text-white">Publish Content</h2><button onclick="closeUpload()"><i class="fa-solid fa-xmark"></i></button></div>
     <form onsubmit="uploadContent(event)" class="mt-4 space-y-3">
-      <input id="upTitle" required placeholder="Track / Reel Title" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3 text-sm text-white">
-      <select id="upType" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3 text-sm text-white">
+      <input id="upTitle" required placeholder="Title" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3 text-sm">
+      <select id="upType" class="w-full rounded-xl bg-slate-950 border border-slate-800 p-3 text-sm">
         <option value="video">Short Video / Reel</option>
         <option value="audio">Audio Track</option>
       </select>
-      <input id="upFile" type="file" accept="audio/*,video/*" required class="w-full text-xs text-slate-400">
-      <button class="w-full py-3 rounded-xl bg-rose-600 font-bold text-xs text-white">Publish Now</button>
+      <input id="upFile" type="file" accept="audio/*,video/*" required class="w-full text-xs">
+      <button class="w-full py-3 rounded-xl bg-rose-600 font-bold text-xs text-white">Publish</button>
     </form>
   </div>
 </div>
 
+<!-- EPHEMERAL LIVE STREAM MODAL (NOT SAVED ANYWHERE) -->
 <div id="liveModal" class="fixed inset-0 z-[95] hidden bg-black flex flex-col items-center justify-center p-4">
   <div class="relative w-full max-w-md bg-slate-900 rounded-3xl overflow-hidden border border-rose-500/50">
+    <div class="absolute top-4 left-4 z-10 px-3 py-1 bg-rose-600 rounded-full text-[10px] font-bold text-white animate-pulse">LIVE</div>
     <button onclick="stopLiveStream()" class="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
     <video id="liveVideo" autoplay playsinline muted class="w-full h-[60vh] object-cover bg-black"></video>
-    <div class="p-3 bg-slate-950 flex justify-between items-center text-xs">
-      <span class="text-rose-500 font-bold flex items-center gap-1.5"><i class="fa-solid fa-circle text-[8px] animate-ping"></i> LIVE (Unsaved Camera Stream)</span>
-    </div>
   </div>
 </div>
 
@@ -358,7 +359,7 @@ const SUPABASE_ANON_KEY = "sb_publishable_yskMxVPr49-HJLubhXgPiA_qESKLUtN";
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let session = null, profile = null, media = [], selectedProfileId = null, currentChatTarget = null;
-let navigationHistory = ['home'], currentMediaIndex = 0, mediaRecorder = null, audioChunks = [], liveStreamMedia = null;
+let navigationHistory = ['home'], currentMediaIndex = 0, mediaRecorder = null, audioChunks = [];
 
 function toast(msg, ok=true){
   const x = document.getElementById('toast');
@@ -369,6 +370,7 @@ function toast(msg, ok=true){
 }
 function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])) }
 
+/* NAVIGATION ROUTER WITH HISTORY BACK BUTTON */
 function go(tab, pushHistory = true){
   if(pushHistory && navigationHistory[navigationHistory.length - 1] !== tab){
     navigationHistory.push(tab);
@@ -401,7 +403,7 @@ async function signUp(e){
   const name=regName.value.trim(), email=regEmail.value.trim().toLowerCase(), role=regRole.value, pass=regPassword.value;
   const {data, error} = await sb.auth.signUp({ email, password: pass, options:{ data:{ full_name: name, role } } });
   if(error) return toast(error.message, false);
-  toast('Account created! Proceed to Sign In.');
+  toast('Account created successfully!');
   showAuth('signin');
 }
 
@@ -421,7 +423,11 @@ async function boot(s){
   
   document.getElementById('authOverlay').classList.add('hidden');
   document.getElementById('mainApp').classList.remove('hidden');
-  document.getElementById('myAvatar').src = profile.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${profile.id}`;
+  
+  // IMMEDIATELY UPDATE PROFILE PIC
+  const userAvatarUrl = profile.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${profile.id}`;
+  document.getElementById('myAvatar').src = userAvatarUrl;
+  
   document.getElementById('currentRoleDisplay').textContent = profile.role;
   document.getElementById('setNameInput').value = profile.full_name || '';
   document.getElementById('setBioInput').value = profile.bio || '';
@@ -436,7 +442,7 @@ async function boot(s){
   await loadMedia();
 }
 
-/* MEDIA & PUBLIC FEED */
+/* MEDIA & CARDS WITH ICON-ONLY REACTIONS & FOLLOW BUTTONS */
 async function loadMedia(){
   const {data} = await sb.from('media').select('*, profiles!media_creator_id_fkey(*)').eq('status','published').order('created_at', {ascending:false});
   media = data || [];
@@ -452,26 +458,33 @@ function renderMedia(){
           <img src="${m.profiles?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${m.creator_id}`}" class="w-8 h-8 rounded-full object-cover">
           <span>${esc(m.profiles?.full_name||'Creator')}</span>
         </button>
+        <button onclick="toggleFollow('${m.creator_id}')" class="px-3 py-1 bg-rose-600/20 text-rose-400 hover:bg-rose-600 hover:text-white rounded-full text-[10px] font-bold transition flex items-center gap-1">
+          <i class="fa-solid fa-user-plus text-[9px]"></i> Follow
+        </button>
       </div>
 
       <div>
         <h4 class="font-bold text-sm truncate text-white">${esc(m.title)}</h4>
         ${m.type==='video'? 
-          `<video onclick="playSelectedTrack(${idx})" class="w-full h-48 rounded-xl object-cover mt-2 bg-black cursor-pointer" src="${esc(m.file_url)}"></video>` : 
-          `<button onclick="playSelectedTrack(${idx})" class="w-full py-4 mt-2 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-center gap-2 text-rose-500 font-bold text-xs"><i class="fa-solid fa-circle-play text-lg"></i> Play Track</button>`
+          `<video onclick="toggleInlineVideoPlay(this)" class="w-full h-48 rounded-xl object-cover mt-2 bg-black cursor-pointer" src="${esc(m.file_url)}"></video>` : 
+          `<button onclick="playSelectedAudioTrack(${idx})" class="w-full py-4 mt-2 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-center gap-2 text-rose-500 font-bold text-xs"><i class="fa-solid fa-circle-play text-lg"></i> Play Audio</button>`
         }
       </div>
 
-      <div class="flex items-center justify-between text-slate-400 text-xs pt-2 border-t border-slate-800">
-        <button onclick="toggleLike('${m.id}')" class="hover:text-rose-500 flex items-center gap-1"><i class="fa-regular fa-heart"></i> ${m.likes_count||0}</button>
-        <span class="text-[10px] text-slate-500 flex items-center gap-1"><i class="fa-regular fa-eye"></i> ${m.views_count||0}</span>
-        <button onclick="downloadMedia('${m.file_url}')" class="hover:text-emerald-400"><i class="fa-solid fa-download"></i></button>
+      <!-- ICON ONLY REACTIONS BELOW MEDIA CARD -->
+      <div class="flex items-center justify-between text-slate-400 text-sm pt-2 border-t border-slate-800">
+        <button onclick="toggleLike('${m.id}')" title="Like" class="hover:text-rose-500 flex items-center gap-1"><i class="fa-regular fa-heart"></i> <span class="text-xs">${m.likes_count||0}</span></button>
+        <button onclick="openCommentsModal('${m.id}')" title="Comment" class="hover:text-amber-400"><i class="fa-regular fa-comment"></i></button>
+        <span title="Views" class="text-xs text-slate-500 flex items-center gap-1"><i class="fa-regular fa-eye"></i> ${m.views_count||0}</span>
+        <button onclick="downloadMedia('${m.file_url}')" title="Download" class="hover:text-emerald-400"><i class="fa-solid fa-download"></i></button>
       </div>
     </div>
   `).join('');
 }
 
-/* PUBLIC PROFILE & DISCUSSIONS */
+function toggleInlineVideoPlay(v){ v.paused ? v.play() : v.pause(); }
+
+/* PUBLIC USER PROFILE VIEW & COMMENTS */
 async function openProfile(userId){
   selectedProfileId = userId;
   const {data: u} = await sb.from('profiles').select('*').eq('id', userId).single();
@@ -499,7 +512,7 @@ function startDirectChatFromProfile(){
   go('inbox');
 }
 
-/* REELS CONTROL & GESTURES */
+/* REELS CONTROL (CLEAN VIEW & NON-INTRUSIVE REACTION ICONS) */
 function renderReels(){
   const container = document.getElementById('reelsContainer');
   const videos = media.filter(m=>m.type==='video');
@@ -508,9 +521,9 @@ function renderReels(){
       <video id="reelVideo-${idx}" onclick="toggleReelPlay(this)" loop playsinline class="w-full h-full object-cover cursor-pointer" src="${esc(m.file_url)}"></video>
       <div class="absolute bottom-6 right-3 z-10 flex flex-col items-center gap-4 text-white">
         <button onclick="openProfile('${m.creator_id}')" class="w-10 h-10 rounded-full border-2 border-rose-500 overflow-hidden shadow-lg"><img src="${m.profiles?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${m.creator_id}`}"></button>
-        <button onclick="toggleLike('${m.id}')" class="flex flex-col items-center"><i class="fa-solid fa-heart text-xl hover:text-rose-500"></i><span class="text-[10px]">${m.likes_count||0}</span></button>
-        <button onclick="openProfile('${m.creator_id}')" class="flex flex-col items-center"><i class="fa-solid fa-comment text-xl hover:text-rose-400"></i></button>
-        <button onclick="downloadMedia('${m.file_url}')" class="flex flex-col items-center"><i class="fa-solid fa-download text-xl hover:text-emerald-400"></i></button>
+        <button onclick="toggleFollow('${m.creator_id}')" title="Follow" class="w-8 h-8 rounded-full bg-rose-600 text-white text-xs flex items-center justify-center"><i class="fa-solid fa-user-plus"></i></button>
+        <button onclick="toggleLike('${m.id}')" title="Like" class="flex flex-col items-center"><i class="fa-solid fa-heart text-xl hover:text-rose-500"></i><span class="text-[10px]">${m.likes_count||0}</span></button>
+        <button onclick="downloadMedia('${m.file_url}')" title="Download"><i class="fa-solid fa-download text-lg hover:text-emerald-400"></i></button>
       </div>
     </div>
   `).join('');
@@ -518,11 +531,16 @@ function renderReels(){
 function toggleReelPlay(v){ v.paused ? v.play() : v.pause(); }
 function scrollReel(dir){ document.getElementById('reelsContainer').scrollBy({ top: dir * (window.innerHeight - 180), behavior: 'smooth' }); }
 
-/* GLOBAL PLAYER CONTROLS (PLAY/STOP, NEXT, BACK) */
-function playSelectedTrack(idx){
+/* GLOBAL PLAYER CONTROLS (SHOWS ONLY FOR AUDIO TRACKS) */
+function playSelectedAudioTrack(idx){
   currentMediaIndex = idx;
   const item = media[currentMediaIndex];
   if(!item) return;
+  
+  const playerBar = document.getElementById('globalPlayerBar');
+  playerBar.classList.remove('hidden');
+  playerBar.classList.add('flex');
+
   const player = document.getElementById('globalAudioPlayer');
   player.src = item.file_url;
   player.play();
@@ -536,17 +554,16 @@ function toggleGlobalPlay(){
   if(player.paused){ player.play(); document.getElementById('globalPlayBtn').innerHTML = `<i class="fa-solid fa-pause"></i>`; }
   else { player.pause(); document.getElementById('globalPlayBtn').innerHTML = `<i class="fa-solid fa-play"></i>`; }
 }
-function playNextTrack(){ if(currentMediaIndex < media.length - 1) playSelectedTrack(currentMediaIndex + 1); }
-function playPrevTrack(){ if(currentMediaIndex > 0) playSelectedTrack(currentMediaIndex - 1); }
+function playNextTrack(){ if(currentMediaIndex < media.length - 1) playSelectedAudioTrack(currentMediaIndex + 1); }
+function playPrevTrack(){ if(currentMediaIndex > 0) playSelectedAudioTrack(currentMediaIndex - 1); }
 
-/* PRIVATE CHAT & VOICE NOTE */
+/* PRIVATE INBOX CHAT (ALIGNMENT & VOICE NOTES) */
 async function loadInboxList(){
   const {data: users} = await sb.from('profiles').select('*').neq('id', session.user.id);
-  const container = document.getElementById('inboxUsersList');
-  container.innerHTML = (users||[]).map(u=>`
-    <button onclick="selectPrivateTarget('${u.id}', '${esc(u.full_name||'User')}')" class="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-slate-900 transition">
-      <img src="${u.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${u.id}`}" class="w-8 h-8 rounded-full">
-      <span class="text-xs font-bold text-white truncate">${esc(u.full_name||'User')}</span>
+  document.getElementById('inboxUsersList').innerHTML = (users||[]).map(u=>`
+    <button onclick="selectPrivateTarget('${u.id}', '${esc(u.full_name)}')" class="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-2 hover:border-rose-500 transition text-left">
+      <img src="${u.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${u.id}`}" class="w-7 h-7 rounded-full object-cover">
+      <span class="text-xs font-bold text-white truncate">${esc(u.full_name)}</span>
     </button>
   `).join('');
 }
@@ -559,99 +576,100 @@ function selectPrivateTarget(id, name){
 
 async function loadPrivateMessages(){
   if(!currentChatTarget) return;
-  const {data: msgs} = await sb.from('private_messages')
-    .select('*')
+  const {data: msgs} = await sb.from('messages').select('*')
     .or(`and(sender_id.eq.${session.user.id},receiver_id.eq.${currentChatTarget}),and(sender_id.eq.${currentChatTarget},receiver_id.eq.${session.user.id})`)
-    .order('created_at', {ascending: true});
+    .order('created_at', {ascending:true});
 
   const list = document.getElementById('privateMessagesList');
   list.innerHTML = (msgs||[]).map(m=>{
-    const isMe = m.sender_id === session.user.id;
+    const isMine = m.sender_id === session.user.id;
     return `
-      <div class="flex ${isMe?'justify-end':'justify-start'}">
-        <div class="max-w-xs p-3 rounded-2xl text-xs ${isMe?'bg-rose-600 text-white rounded-br-none':'bg-slate-800 text-slate-200 rounded-bl-none'}">
-          ${m.audio_url ? `<audio controls src="${esc(m.audio_url)}" class="w-48"></audio>` : esc(m.message)}
+      <div class="flex ${isMine ? 'justify-end' : 'justify-start'}">
+        <div class="${isMine ? 'bg-rose-600 text-white rounded-l-2xl rounded-tr-2xl' : 'bg-slate-800 text-slate-200 rounded-r-2xl rounded-tl-2xl'} px-4 py-2.5 max-w-xs text-xs shadow-md">
+          ${m.voice_url ? `<audio controls src="${m.voice_url}" class="w-48 h-8"></audio>` : esc(m.content)}
         </div>
       </div>
     `;
   }).join('');
+  list.scrollTop = list.scrollHeight;
 }
 
 async function sendPrivateMessage(e){
   e.preventDefault();
   const input = document.getElementById('privateInput');
-  const txt = input.value.trim();
-  if(!txt || !currentChatTarget) return;
-  await sb.from('private_messages').insert([{ sender_id: session.user.id, receiver_id: currentChatTarget, message: txt }]);
+  if(!input.value.trim() || !currentChatTarget) return;
+  await sb.from('messages').insert({ sender_id: session.user.id, receiver_id: currentChatTarget, content: input.value.trim() });
   input.value = '';
   loadPrivateMessages();
 }
 
-/* SETTINGS & SWITCH ACCOUNT ROLE */
+/* SETTINGS & AVATAR UPLOAD (IMMEDIATELY REPLACES OLD AVATAR) */
 async function uploadAvatarFile(){
   const fileInput = document.getElementById('setAvatarFile');
-  if(!fileInput.files.length) return toast('Select a picture first', false);
+  if(!fileInput.files.length) return toast('Please select an image file first', false);
   const file = fileInput.files[0];
   const path = `avatars/${session.user.id}_${Date.now()}.png`;
   const {error} = await sb.storage.from('media').upload(path, file);
   if(error) return toast(error.message, false);
   const {data:{publicUrl}} = sb.storage.from('media').getPublicUrl(path);
+  
   await sb.from('profiles').update({ avatar_url: publicUrl }).eq('id', session.user.id);
+  
+  // REPLACE PROFILE PIC IMMEDIATELY
   document.getElementById('myAvatar').src = publicUrl;
-  toast('Profile image updated successfully!');
+  toast('Profile picture updated successfully!');
 }
 
 async function toggleAccountRole(){
-  const newRole = profile.role==='client' ? 'creator' : 'client';
+  const newRole = profile.role === 'client' ? 'creator' : 'client';
   await sb.from('profiles').update({ role: newRole }).eq('id', session.user.id);
   profile.role = newRole;
   document.getElementById('currentRoleDisplay').textContent = newRole;
-  toast(`Account mode switched to: ${newRole.toUpperCase()}`);
+  toast(`Role updated to ${newRole.toUpperCase()}`);
   boot(session);
 }
 
-/* ADMIN MODERATION */
+/* ADMIN PANEL (MODERATE & CHAT WITH ANY USER) */
 async function loadAdminPanel(){
-  if(profile.role !== 'admin') return;
-  const {data: allMedia} = await sb.from('media').select('*');
-  document.getElementById('adminContentList').innerHTML = (allMedia||[]).map(m=>`
-    <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900 text-xs">
-      <span class="truncate max-w-[200px] text-white">${esc(m.title)}</span>
-      <button onclick="adminDeleteMedia('${m.id}')" class="px-2 py-1 bg-rose-600 text-white font-bold rounded-lg text-[10px]">Delete</button>
+  const {data: users} = await sb.from('profiles').select('*');
+  document.getElementById('adminUsersList').innerHTML = (users||[]).map(u=>`
+    <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+      <span class="text-xs font-bold text-white">${esc(u.full_name)} (${u.role})</span>
+      <button onclick="selectPrivateTarget('${u.id}', '${esc(u.full_name)}'); go('inbox');" class="px-3 py-1 bg-rose-600 text-white rounded-lg text-[10px] font-bold">Message</button>
     </div>
   `).join('');
 
-  const {data: allUsers} = await sb.from('profiles').select('*');
-  document.getElementById('adminUsersList').innerHTML = (allUsers||[]).map(u=>`
-    <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900 text-xs">
-      <span class="text-white">${esc(u.full_name||'User')}</span>
-      <button onclick="selectPrivateTarget('${u.id}', '${esc(u.full_name||'User')}'); go('inbox');" class="px-2 py-1 bg-slate-800 text-white rounded-lg text-[10px]">Direct Message</button>
+  const {data: allMedia} = await sb.from('media').select('*');
+  document.getElementById('adminContentList').innerHTML = (allMedia||[]).map(m=>`
+    <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+      <span class="text-xs text-white truncate max-w-[180px]">${esc(m.title)}</span>
+      <button onclick="deleteContentAdmin('${m.id}')" class="px-3 py-1 bg-rose-600/20 text-rose-400 hover:bg-rose-600 hover:text-white rounded-lg text-[10px] font-bold">Delete</button>
     </div>
   `).join('');
 }
 
-async function adminDeleteMedia(id){
+async function deleteContentAdmin(id){
   await sb.from('media').delete().eq('id', id);
-  toast('Media deleted by admin.');
+  toast('Content removed by admin');
   loadAdminPanel();
 }
 
-/* UNSAVED LIVE STREAM CONTROL */
+/* EPHEMERAL LIVE STREAM (UNSAVED) */
 async function startLiveStream(){
+  document.getElementById('liveModal').classList.remove('hidden');
+  document.getElementById('liveModal').classList.add('flex');
   try {
-    liveStreamMedia = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-    document.getElementById('liveVideo').srcObject = liveStreamMedia;
-    document.getElementById('liveModal').classList.remove('hidden');
-  } catch(err) {
-    toast('Camera permission denied or unavailable', false);
-  }
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    document.getElementById('liveVideo').srcObject = stream;
+  } catch(e) { toast('Camera access denied', false); stopLiveStream(); }
 }
+
 function stopLiveStream(){
-  if(liveStreamMedia){ liveStreamMedia.getTracks().forEach(t=>t.stop()); }
+  const video = document.getElementById('liveVideo');
+  if(video.srcObject) video.srcObject.getTracks().forEach(t=>t.stop());
   document.getElementById('liveModal').classList.add('hidden');
 }
 
-/* NOTIFICATIONS TOGGLE */
 function toggleNotifications(){
   document.getElementById('notifPanel').classList.toggle('hidden');
 }
