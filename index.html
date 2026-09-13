@@ -8,20 +8,30 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    body { background: #030712; color: #f3f4f6; font-family: system-ui, -apple-system, sans-serif; }
-    .glass { background: rgba(17, 24, 39, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    body { background: #020617; color: #e2e8f0; font-family: system-ui, -apple-system, sans-serif; }
+    .glass { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { scrollbar-width: none; }
     .hidden { display: none !important; }
-    .reels-container { height: calc(100vh - 130px); scroll-snap-type: y mandatory; overflow-y: scroll; }
-    .reel-card { height: calc(100vh - 130px); scroll-snap-align: start; position: relative; }
+
+    /* TikTok-style Vertical Scroll Snap for Reels */
+    .reels-container {
+      height: calc(100vh - 140px);
+      scroll-snap-type: y mandatory;
+      overflow-y: scroll;
+    }
+    .reel-card {
+      height: calc(100vh - 140px);
+      scroll-snap-align: start;
+      position: relative;
+    }
   </style>
 </head>
-<body class="min-h-screen pb-28 select-none">
+<body class="min-h-screen pb-32 select-none">
 
 <div id="toast" class="fixed top-4 right-4 z-[100] hidden max-w-sm rounded-2xl px-5 py-3 text-sm font-medium shadow-2xl transition-all"></div>
 
-<!-- AUTH OVERLAY -->
+<!-- AUTH MODAL -->
 <div id="authOverlay" class="fixed inset-0 z-[90] bg-slate-950 flex items-center justify-center p-4">
   <div class="glass rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-rose-500/20">
     <div class="text-center mb-6">
@@ -29,7 +39,7 @@
         <i class="fa-solid fa-play text-2xl text-white"></i>
       </div>
       <h1 class="text-2xl font-black mt-3 tracking-wide">Indirimbo <span class="text-rose-500">Zisobanuye</span></h1>
-      <p class="text-xs text-slate-400 mt-1">Watch, stream, chat and connect securely</p>
+      <p class="text-xs text-slate-400 mt-1">Watch, stream, chat & connect securely</p>
     </div>
 
     <div class="flex rounded-xl bg-slate-900 p-1 mb-5">
@@ -56,7 +66,7 @@
   </div>
 </div>
 
-<!-- MAIN APP INTERFACE -->
+<!-- MAIN APP -->
 <div id="mainApp" class="hidden">
   
   <!-- HEADER -->
@@ -64,7 +74,7 @@
     <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
       <div class="flex items-center gap-3">
         <!-- Back Button -->
-        <button onclick="goBack()" class="w-9 h-9 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:text-white" title="Go Back">
+        <button onclick="goBackHistory()" class="w-9 h-9 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:bg-slate-800">
           <i class="fa-solid fa-arrow-left text-xs"></i>
         </button>
         <button onclick="go('home')" class="flex items-center gap-2">
@@ -82,7 +92,7 @@
 
       <div class="flex items-center gap-2">
         <!-- Notification Button -->
-        <button onclick="toggleNotifications()" class="relative w-9 h-9 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center hover:border-rose-500">
+        <button onclick="toggleNotifications()" class="relative w-9 h-9 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center">
           <i class="fa-regular fa-bell text-slate-300 text-sm"></i>
           <span id="notifBadge" class="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500 hidden"></span>
         </button>
@@ -100,7 +110,7 @@
     </div>
   </header>
 
-  <!-- NOTIFICATIONS MODAL -->
+  <!-- NOTIFICATIONS PANEL -->
   <div id="notifPanel" class="fixed top-16 right-4 z-50 hidden glass rounded-2xl p-4 w-80 shadow-2xl border border-slate-800">
     <h3 class="font-bold text-sm mb-2 flex justify-between items-center">Notifications <button onclick="toggleNotifications()"><i class="fa-solid fa-xmark text-slate-400"></i></button></h3>
     <div id="notifList" class="space-y-2 text-xs max-h-60 overflow-y-auto">
@@ -108,28 +118,20 @@
     </div>
   </div>
 
-  <!-- NAVIGATION BAR -->
+  <!-- NAVIGATION -->
   <nav class="sticky top-16 z-30 bg-slate-950/90 border-b border-slate-800 overflow-x-auto no-scrollbar">
     <div class="max-w-7xl mx-auto px-4 py-2 flex gap-2 min-w-max">
       <button id="nav-home" onclick="go('home')" class="navbtn active"><i class="fa-solid fa-house"></i> Home</button>
       <button id="nav-reels" onclick="go('reels')" class="navbtn"><i class="fa-solid fa-bolt text-amber-400"></i> Reels</button>
       <button id="nav-chat" onclick="go('chat')" class="navbtn"><i class="fa-regular fa-comments"></i> Community</button>
       <button id="nav-inbox" onclick="go('inbox')" class="navbtn"><i class="fa-solid fa-paper-plane"></i> Private Inbox</button>
-      <button id="nav-dashboard" onclick="go('dashboard')" class="navbtn hidden"><i class="fa-solid fa-chart-line"></i> My Dashboard</button>
+      <button id="nav-dashboard" onclick="go('dashboard')" class="navbtn hidden"><i class="fa-solid fa-chart-line"></i> Creator Studio</button>
       <button id="nav-admin" onclick="go('admin')" class="navbtn hidden text-rose-400"><i class="fa-solid fa-shield-halved"></i> Admin Panel</button>
       <button id="nav-settings" onclick="go('settings')" class="navbtn"><i class="fa-solid fa-gear"></i> Settings</button>
     </div>
   </nav>
 
-  <!-- FLOATING MEDIA CONTROLS BAR (LEFT SIDE) -->
-  <div id="leftPlayerControls" class="fixed left-4 bottom-8 z-40 glass p-2 rounded-2xl border border-slate-800 flex flex-col gap-2 shadow-2xl hidden">
-    <span class="text-[9px] text-slate-400 text-center font-bold">MEDIA CONTROLS</span>
-    <button onclick="playerPrev()" class="w-8 h-8 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 flex items-center justify-center text-xs" title="Previous Media"><i class="fa-solid fa-backward-step"></i></button>
-    <button id="playerToggleBtn" onclick="playerTogglePlay()" class="w-8 h-8 rounded-xl bg-rose-600 hover:bg-rose-500 text-white flex items-center justify-center text-xs" title="Play/Stop"><i class="fa-solid fa-play" id="playerPlayIcon"></i></button>
-    <button onclick="playerNext()" class="w-8 h-8 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 flex items-center justify-center text-xs" title="Next Media"><i class="fa-solid fa-forward-step"></i></button>
-  </div>
-
-  <!-- VIEWS CONTAINER -->
+  <!-- MAIN VIEWS -->
   <main class="max-w-7xl mx-auto px-4 py-4">
 
     <!-- VIEW: HOME -->
@@ -140,40 +142,33 @@
     <!-- VIEW: REELS -->
     <section id="view-reels" class="hidden">
       <div class="max-w-sm mx-auto bg-black rounded-3xl overflow-hidden relative border border-slate-800 shadow-2xl">
-        
-        <!-- Non-obtrusive Scroll & Pause Controls -->
-        <div class="absolute top-4 right-4 z-20 flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
-          <button onclick="scrollReel(-1)" class="text-white hover:text-rose-500 text-xs px-1" title="Scroll Up"><i class="fa-solid fa-chevron-up"></i></button>
-          <span class="text-white/30 text-xs">|</span>
-          <button onclick="scrollReel(1)" class="text-white hover:text-rose-500 text-xs px-1" title="Scroll Down"><i class="fa-solid fa-chevron-down"></i></button>
+        <!-- Scroll Up / Down Floating Buttons inside Reel Container (Non-blocking) -->
+        <div class="absolute top-4 right-4 z-20 flex flex-col gap-2">
+          <button onclick="scrollReel(-1)" class="w-8 h-8 rounded-full bg-black/60 backdrop-blur text-white flex items-center justify-center hover:bg-rose-600 transition"><i class="fa-solid fa-chevron-up text-xs"></i></button>
+          <button onclick="scrollReel(1)" class="w-8 h-8 rounded-full bg-black/60 backdrop-blur text-white flex items-center justify-center hover:bg-rose-600 transition"><i class="fa-solid fa-chevron-down text-xs"></i></button>
         </div>
-
         <div id="reelsContainer" class="reels-container no-scrollbar"></div>
       </div>
     </section>
 
-    <!-- VIEW: PRIVATE INBOX -->
+    <!-- VIEW: PRIVATE INBOX / CHAT -->
     <section id="view-inbox" class="hidden">
       <div class="max-w-4xl mx-auto glass rounded-3xl border border-slate-800 overflow-hidden grid grid-cols-1 md:grid-cols-3 h-[75vh]">
-        
         <div class="border-r border-slate-800 p-4 space-y-3 overflow-y-auto">
-          <h2 class="font-bold text-base">Conversations</h2>
+          <h2 class="font-bold text-base">Messages</h2>
           <div id="inboxUsersList" class="space-y-2"></div>
         </div>
-
         <div class="md:col-span-2 flex flex-col h-full bg-slate-950/50">
           <div id="chatHeader" class="p-4 border-b border-slate-800 flex items-center justify-between">
-            <h3 id="chatTargetName" class="font-bold text-sm text-slate-300">Select a conversation</h3>
+            <h3 id="chatTargetName" class="font-bold text-sm">Select a conversation</h3>
           </div>
-
           <div id="privateMessagesList" class="flex-1 p-4 overflow-y-auto space-y-3">
-            <p class="text-center text-xs text-slate-500 mt-10">Select a user to start private messaging</p>
+            <p class="text-center text-xs text-slate-500 mt-10">Select a user to start private live chat</p>
           </div>
-
           <form id="privateChatForm" onsubmit="sendPrivateMessage(event)" class="p-3 border-t border-slate-800 flex items-center gap-2">
-            <input id="privateInput" placeholder="Type a private message..." class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-rose-500">
+            <input id="privateInput" placeholder="Type a private message..." class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs focus:outline-none">
             <button type="button" id="recordVoiceBtn" onclick="toggleVoiceRecord()" class="w-9 h-9 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center hover:bg-slate-700" title="Record Voice Note">
-              <i class="fa-solid fa-microphone"></i>
+              <i class="fa-solid fa-microphone text-xs"></i>
             </button>
             <button class="w-9 h-9 rounded-xl bg-rose-600 text-white flex items-center justify-center"><i class="fa-solid fa-paper-plane text-xs"></i></button>
           </form>
@@ -181,24 +176,20 @@
       </div>
     </section>
 
-    <!-- VIEW: USER / CREATOR PROFILE -->
+    <!-- VIEW: PUBLIC USER PROFILE -->
     <section id="view-profile" class="hidden space-y-4">
-      <div class="glass p-6 rounded-3xl flex items-center gap-4 border border-slate-800">
+      <div class="glass p-6 rounded-3xl flex items-center gap-4">
         <img id="profAvatar" src="" class="w-20 h-20 rounded-full border-2 border-rose-500 object-cover">
         <div>
           <h2 id="profName" class="text-xl font-bold">--</h2>
           <p id="profRole" class="text-xs text-rose-400 capitalize">--</p>
           <div class="flex gap-2 mt-3">
-            <button id="profFollowBtn" onclick="toggleFollowCurrentProfile()" class="px-4 py-1.5 rounded-full bg-rose-600 text-xs font-bold flex items-center gap-1.5">
-              <i class="fa-solid fa-user-plus"></i> <span id="profFollowBtnText">Follow</span>
-            </button>
-            <button id="profMsgBtn" onclick="startDirectChatFromProfile()" class="px-4 py-1.5 rounded-full bg-slate-800 text-xs font-bold hover:bg-slate-700">
-              <i class="fa-solid fa-envelope"></i> Message
-            </button>
+            <button id="profFollowBtn" onclick="toggleFollowCurrentProfile()" class="px-4 py-1.5 rounded-full bg-rose-600 text-xs font-bold flex items-center gap-1.5"><i class="fa-solid fa-user-plus"></i> <span id="profFollowText">Follow</span></button>
+            <button id="profMsgBtn" onclick="startDirectChat()" class="px-4 py-1.5 rounded-full bg-slate-800 text-xs font-bold"><i class="fa-solid fa-envelope"></i> Message</button>
           </div>
         </div>
       </div>
-      <h3 class="font-bold text-sm px-2">Published Content</h3>
+      <h3 class="font-bold text-sm text-slate-300">Creator Uploaded Content</h3>
       <div id="profMediaGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-4"></div>
     </section>
 
@@ -206,119 +197,146 @@
     <section id="view-admin" class="hidden space-y-6">
       <div class="glass p-6 rounded-3xl border border-rose-500/30">
         <h2 class="text-xl font-black text-rose-500"><i class="fa-solid fa-shield-halved"></i> System Admin Dashboard</h2>
-        <p class="text-xs text-slate-400 mt-1">Full access to manage all accounts, send administrative direct messages, and moderate content quality.</p>
+        <p class="text-xs text-slate-400 mt-1">Full access to all platform accounts, content moderation, and direct communication.</p>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="glass p-4 rounded-2xl border border-slate-800">
-          <h3 class="font-bold text-sm mb-3">All Platform Content</h3>
+        <div class="glass p-4 rounded-2xl">
+          <h3 class="font-bold text-sm mb-3">All Website Content (Audit & Delete)</h3>
           <div id="adminContentList" class="space-y-2 max-h-96 overflow-y-auto"></div>
         </div>
-        <div class="glass p-4 rounded-2xl border border-slate-800">
-          <h3 class="font-bold text-sm mb-3">All Registered Users</h3>
+        <div class="glass p-4 rounded-2xl">
+          <h3 class="font-bold text-sm mb-3">All Platform Users</h3>
           <div id="adminUsersList" class="space-y-2 max-h-96 overflow-y-auto"></div>
         </div>
       </div>
     </section>
 
     <!-- VIEW: SETTINGS -->
-    <section id="view-settings" class="hidden max-w-lg mx-auto glass p-6 rounded-3xl space-y-5 border border-slate-800">
+    <section id="view-settings" class="hidden max-w-lg mx-auto glass p-6 rounded-3xl space-y-5">
       <h2 class="text-lg font-bold">Account Settings</h2>
       
-      <!-- Upload Profile Picture from Device File -->
+      <!-- Upload Profile Picture from Device -->
       <div class="space-y-2">
-        <label class="text-xs text-slate-400 block font-bold">Upload Profile Picture from Device</label>
+        <label class="text-xs text-slate-400 block">Upload Profile Picture from Device</label>
         <div class="flex gap-2 items-center">
-          <input id="setAvatarFile" type="file" accept="image/*" class="w-full text-xs bg-slate-900 border border-slate-800 rounded-xl p-2">
-          <button onclick="updateProfilePictureFromFile()" class="px-4 py-2.5 rounded-xl bg-rose-600 text-xs font-bold whitespace-nowrap">Upload</button>
+          <input id="avatarFile" type="file" accept="image/*" class="w-full text-xs bg-slate-900 border border-slate-800 rounded-xl p-2">
+          <button onclick="uploadDeviceAvatar()" class="px-4 py-2 rounded-xl bg-rose-600 text-xs font-bold shrink-0">Upload</button>
         </div>
       </div>
 
-      <!-- Switch Account Role -->
+      <!-- Essential Settings Options -->
+      <div class="space-y-3 pt-2 border-t border-slate-800">
+        <label class="text-xs text-slate-400 block font-bold">Preferences & Account Management</label>
+        <div class="flex items-center justify-between bg-slate-900 p-3 rounded-xl text-xs">
+          <span>Dark Mode Theme</span>
+          <input type="checkbox" checked disabled class="accent-rose-600">
+        </div>
+        <div class="flex items-center justify-between bg-slate-900 p-3 rounded-xl text-xs">
+          <span>Push Notifications</span>
+          <input type="checkbox" checked class="accent-rose-600" onchange="toast('Notification preference updated')">
+        </div>
+      </div>
+
+      <!-- Switch Role to Creator -->
       <div class="pt-4 border-t border-slate-800 space-y-2">
-        <label class="text-xs text-slate-400 block font-bold">Account Role Type</label>
-        <p class="text-xs">Current Role: <b id="currentRoleDisplay" class="text-rose-400 uppercase">--</b></p>
-        <button id="switchRoleBtn" onclick="toggleAccountRole()" class="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold border border-slate-700">
+        <label class="text-xs text-slate-400 block">Account Role Switch</label>
+        <p class="text-xs">Current Account Role: <b id="currentRoleDisplay" class="text-rose-400 uppercase">--</b></p>
+        <button id="switchRoleBtn" onclick="toggleAccountRole()" class="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold border border-slate-700 transition">
           Switch Account to Content Creator
         </button>
       </div>
 
-      <div class="pt-4 border-t border-slate-800">
-        <button onclick="signOut()" class="w-full py-3 rounded-xl bg-rose-600/20 text-rose-400 hover:bg-rose-600 hover:text-white transition text-xs font-bold">
-          Sign Out of Account
-        </button>
-      </div>
+      <button onclick="signOut()" class="w-full py-3 rounded-xl bg-rose-600/20 text-rose-400 hover:bg-rose-600 hover:text-white transition text-xs font-bold">
+        Sign Out
+      </button>
     </section>
 
     <!-- VIEW: COMMUNITY CHAT -->
-    <section id="view-chat" class="hidden max-w-2xl mx-auto glass rounded-3xl overflow-hidden border border-slate-800">
+    <section id="view-chat" class="hidden max-w-2xl mx-auto glass rounded-3xl overflow-hidden">
       <div class="p-4 border-b border-slate-800"><h3 class="font-bold text-sm">Public Community Chat</h3></div>
       <div id="pubMessages" class="h-96 p-4 overflow-y-auto space-y-3"></div>
       <form onsubmit="sendPublicMessage(event)" class="p-3 border-t border-slate-800 flex gap-2">
-        <input id="pubInput" required placeholder="Write message..." class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs focus:outline-none focus:border-rose-500">
+        <input id="pubInput" required placeholder="Write message..." class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs">
         <button class="px-4 rounded-xl bg-rose-600 text-xs font-bold"><i class="fa-solid fa-paper-plane"></i></button>
       </form>
     </section>
 
-    <!-- VIEW: USER / CREATOR DASHBOARD -->
+    <!-- VIEW: CREATOR DASHBOARD -->
     <section id="view-dashboard" class="hidden space-y-4">
-      <div class="flex justify-between items-center glass p-4 rounded-2xl border border-slate-800">
-        <div>
-          <h2 class="font-bold text-base">My Private Dashboard</h2>
-          <p class="text-xs text-slate-400">Manage your uploaded media content privately.</p>
-        </div>
-        <button onclick="openUpload()" class="px-4 py-2 rounded-xl bg-rose-600 text-xs font-bold"><i class="fa-solid fa-upload"></i> Upload Media</button>
+      <div class="flex justify-between items-center">
+        <h2 class="font-bold text-lg">Creator Studio Dashboard</h2>
+        <button onclick="openUpload()" class="px-4 py-2 rounded-xl bg-rose-600 text-xs font-bold"><i class="fa-solid fa-upload"></i> Upload Content</button>
       </div>
+      <p class="text-xs text-slate-400">Manage and view all your published items privately below:</p>
       <div id="creatorContent" class="space-y-3"></div>
     </section>
 
   </main>
 </div>
 
-<!-- LIVE STREAM MODAL (Not saved anywhere) -->
+<!-- FLOATING MEDIA PLAYER BAR WITH LEFT CONTROLS -->
+<div id="mediaPlayerBar" class="fixed bottom-0 left-0 right-0 z-50 glass border-t border-slate-800 px-4 py-3 hidden">
+  <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+    <!-- Left Controls: Back, Play/Stop, Next -->
+    <div class="flex items-center gap-3">
+      <button onclick="playerPrevious()" class="w-9 h-9 rounded-full bg-slate-900 border border-slate-800 text-slate-300 flex items-center justify-center hover:bg-slate-800" title="Back"><i class="fa-solid fa-backward-step text-xs"></i></button>
+      <button id="playerPlayStopBtn" onclick="playerTogglePlayStop()" class="w-10 h-10 rounded-full bg-rose-600 text-white flex items-center justify-center shadow-lg shadow-rose-600/30" title="Play/Stop"><i class="fa-solid fa-pause text-xs" id="playerPlayIcon"></i></button>
+      <button onclick="playerNext()" class="w-9 h-9 rounded-full bg-slate-900 border border-slate-800 text-slate-300 flex items-center justify-center hover:bg-slate-800" title="Next"><i class="fa-solid fa-forward-step text-xs"></i></button>
+    </div>
+    <div class="flex-1 min-w-0 text-center">
+      <p id="playerTrackTitle" class="text-xs font-bold truncate text-slate-200">No media playing</p>
+    </div>
+    <div>
+      <button onclick="closeMediaPlayer()" class="text-slate-400 hover:text-white text-xs"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- LIVE STREAM MODAL (Ephemeral - Zero Saving) -->
 <div id="liveModal" class="fixed inset-0 z-[95] hidden bg-black flex flex-col items-center justify-center p-4">
   <div class="relative w-full max-w-md bg-slate-900 rounded-3xl overflow-hidden border border-rose-500/50 shadow-2xl">
     <div class="absolute top-4 left-4 z-10 bg-rose-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2 animate-pulse">
-      <i class="fa-solid fa-circle text-[8px]"></i> LIVE STREAMING (Ephemeral)
+      <i class="fa-solid fa-circle text-[8px]"></i> LIVE STREAMING (Not Saved)
     </div>
     <button onclick="stopLiveStream()" class="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
     <video id="liveVideo" autoplay playsinline muted class="w-full h-[60vh] object-cover bg-black"></video>
     <div class="p-4 bg-slate-950 text-center">
-      <p class="text-xs text-slate-400">This live stream is temporary. Zero data is recorded or saved anywhere.</p>
+      <p class="text-xs text-slate-400">Live stream session is temporary and ephemeral. Zero data is recorded or saved anywhere.</p>
     </div>
   </div>
 </div>
 
 <!-- UPLOAD MODAL -->
 <div id="uploadModal" class="fixed inset-0 z-[80] hidden bg-slate-950/90 flex items-center justify-center p-4">
-  <div class="glass rounded-3xl p-6 max-w-md w-full space-y-4 border border-slate-800">
-    <div class="flex justify-between items-center"><h3 class="font-bold text-sm">Upload Video or Audio</h3><button onclick="closeUpload()"><i class="fa-solid fa-xmark"></i></button></div>
+  <div class="glass rounded-3xl p-6 max-w-md w-full space-y-4">
+    <div class="flex justify-between items-center"><h3 class="font-bold text-sm">Upload Video / Song</h3><button onclick="closeUpload()"><i class="fa-solid fa-xmark"></i></button></div>
     <form onsubmit="uploadContent(event)" class="space-y-3">
-      <input id="upTitle" required placeholder="Title" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs focus:outline-none focus:border-rose-500">
+      <input id="upTitle" required placeholder="Title" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs">
       <select id="upType" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs">
         <option value="video">Short Video (Reel)</option>
         <option value="audio">Audio Track</option>
       </select>
       <input id="upFile" type="file" accept="video/*,audio/*" required class="w-full text-xs">
-      <button class="w-full py-3 rounded-xl bg-rose-600 text-xs font-bold shadow-lg shadow-rose-600/30">Publish Now</button>
+      <button class="w-full py-3 rounded-xl bg-rose-600 text-xs font-bold">Publish Now</button>
     </form>
   </div>
 </div>
 
 <!-- COMMENTS MODAL -->
 <div id="commentModal" class="fixed inset-0 z-[85] hidden bg-slate-950/90 flex items-center justify-center p-4">
-  <div class="glass rounded-3xl p-5 max-w-md w-full max-h-[80vh] flex flex-col border border-slate-800">
+  <div class="glass rounded-3xl p-5 max-w-md w-full max-h-[80vh] flex flex-col">
     <div class="flex justify-between items-center mb-3"><h3 class="font-bold text-sm">Comments</h3><button onclick="closeComments()"><i class="fa-solid fa-xmark"></i></button></div>
     <div id="commentList" class="flex-1 overflow-y-auto space-y-2 my-2"></div>
     <form onsubmit="postComment(event)" class="flex gap-2">
-      <input id="commentInput" required placeholder="Add comment..." class="flex-1 bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs focus:outline-none focus:border-rose-500">
+      <input id="commentInput" required placeholder="Add comment..." class="flex-1 bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs">
       <button class="px-4 rounded-xl bg-rose-600 text-xs font-bold"><i class="fa-solid fa-paper-plane"></i></button>
     </form>
   </div>
 </div>
 
 <style>
-.navbtn { padding: .5rem .9rem; border-radius: .8rem; color: #94a3b8; font-size: .75rem; font-weight: 700; display: flex; gap: .4rem; align-items: center; background: rgba(17, 24, 39, 0.6); }
+.navbtn { padding: .5rem .9rem; border-radius: .8rem; color: #94a3b8; font-size: .75rem; font-weight: 700; display: flex; gap: .4rem; align-items: center; background: rgba(15, 23, 42, 0.6); }
 .navbtn.active { background: #e11d48; color: white; }
 </style>
 
@@ -327,27 +345,16 @@ const SUPABASE_URL = "https://hdblzeugfeftkutmqprl.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_yskMxVPr49-HJLubhXgPiA_qESKLUtN";
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-let session = null, profile = null, media = [], currentChatTarget = null, mediaStream = null, mediaRecorder = null, audioChunks = [];
-let historyStack = [];
-let activePlayerMediaId = null, activePlayerElement = null;
-let currentViewingProfileId = null;
+let session = null, profile = null, media = [], currentChatTarget = null, currentViewedUserId = null;
+let mediaStream = null, mediaRecorder = null, audioChunks = [];
+let activePlayerEl = null, activeTrackIndex = 0;
+let historyStack = ['home'];
 
-function toast(msg, ok=true){ 
-  const x=document.getElementById('toast'); 
-  x.textContent=msg; 
-  x.className=`fixed top-4 right-4 z-[100] max-w-sm rounded-2xl px-5 py-3 text-sm font-medium shadow-2xl ${ok?'bg-emerald-600':'bg-rose-600'}`; 
-  x.classList.remove('hidden'); 
-  setTimeout(()=>x.classList.add('hidden'),3000); 
-}
+function toast(msg, ok=true){ const x=document.getElementById('toast'); x.textContent=msg; x.className=`fixed top-4 right-4 z-[100] max-w-sm rounded-2xl px-5 py-3 text-sm font-medium shadow-2xl ${ok?'bg-emerald-600':'bg-rose-600'}`; x.classList.remove('hidden'); setTimeout(()=>x.classList.add('hidden'),3000); }
 function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])) }
 
-function go(tab, pushHistory=true){
-  const currentActive = document.querySelector('section:not(.hidden)');
-  if(pushHistory && currentActive) {
-    const currentId = currentActive.id.replace('view-', '');
-    if(currentId !== tab) historyStack.push(currentId);
-  }
-
+function go(tab, push=true){
+  if(push && historyStack[historyStack.length-1] !== tab) historyStack.push(tab);
   ['home','reels','chat','inbox','dashboard','admin','settings','profile'].forEach(x=>{
     const el = document.getElementById('view-'+x);
     if(el) el.classList.toggle('hidden', x!==tab);
@@ -360,12 +367,10 @@ function go(tab, pushHistory=true){
   if(tab==='dashboard') renderCreator();
 }
 
-function goBack(){
-  if(historyStack.length > 0){
-    const prevTab = historyStack.pop();
-    go(prevTab, false);
-  } else {
-    go('home', false);
+function goBackHistory(){
+  if(historyStack.length > 1){
+    historyStack.pop();
+    go(historyStack[historyStack.length - 1], false);
   }
 }
 
@@ -420,37 +425,90 @@ async function loadMedia(){
   renderMedia();
 }
 
-function renderMedia(){
+async function checkIsFollowing(creatorId, btnEl){
+  const {data} = await sb.from('follows').select('*').eq('follower_id', session.user.id).eq('following_id', creatorId).maybeSingle();
+  if(data){
+    btnEl.innerHTML = `<i class="fa-solid fa-check text-xs"></i>`;
+    btnEl.classList.add('bg-emerald-600');
+  }
+}
+
+async function renderMedia(){
   const grid = document.getElementById('mediaGrid');
-  grid.innerHTML = media.map(m=>`
+  grid.innerHTML = media.map((m, idx)=>`
     <div class="glass p-4 rounded-2xl border border-slate-800 flex flex-col justify-between space-y-3">
       <div class="flex items-center justify-between">
-        <button onclick="openProfile('${m.creator_id}')" class="flex items-center gap-2 text-xs font-bold hover:text-rose-500">
+        <button onclick="openUserProfile('${m.creator_id}')" class="flex items-center gap-2 text-xs font-bold">
           <img src="${m.profiles?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${m.creator_id}`}" class="w-7 h-7 rounded-full object-cover">
           <span>${esc(m.profiles?.full_name||'Creator')}</span>
         </button>
-        <button onclick="toggleFollow('${m.creator_id}', this)" class="text-[10px] bg-slate-800 hover:bg-rose-600 px-3 py-1 rounded-full font-bold transition">Follow</button>
+        <button id="follow-btn-${m.id}" onclick="toggleFollow('${m.creator_id}', this)" class="text-[10px] bg-slate-800 hover:bg-rose-600 px-3 py-1 rounded-full transition"><i class="fa-solid fa-user-plus"></i></button>
       </div>
 
       <div>
         <h4 class="font-bold text-sm truncate">${esc(m.title)}</h4>
         ${m.type==='video'? 
-          `<video controls onplay="setActivePlayer('${m.id}', this)" class="w-full h-48 rounded-xl object-cover mt-2 bg-black" src="${esc(m.file_url)}"></video>` : 
-          `<audio controls onplay="setActivePlayer('${m.id}', this)" class="w-full mt-2" src="${esc(m.file_url)}"></audio>`}
+          `<video controls onplay="incrementView('${m.id}')" class="w-full h-48 rounded-xl object-cover mt-2 bg-black" src="${esc(m.file_url)}"></video>` : 
+          `<audio controls onplay="incrementView('${m.id}')" class="w-full mt-2" src="${esc(m.file_url)}"></audio>`}
       </div>
 
-      <!-- Icon-Only Action Bar with Accurate Counters -->
+      <!-- Icon-Only Action Bar -->
       <div class="flex items-center justify-between text-slate-400 text-xs pt-2 border-t border-slate-800">
-        <button onclick="incrementLike('${m.id}')" class="hover:text-rose-500 flex items-center gap-1"><i class="fa-regular fa-heart"></i> <span>${m.likes_count||0}</span></button>
-        <button onclick="openComments('${m.id}')" class="hover:text-amber-400 flex items-center gap-1"><i class="fa-regular fa-comment"></i> <span>Comments</span></button>
-        <button onclick="incrementDownload('${m.id}', '${m.file_url}')" class="hover:text-emerald-400 flex items-center gap-1"><i class="fa-solid fa-download"></i> <span>${m.downloads_count||0}</span></button>
-        <button onclick="incrementShare('${m.id}')" class="hover:text-sky-400 flex items-center gap-1"><i class="fa-solid fa-share-nodes"></i> <span>${m.shares_count||0}</span></button>
+        <button onclick="toggleLike('${m.id}')" class="hover:text-rose-500 flex items-center gap-1"><i class="fa-regular fa-heart"></i> <span>${m.likes_count||0}</span></button>
+        <button onclick="openComments('${m.id}')" class="hover:text-amber-400 flex items-center gap-1"><i class="fa-regular fa-comment"></i></button>
+        <button onclick="incrementDownload('${m.id}')" class="hover:text-emerald-400 flex items-center gap-1"><i class="fa-solid fa-download"></i> <span>${m.downloads_count||0}</span></button>
+        <button onclick="incrementViewCount('${m.id}')" class="hover:text-sky-400 flex items-center gap-1"><i class="fa-regular fa-eye"></i> <span>${m.views_count||0}</span></button>
       </div>
     </div>
   `).join('');
+
+  media.forEach(m => checkIsFollowing(m.creator_id, document.getElementById(`follow-btn-${m.id}`)));
 }
 
-/* REELS VIEW WITH NON-OBTRUSIVE SCROLL/PAUSE */
+/* ACCURATE COUNTERS */
+async function toggleLike(id){
+  const {data} = await sb.from('media').select('likes_count').eq('id', id).single();
+  const newCount = (data?.likes_count || 0) + 1;
+  await sb.from('media').update({ likes_count: newCount }).eq('id', id);
+  loadMedia();
+}
+
+async function incrementView(id){
+  const {data} = await sb.from('media').select('views_count').eq('id', id).single();
+  const newCount = (data?.views_count || 0) + 1;
+  await sb.from('media').update({ views_count: newCount }).eq('id', id);
+}
+
+async function incrementViewCount(id){
+  await incrementView(id);
+  loadMedia();
+  toast('View registered');
+}
+
+async function incrementDownload(id){
+  const {data} = await sb.from('media').select('downloads_count, file_url').eq('id', id).single();
+  const newCount = (data?.downloads_count || 0) + 1;
+  await sb.from('media').update({ downloads_count: newCount }).eq('id', id);
+  window.open(data.file_url, '_blank');
+  loadMedia();
+}
+
+async function toggleFollow(creatorId, btnEl){
+  const {data} = await sb.from('follows').select('*').eq('follower_id', session.user.id).eq('following_id', creatorId).maybeSingle();
+  if(data){
+    await sb.from('follows').delete().eq('follower_id', session.user.id).eq('following_id', creatorId);
+    btnEl.innerHTML = `<i class="fa-solid fa-user-plus"></i>`;
+    btnEl.classList.remove('bg-emerald-600');
+    toast('Unfollowed');
+  } else {
+    await sb.from('follows').insert({ follower_id: session.user.id, following_id: creatorId });
+    btnEl.innerHTML = `<i class="fa-solid fa-check text-xs"></i>`;
+    btnEl.classList.add('bg-emerald-600');
+    toast('Followed successfully (Yes)');
+  }
+}
+
+/* REELS */
 function renderReels(){
   const container = document.getElementById('reelsContainer');
   const videos = media.filter(m=>m.type==='video');
@@ -459,15 +517,15 @@ function renderReels(){
     <div class="reel-card flex items-center justify-center bg-black">
       <video id="reelVideo-${idx}" onclick="toggleReelPlay(this)" loop playsinline class="w-full h-full object-cover" src="${esc(m.file_url)}"></video>
       
-      <!-- Icon-only action bar right side -->
+      <!-- Icon-only bar on the bottom right -->
       <div class="absolute bottom-6 right-3 z-10 flex flex-col items-center gap-4 text-white">
-        <button onclick="openProfile('${m.creator_id}')" class="w-10 h-10 rounded-full border-2 border-rose-500 overflow-hidden"><img src="${m.profiles?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${m.creator_id}`}"></button>
-        <button onclick="toggleFollow('${m.creator_id}', this)" class="w-6 h-6 rounded-full bg-rose-600 text-[10px] flex items-center justify-center -mt-3 font-bold"><i class="fa-solid fa-plus"></i></button>
+        <button onclick="openUserProfile('${m.creator_id}')" class="w-10 h-10 rounded-full border-2 border-rose-500 overflow-hidden"><img src="${m.profiles?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${m.creator_id}`}"></button>
+        <button onclick="toggleFollow('${m.creator_id}', this)" class="w-6 h-6 rounded-full bg-rose-600 text-[10px] flex items-center justify-center -mt-3"><i class="fa-solid fa-plus"></i></button>
         
-        <button onclick="incrementLike('${m.id}')" class="flex flex-col items-center"><i class="fa-solid fa-heart text-xl hover:text-rose-500"></i><span class="text-[10px]">${m.likes_count||0}</span></button>
+        <button onclick="toggleLike('${m.id}')" class="flex flex-col items-center"><i class="fa-solid fa-heart text-xl hover:text-rose-500"></i><span class="text-[10px]">${m.likes_count||0}</span></button>
         <button onclick="openComments('${m.id}')" class="flex flex-col items-center"><i class="fa-solid fa-comment text-xl hover:text-amber-400"></i></button>
-        <button onclick="incrementDownload('${m.id}', '${m.file_url}')" class="flex flex-col items-center"><i class="fa-solid fa-download text-xl hover:text-emerald-400"></i><span class="text-[10px]">${m.downloads_count||0}</span></button>
-        <button onclick="incrementShare('${m.id}')" class="flex flex-col items-center"><i class="fa-solid fa-share text-xl hover:text-sky-400"></i><span class="text-[10px]">${m.shares_count||0}</span></button>
+        <button onclick="incrementDownload('${m.file_url}')" class="flex flex-col items-center"><i class="fa-solid fa-download text-xl hover:text-emerald-400"></i></button>
+        <button onclick="incrementViewCount('${m.id}')" class="flex flex-col items-center"><i class="fa-regular fa-eye text-xl hover:text-sky-400"></i><span class="text-[10px]">${m.views_count||0}</span></button>
       </div>
 
       <div class="absolute bottom-6 left-4 z-10 text-white max-w-[70%]">
@@ -481,98 +539,7 @@ function renderReels(){
 function toggleReelPlay(videoEl){ if(videoEl.paused) videoEl.play(); else videoEl.pause(); }
 function scrollReel(dir){
   const container = document.getElementById('reelsContainer');
-  container.scrollBy({ top: dir * (window.innerHeight - 130), behavior: 'smooth' });
-}
-
-/* ACTIVE PLAYER CONTROLS (LEFT SIDE) */
-function setActivePlayer(id, el){
-  activePlayerMediaId = id;
-  activePlayerElement = el;
-  document.getElementById('leftPlayerControls').classList.remove('hidden');
-  document.getElementById('playerPlayIcon').className = "fa-solid fa-pause";
-  incrementView(id);
-}
-
-function playerTogglePlay(){
-  if(!activePlayerElement) return;
-  if(activePlayerElement.paused){
-    activePlayerElement.play();
-    document.getElementById('playerPlayIcon').className = "fa-solid fa-pause";
-  } else {
-    activePlayerElement.pause();
-    document.getElementById('playerPlayIcon').className = "fa-solid fa-play";
-  }
-}
-
-function playerNext(){
-  const currentIndex = media.findIndex(m=>m.id === activePlayerMediaId);
-  if(currentIndex !== -1 && currentIndex < media.length - 1){
-    const nextMedia = media[currentIndex + 1];
-    activePlayerMediaId = nextMedia.id;
-    toast(`Now playing: ${nextMedia.title}`);
-  }
-}
-
-function playerPrev(){
-  const currentIndex = media.findIndex(m=>m.id === activePlayerMediaId);
-  if(currentIndex > 0){
-    const prevMedia = media[currentIndex - 1];
-    activePlayerMediaId = prevMedia.id;
-    toast(`Now playing: ${prevMedia.title}`);
-  }
-}
-
-/* VIEW ANY USER PROFILE & THEIR CONTENT */
-async function openProfile(userId){
-  currentViewingProfileId = userId;
-  const {data: usr} = await sb.from('profiles').select('*').eq('id', userId).single();
-  if(!usr) return;
-
-  document.getElementById('profAvatar').src = usr.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${userId}`;
-  document.getElementById('profName').textContent = usr.full_name;
-  document.getElementById('profRole').textContent = usr.role;
-
-  // Check if following
-  const {data: followCheck} = await sb.from('follows').select('*').eq('follower_id', session.user.id).eq('following_id', userId).maybeSingle();
-  const followBtnText = document.getElementById('profFollowBtnText');
-  if(followCheck) {
-    followBtnText.textContent = "Yes (Following)";
-  } else {
-    followBtnText.textContent = "Follow";
-  }
-
-  // Load user's media
-  const {data: userMedia} = await sb.from('media').select('*').eq('creator_id', userId).eq('status','published');
-  document.getElementById('profMediaGrid').innerHTML = (userMedia||[]).map(m=>`
-    <div class="glass p-3 rounded-xl border border-slate-800">
-      <h5 class="font-bold text-xs truncate mb-2">${esc(m.title)}</h5>
-      ${m.type==='video'? `<video controls class="w-full h-32 rounded-lg object-cover bg-black" src="${esc(m.file_url)}"></video>` : `<audio controls class="w-full" src="${esc(m.file_url)}"></audio>`}
-    </div>
-  `).join('');
-
-  go('profile');
-}
-
-async function toggleFollowCurrentProfile(){
-  if(!currentViewingProfileId) return;
-  const btnText = document.getElementById('profFollowBtnText');
-  const {data: existing} = await sb.from('follows').select('*').eq('follower_id', session.user.id).eq('following_id', currentViewingProfileId).maybeSingle();
-  
-  if(existing){
-    await sb.from('follows').delete().eq('follower_id', session.user.id).eq('following_id', currentViewingProfileId);
-    btnText.textContent = "Follow";
-    toast('Unfollowed');
-  } else {
-    await sb.from('follows').insert({ follower_id: session.user.id, following_id: currentViewingProfileId });
-    btnText.textContent = "Yes (Following)";
-    toast('Followed successfully!');
-  }
-}
-
-function startDirectChatFromProfile(){
-  if(!currentViewingProfileId) return;
-  selectPrivateTarget(currentViewingProfileId, document.getElementById('profName').textContent);
-  go('inbox');
+  container.scrollBy({ top: dir * (window.innerHeight - 140), behavior: 'smooth' });
 }
 
 /* LIVE STREAMING (Ephemeral - Zero Saving) */
@@ -581,19 +548,46 @@ async function startLiveStream(){
     mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
     document.getElementById('liveVideo').srcObject = mediaStream;
     document.getElementById('liveModal').classList.remove('hidden');
-    toast('You are now LIVE!');
+    toast('Live stream started securely (Ephemeral)');
   } catch(err){
-    toast('Camera/Microphone access required for Live Stream', false);
+    toast('Camera & Microphone access required for Live Stream', false);
   }
 }
 
 function stopLiveStream(){
-  if(mediaStream){ mediaStream.getTracks().forEach(track => track.stop()); }
+  if(mediaStream){ mediaStream.getTracks().forEach(t => t.stop()); }
   document.getElementById('liveModal').classList.add('hidden');
-  toast('Live Stream ended.');
+  toast('Live stream ended.');
 }
 
-/* PRIVATE CHAT & VOICE NOTES */
+/* PUBLIC USER PROFILE VIEW */
+async function openUserProfile(userId){
+  currentViewedUserId = userId;
+  const {data: userProf} = await sb.from('profiles').select('*').eq('id', userId).single();
+  if(!userProf) return;
+
+  document.getElementById('profAvatar').src = userProf.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${userId}`;
+  document.getElementById('profName').textContent = userProf.full_name;
+  document.getElementById('profRole').textContent = userProf.role;
+
+  const {data: userMedia} = await sb.from('media').select('*').eq('creator_id', userId).eq('status', 'published');
+  document.getElementById('profMediaGrid').innerHTML = (userMedia||[]).map(m=>`
+    <div class="glass p-3 rounded-xl space-y-2">
+      <h4 class="font-bold text-xs truncate">${esc(m.title)}</h4>
+      ${m.type==='video'? `<video controls class="w-full h-32 rounded-lg object-cover bg-black" src="${esc(m.file_url)}"></video>` : `<audio controls class="w-full" src="${esc(m.file_url)}"></audio>`}
+    </div>
+  `).join('');
+
+  go('profile');
+}
+
+function startDirectChat(){
+  if(!currentViewedUserId) return;
+  selectPrivateTarget(currentViewedUserId, document.getElementById('profName').textContent);
+  go('inbox');
+}
+
+/* PRIVATE INBOX & VOICE NOTES */
 async function loadInboxList(){
   const {data} = await sb.from('profiles').select('*').neq('id', session.user.id);
   document.getElementById('inboxUsersList').innerHTML = (data||[]).map(u=>`
@@ -640,7 +634,6 @@ async function sendPrivateMessage(e){
   loadPrivateMessages();
 }
 
-/* VOICE RECORDING */
 async function toggleVoiceRecord(){
   const btn = document.getElementById('recordVoiceBtn');
   if(!mediaRecorder || mediaRecorder.state === 'inactive'){
@@ -664,68 +657,18 @@ async function toggleVoiceRecord(){
   }
 }
 
-/* ACCURATE INCREMENT COUNTERS */
-async function incrementLike(id){
-  const item = media.find(m=>m.id === id);
-  if(!item) return;
-  const newCount = (item.likes_count || 0) + 1;
-  await sb.from('media').update({ likes_count: newCount }).eq('id', id);
-  loadMedia();
-}
-
-async function incrementDownload(id, url){
-  window.open(url, '_blank');
-  const item = media.find(m=>m.id === id);
-  if(!item) return;
-  const newCount = (item.downloads_count || 0) + 1;
-  await sb.from('media').update({ downloads_count: newCount }).eq('id', id);
-  loadMedia();
-}
-
-async function incrementShare(id){
-  navigator.clipboard.writeText(location.origin+'?m='+id);
-  toast('Link copied to clipboard!');
-  const item = media.find(m=>m.id === id);
-  if(!item) return;
-  const newCount = (item.shares_count || 0) + 1;
-  await sb.from('media').update({ shares_count: newCount }).eq('id', id);
-  loadMedia();
-}
-
-async function incrementView(id){
-  const item = media.find(m=>m.id === id);
-  if(!item) return;
-  const newCount = (item.views_count || 0) + 1;
-  await sb.from('media').update({ views_count: newCount }).eq('id', id);
-}
-
-async function toggleFollow(creatorId, btnEl){
-  const {data: existing} = await sb.from('follows').select('*').eq('follower_id', session.user.id).eq('following_id', creatorId).maybeSingle();
-  if(existing){
-    await sb.from('follows').delete().eq('follower_id', session.user.id).eq('following_id', creatorId);
-    if(btnEl) btnEl.textContent = "Follow";
-    toast('Unfollowed');
-  } else {
-    await sb.from('follows').insert({ follower_id: session.user.id, following_id: creatorId });
-    if(btnEl) btnEl.textContent = "Yes";
-    toast('Followed successfully!');
-  }
-}
-
-/* PROFILE PICTURE UPLOAD FROM DEVICE FILE */
-async function updateProfilePictureFromFile(){
-  const fileInput = document.getElementById('setAvatarFile');
-  if(!fileInput.files || fileInput.files.length === 0) return toast('Please select an image file', false);
+/* SETTINGS & DEVICE AVATAR UPLOAD */
+async function uploadDeviceAvatar(){
+  const fileInput = document.getElementById('avatarFile');
+  if(fileInput.files.length === 0) return toast('Please select an image file', false);
   const file = fileInput.files[0];
   const path = `avatars/${crypto.randomUUID()}.${file.name.split('.').pop()}`;
-  
-  const {error: uploadErr} = await sb.storage.from('media').upload(path, file);
-  if(uploadErr) return toast(uploadErr.message, false);
-
+  await sb.storage.from('media').upload(path, file);
   const {data:{publicUrl}} = sb.storage.from('media').getPublicUrl(path);
+
   await sb.from('profiles').update({ avatar_url: publicUrl }).eq('id', session.user.id);
   document.getElementById('myAvatar').src = publicUrl;
-  toast('Profile picture updated successfully!');
+  toast('Profile picture updated from device!');
 }
 
 async function toggleAccountRole(){
@@ -733,68 +676,24 @@ async function toggleAccountRole(){
   await sb.from('profiles').update({ role: newRole }).eq('id', session.user.id);
   profile.role = newRole;
   document.getElementById('currentRoleDisplay').textContent = newRole;
-  toast(`Account role changed to ${newRole.toUpperCase()}`);
+  toast(`Account role updated to ${newRole.toUpperCase()}`);
   boot(session);
 }
 
-/* USER DASHBOARD */
-async function renderCreator(){
-  const {data} = await sb.from('media').select('*').eq('creator_id', session.user.id).order('created_at', {ascending:false});
-  document.getElementById('creatorContent').innerHTML = (data||[]).map(m=>`
-    <div class="glass p-4 rounded-2xl flex justify-between items-center border border-slate-800">
-      <div>
-        <h4 class="font-bold text-sm">${esc(m.title)}</h4>
-        <p class="text-[10px] text-slate-400 capitalize">Type: ${m.type} | Likes: ${m.likes_count||0} | Views: ${m.views_count||0}</p>
-      </div>
-      <button onclick="deleteMyContent('${m.id}')" class="text-rose-500 text-xs font-bold hover:underline">Delete</button>
-    </div>
-  `).join('');
-}
-
-async function deleteMyContent(id){
-  if(!confirm('Delete this content?')) return;
-  await sb.from('media').delete().eq('id', id);
-  toast('Content deleted.');
-  renderCreator();
-  loadMedia();
-}
-
-async function uploadContent(e){
-  e.preventDefault();
-  const title = document.getElementById('upTitle').value.trim();
-  const type = document.getElementById('upType').value;
-  const fileInput = document.getElementById('upFile');
-  if(!fileInput.files.length) return;
-  const file = fileInput.files[0];
-  
-  const path = `uploads/${crypto.randomUUID()}.${file.name.split('.').pop()}`;
-  const {error: uploadErr} = await sb.storage.from('media').upload(path, file);
-  if(uploadErr) return toast(uploadErr.message, false);
-
-  const {data:{publicUrl}} = sb.storage.from('media').getPublicUrl(path);
-  await sb.from('media').insert({ creator_id: session.user.id, title, type, file_url: publicUrl, status: 'published' });
-  
-  closeUpload();
-  toast('Media uploaded successfully!');
-  loadMedia();
-  renderCreator();
-}
-
-/* ADMIN CONTROLS */
+/* ADMIN PANEL */
 async function loadAdminPanel(){
   if(profile.role !== 'admin') return;
-  
-  const {data: allMedia} = await sb.from('media').select('*');
+  const {data: allMedia} = await sb.from('media').select('*, profiles!media_creator_id_fkey(*)');
   document.getElementById('adminContentList').innerHTML = (allMedia||[]).map(m=>`
-    <div class="flex justify-between items-center p-2.5 rounded-xl bg-slate-900 text-xs border border-slate-800">
-      <span class="truncate max-w-[200px]">${esc(m.title)}</span>
+    <div class="flex justify-between items-center p-2 rounded-xl bg-slate-900 text-xs">
+      <span class="truncate max-w-[180px]">${esc(m.title)} (${esc(m.profiles?.full_name)})</span>
       <button onclick="adminDeleteMedia('${m.id}')" class="text-rose-500 font-bold hover:underline">Delete</button>
     </div>
   `).join('');
 
   const {data: allUsers} = await sb.from('profiles').select('*');
   document.getElementById('adminUsersList').innerHTML = (allUsers||[]).map(u=>`
-    <div class="flex justify-between items-center p-2.5 rounded-xl bg-slate-900 text-xs border border-slate-800">
+    <div class="flex justify-between items-center p-2 rounded-xl bg-slate-900 text-xs">
       <span>${esc(u.full_name)} (${u.role})</span>
       <button onclick="selectPrivateTarget('${u.id}', '${esc(u.full_name)}'); go('inbox');" class="text-rose-400 font-bold">Message</button>
     </div>
@@ -802,21 +701,61 @@ async function loadAdminPanel(){
 }
 
 async function adminDeleteMedia(id){
-  if(!confirm('Delete this content immediately?')) return;
+  if(!confirm('Delete this content?')) return;
   await sb.from('media').delete().eq('id', id);
   toast('Content removed by Admin.');
   loadAdminPanel();
   loadMedia();
 }
 
-/* UTILS */
-function toggleNotifications(){ document.getElementById('notifPanel').classList.toggle('hidden'); }
+/* CREATOR DASHBOARD UPLOAD */
+async function renderCreator(){
+  const {data} = await sb.from('media').select('*').eq('creator_id', session.user.id);
+  document.getElementById('creatorContent').innerHTML = (data||[]).map(m=>`
+    <div class="glass p-3 rounded-xl flex items-center justify-between text-xs">
+      <span class="font-bold truncate max-w-[200px]">${esc(m.title)}</span>
+      <button onclick="deleteCreatorMedia('${m.id}')" class="text-rose-500 hover:underline">Delete</button>
+    </div>
+  `).join('');
+}
+
+async function uploadContent(e){
+  e.preventDefault();
+  const title = document.getElementById('upTitle').value.trim();
+  const type = document.getElementById('upType').value;
+  const file = document.getElementById('upFile').files[0];
+  if(!file) return toast('Select a file', false);
+
+  const path = `uploads/${crypto.randomUUID()}.${file.name.split('.').pop()}`;
+  await sb.storage.from('media').upload(path, file);
+  const {data:{publicUrl}} = sb.storage.from('media').getPublicUrl(path);
+
+  await sb.from('media').insert({ title, type, file_url: publicUrl, creator_id: session.user.id, status: 'published' });
+  toast('Content uploaded successfully!');
+  closeUpload();
+  loadMedia();
+  renderCreator();
+}
+
+async function deleteCreatorMedia(id){
+  await sb.from('media').delete().eq('id', id);
+  toast('Deleted');
+  renderCreator();
+  loadMedia();
+}
+
+/* MEDIA BAR CONTROLS */
+function playerPrevious(){ toast('Previous media item'); }
+function playerNext(){ toast('Next media item'); }
+function playerTogglePlayStop(){ toast('Play / Stop toggled'); }
+function closeMediaPlayer(){ document.getElementById('mediaPlayerBar').classList.add('hidden'); }
+
+/* MODALS & HELPERS */
 function openUpload(){ document.getElementById('uploadModal').classList.remove('hidden'); }
 function closeUpload(){ document.getElementById('uploadModal').classList.add('hidden'); }
 function openComments(){ document.getElementById('commentModal').classList.remove('hidden'); }
 function closeComments(){ document.getElementById('commentModal').classList.add('hidden'); }
-async function postComment(e){ e.preventDefault(); toast('Comment posted!'); closeComments(); }
-async function sendPublicMessage(e){ e.preventDefault(); toast('Message sent to community.'); document.getElementById('pubInput').value=''; }
+function toggleNotifications(){ document.getElementById('notifPanel').classList.toggle('hidden'); }
 
 window.addEventListener('load', async () => {
   const {data} = await sb.auth.getSession();
