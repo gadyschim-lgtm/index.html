@@ -4,1940 +4,6008 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Indirimbo Zisobanuye</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    body { background: #020617; color: #e2e8f0; font-family: system-ui, -apple-system, sans-serif; }
-    .glass { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { scrollbar-width: none; }
-    .hidden { display: none !important; }
 
-    /* TikTok-style Vertical Scroll Snap for Reels */
-    .reels-container {
-      height: calc(100vh - 140px);
-      scroll-snap-type: y mandatory;
-      overflow-y: scroll;
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body{
+      background:#020617;
+      color:#e2e8f0;
+      font-family:system-ui,-apple-system,sans-serif;
     }
-    .reel-card {
-      height: calc(100vh - 140px);
-      scroll-snap-align: start;
-      position: relative;
+
+    .glass{
+      background:rgba(15,23,42,.88);
+      backdrop-filter:blur(16px);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .hidden{
+      display:none !important;
+    }
+
+    .no-scrollbar::-webkit-scrollbar{
+      display:none;
+    }
+
+    .no-scrollbar{
+      scrollbar-width:none;
+    }
+
+    .navbtn{
+      padding:.5rem .9rem;
+      border-radius:.8rem;
+      color:#94a3b8;
+      font-size:.75rem;
+      font-weight:700;
+      display:flex;
+      gap:.4rem;
+      align-items:center;
+      background:rgba(15,23,42,.6);
+      white-space:nowrap;
+    }
+
+    .navbtn:hover{
+      background:#1e293b;
+      color:white;
+    }
+
+    .navbtn.active{
+      background:#e11d48;
+      color:white;
+    }
+
+    .reels-container{
+      height:calc(100vh - 140px);
+      scroll-snap-type:y mandatory;
+      overflow-y:auto;
+    }
+
+    .reel-card{
+      height:calc(100vh - 140px);
+      scroll-snap-align:start;
+      position:relative;
+    }
+
+    button:disabled{
+      opacity:.55;
+      cursor:not-allowed;
     }
   </style>
 </head>
+
 <body class="min-h-screen pb-32 select-none">
 
-<div id="toast" class="fixed top-4 right-4 z-[100] hidden max-w-sm rounded-2xl px-5 py-3 text-sm font-medium shadow-2xl transition-all"></div>
+<!-- =========================================================
+     TOAST
+========================================================= -->
+<div id="toast"
+     class="fixed top-4 right-4 z-[200] hidden max-w-sm rounded-2xl px-5 py-3 text-sm font-medium shadow-2xl">
+</div>
 
-<!-- AUTH MODAL -->
-<div id="authOverlay" class="fixed inset-0 z-[90] bg-slate-950 flex items-center justify-center p-4">
+<!-- =========================================================
+     AUTH
+========================================================= -->
+<div id="authOverlay"
+     class="fixed inset-0 z-[190] bg-slate-950 flex items-center justify-center p-4">
+
   <div class="glass rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-rose-500/20">
+
     <div class="text-center mb-6">
       <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-rose-600 to-amber-500 flex items-center justify-center mx-auto shadow-lg shadow-rose-500/30">
         <i class="fa-solid fa-play text-2xl text-white"></i>
       </div>
-      <h1 class="text-2xl font-black mt-3 tracking-wide">Indirimbo <span class="text-rose-500">Zisobanuye</span></h1>
-      <p class="text-xs text-slate-400 mt-1">Watch, stream, chat & connect securely</p>
+
+      <h1 class="text-2xl font-black mt-3 tracking-wide">
+        Indirimbo <span class="text-rose-500">Zisobanuye</span>
+      </h1>
+
+      <p class="text-xs text-slate-400 mt-1">
+        Watch, stream, chat & connect securely
+      </p>
     </div>
 
     <div class="flex rounded-xl bg-slate-900 p-1 mb-5">
-      <button id="tabSignin" onclick="showAuth('signin')" class="flex-1 py-2 rounded-lg bg-rose-600 text-sm font-bold">Sign In</button>
-      <button id="tabSignup" onclick="showAuth('signup')" class="flex-1 py-2 rounded-lg text-sm text-slate-400">Sign Up</button>
+      <button id="tabSignin"
+              onclick="showAuth('signin')"
+              class="flex-1 py-2 rounded-lg bg-rose-600 text-sm font-bold">
+        Sign In
+      </button>
+
+      <button id="tabSignup"
+              onclick="showAuth('signup')"
+              class="flex-1 py-2 rounded-lg text-sm text-slate-400">
+        Sign Up
+      </button>
     </div>
 
-    <form id="signinForm" class="space-y-3" onsubmit="signIn(event)">
-      <input id="loginEmail" type="email" required placeholder="Email address" class="w-full rounded-xl bg-slate-900 border border-slate-800 p-3 text-sm focus:outline-none focus:border-rose-500">
-      <input id="loginPassword" type="password" required placeholder="Password" class="w-full rounded-xl bg-slate-900 border border-slate-800 p-3 text-sm focus:outline-none focus:border-rose-500">
-      <button class="w-full py-3 rounded-xl bg-rose-600 hover:bg-rose-500 font-bold shadow-lg shadow-rose-600/30 transition">Sign In</button>
+    <!-- SIGN IN -->
+    <form id="signinForm"
+          class="space-y-3"
+          onsubmit="signIn(event)">
+
+      <input id="loginEmail"
+             type="email"
+             required
+             autocomplete="email"
+             placeholder="Email address"
+             class="w-full rounded-xl bg-slate-900 border border-slate-800 p-3 text-sm focus:outline-none focus:border-rose-500">
+
+      <input id="loginPassword"
+             type="password"
+             required
+             autocomplete="current-password"
+             placeholder="Password"
+             class="w-full rounded-xl bg-slate-900 border border-slate-800 p-3 text-sm focus:outline-none focus:border-rose-500">
+
+      <button id="signinButton"
+              class="w-full py-3 rounded-xl bg-rose-600 hover:bg-rose-500 font-bold shadow-lg shadow-rose-600/30">
+        Sign In
+      </button>
     </form>
 
-    <!-- Signup Form where users choose role during registration -->
-    <form id="signupForm" class="hidden space-y-3" onsubmit="signUp(event)">
-      <input id="regName" type="text" required placeholder="Full Name" class="w-full rounded-xl bg-slate-900 border border-slate-800 p-3 text-sm">
-      <input id="regEmail" type="email" required placeholder="Email" class="w-full rounded-xl bg-slate-900 border border-slate-800 p-3 text-sm">
-      <div class="space-y-1">
-        <label class="text-[10px] text-slate-400">Select Account Role</label>
-        <select id="regRole" required class="w-full rounded-xl bg-slate-900 border border-slate-800 p-3 text-sm text-slate-200">
+    <!-- SIGN UP -->
+    <form id="signupForm"
+          class="hidden space-y-3"
+          onsubmit="signUp(event)">
+
+      <input id="regName"
+             type="text"
+             required
+             placeholder="Full Name"
+             class="w-full rounded-xl bg-slate-900 border border-slate-800 p-3 text-sm">
+
+      <input id="regEmail"
+             type="email"
+             required
+             autocomplete="email"
+             placeholder="Email"
+             class="w-full rounded-xl bg-slate-900 border border-slate-800 p-3 text-sm">
+
+      <div>
+        <label class="text-[10px] text-slate-400">
+          Select Account Role
+        </label>
+
+        <select id="regRole"
+                required
+                class="w-full rounded-xl bg-slate-900 border border-slate-800 p-3 text-sm">
           <option value="client">Client (Viewer)</option>
           <option value="creator">Content Creator</option>
         </select>
       </div>
-      <input id="regPassword" type="password" minlength="6" required placeholder="Password" class="w-full rounded-xl bg-slate-900 border border-slate-800 p-3 text-sm">
-      <button class="w-full py-3 rounded-xl bg-rose-600 font-bold shadow-lg shadow-rose-600/30">Create Account</button>
+
+      <input id="regPassword"
+             type="password"
+             minlength="6"
+             required
+             autocomplete="new-password"
+             placeholder="Password"
+             class="w-full rounded-xl bg-slate-900 border border-slate-800 p-3 text-sm">
+
+      <button id="signupButton"
+              class="w-full py-3 rounded-xl bg-rose-600 font-bold shadow-lg shadow-rose-600/30">
+        Create Account
+      </button>
     </form>
+
+    <p id="authStatus"
+       class="text-center text-[10px] text-slate-500 mt-4"></p>
   </div>
 </div>
 
-<!-- MAIN APP -->
+
+<!-- =========================================================
+     MAIN APP
+========================================================= -->
 <div id="mainApp" class="hidden">
-  
+
   <!-- HEADER -->
   <header class="sticky top-0 z-40 glass border-b border-slate-800/80">
+
     <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
+
       <div class="flex items-center gap-3">
-        <!-- Back Button -->
-        <button onclick="goBackHistory()" class="w-9 h-9 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:bg-slate-800">
+
+        <button onclick="goBackHistory()"
+                class="w-9 h-9 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center">
           <i class="fa-solid fa-arrow-left text-xs"></i>
         </button>
+
         <button onclick="go('home')" class="flex items-center gap-2">
-          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-rose-600 to-amber-500 flex items-center justify-center"><i class="fa-solid fa-play text-white text-sm"></i></div>
-          <span class="font-black text-base hidden sm:block">Indirimbo <span class="text-rose-500">Zisobanuye</span></span>
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-rose-600 to-amber-500 flex items-center justify-center">
+            <i class="fa-solid fa-play text-white text-sm"></i>
+          </div>
+
+          <span class="font-black text-base hidden sm:block">
+            Indirimbo <span class="text-rose-500">Zisobanuye</span>
+          </span>
         </button>
       </div>
 
+
+      <!-- SEARCH -->
       <div class="flex-1 max-w-md">
         <div class="relative">
+
           <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-500 text-xs"></i>
-          <input id="search" oninput="renderMedia()" placeholder="Search creators, videos..." class="w-full rounded-full bg-slate-900 border border-slate-800/80 pl-9 pr-4 py-2 text-xs focus:outline-none focus:border-rose-500">
+
+          <input id="search"
+                 oninput="renderMedia()"
+                 placeholder="Search creators, videos..."
+                 class="w-full rounded-full bg-slate-900 border border-slate-800/80 pl-9 pr-4 py-2 text-xs focus:outline-none focus:border-rose-500">
         </div>
       </div>
 
+
       <div class="flex items-center gap-2">
-        <!-- Notification Button -->
-        <button onclick="toggleNotifications()" class="relative w-9 h-9 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center">
+
+        <button onclick="toggleNotifications()"
+                class="relative w-9 h-9 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center">
+
           <i class="fa-regular fa-bell text-slate-300 text-sm"></i>
-          <span id="notifBadge" class="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500 hidden"></span>
+
+          <span id="notifBadge"
+                class="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500 hidden">
+          </span>
         </button>
 
-        <!-- Live Stream Button for Creator -->
-        <button id="liveStreamBtn" onclick="startLiveStream()" class="hidden px-3 py-1.5 rounded-full bg-rose-600 hover:bg-rose-500 text-xs font-bold flex items-center gap-1.5 animate-pulse">
-          <i class="fa-solid fa-tower-broadcast"></i> Go LIVE
+
+        <button id="liveStreamBtn"
+                onclick="startLiveStream()"
+                class="hidden px-3 py-1.5 rounded-full bg-rose-600 hover:bg-rose-500 text-xs font-bold flex items-center gap-1.5">
+          <i class="fa-solid fa-tower-broadcast"></i>
+          Go LIVE
         </button>
 
-        <!-- Profile Avatar -->
-        <button onclick="openOwnProfile()" class="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 overflow-hidden" title="My Profile">
-          <img id="myAvatar" src="" class="w-full h-full object-cover">
+
+        <button onclick="openOwnProfile()"
+                class="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 overflow-hidden">
+
+          <img id="myAvatar"
+               src=""
+               class="w-full h-full object-cover"
+               alt="My profile">
         </button>
+
       </div>
     </div>
   </header>
 
-  <!-- NOTIFICATIONS PANEL -->
-  <div id="notifPanel" class="fixed top-16 right-4 z-50 hidden glass rounded-2xl p-4 w-80 shadow-2xl border border-slate-800">
-    <h3 class="font-bold text-sm mb-2 flex justify-between items-center">Notifications <button onclick="toggleNotifications()"><i class="fa-solid fa-xmark text-slate-400"></i></button></h3>
-    <div id="notifList" class="space-y-2 text-xs max-h-60 overflow-y-auto">
-      <p class="text-slate-500">No new notifications.</p>
+
+  <!-- NOTIFICATIONS -->
+  <div id="notifPanel"
+       class="fixed top-16 right-4 z-50 hidden glass rounded-2xl p-4 w-80 shadow-2xl border border-slate-800">
+
+    <h3 class="font-bold text-sm mb-2 flex justify-between">
+      Notifications
+
+      <button onclick="toggleNotifications()">
+        <i class="fa-solid fa-xmark text-slate-400"></i>
+      </button>
+    </h3>
+
+    <div id="notifList"
+         class="space-y-2 text-xs max-h-60 overflow-y-auto">
     </div>
   </div>
 
-  <!-- NAVIGATION -->
+
+  <!-- NAV -->
   <nav class="sticky top-16 z-30 bg-slate-950/90 border-b border-slate-800 overflow-x-auto no-scrollbar">
+
     <div class="max-w-7xl mx-auto px-4 py-2 flex gap-2 min-w-max">
-      <button id="nav-home" onclick="go('home')" class="navbtn active"><i class="fa-solid fa-house"></i> Home</button>
-      <button id="nav-reels" onclick="go('reels')" class="navbtn"><i class="fa-solid fa-bolt text-amber-400"></i> Reels</button>
-      <button id="nav-chat" onclick="go('chat')" class="navbtn"><i class="fa-regular fa-comments"></i> Community</button>
-      <button id="nav-inbox" onclick="go('inbox')" class="navbtn"><i class="fa-solid fa-paper-plane"></i> Private Inbox</button>
-      <button id="nav-dashboard" onclick="go('dashboard')" class="navbtn hidden"><i class="fa-solid fa-chart-line"></i> Creator Studio</button>
-      <button id="nav-admin" onclick="go('admin')" class="navbtn hidden text-rose-400"><i class="fa-solid fa-shield-halved"></i> Admin Panel</button>
-      <button id="nav-settings" onclick="go('settings')" class="navbtn"><i class="fa-solid fa-gear"></i> Settings</button>
+
+      <button id="nav-home"
+              onclick="go('home')"
+              class="navbtn active">
+        <i class="fa-solid fa-house"></i>
+        Home
+      </button>
+
+      <button id="nav-reels"
+              onclick="go('reels')"
+              class="navbtn">
+        <i class="fa-solid fa-bolt text-amber-400"></i>
+        Reels
+      </button>
+
+      <button id="nav-chat"
+              onclick="go('chat')"
+              class="navbtn">
+        <i class="fa-regular fa-comments"></i>
+        Community
+      </button>
+
+      <button id="nav-inbox"
+              onclick="go('inbox')"
+              class="navbtn">
+        <i class="fa-solid fa-paper-plane"></i>
+        Private Inbox
+      </button>
+
+      <button id="nav-dashboard"
+              onclick="go('dashboard')"
+              class="navbtn hidden">
+        <i class="fa-solid fa-chart-line"></i>
+        Creator Studio
+      </button>
+
+      <button id="nav-admin"
+              onclick="go('admin')"
+              class="navbtn hidden text-rose-400">
+        <i class="fa-solid fa-shield-halved"></i>
+        Admin Panel
+      </button>
+
+      <button id="nav-settings"
+              onclick="go('settings')"
+              class="navbtn">
+        <i class="fa-solid fa-gear"></i>
+        Settings
+      </button>
+
     </div>
   </nav>
 
-  <!-- MAIN VIEWS -->
+
+  <!-- MAIN -->
   <main class="max-w-7xl mx-auto px-4 py-4">
 
-    <!-- VIEW: HOME -->
+
+    <!-- HOME -->
     <section id="view-home" class="space-y-6">
-      <div id="mediaGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+      <div id="mediaGrid"
+           class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      </div>
+
     </section>
 
-    <!-- VIEW: REELS -->
+
+    <!-- REELS -->
     <section id="view-reels" class="hidden">
+
       <div class="max-w-sm mx-auto bg-black rounded-3xl overflow-hidden relative border border-slate-800 shadow-2xl">
+
         <div class="absolute top-4 right-4 z-20 flex flex-col gap-2">
-          <button onclick="scrollReel(-1)" class="w-8 h-8 rounded-full bg-black/60 backdrop-blur text-white flex items-center justify-center hover:bg-rose-600 transition"><i class="fa-solid fa-chevron-up text-xs"></i></button>
-          <button onclick="scrollReel(1)" class="w-8 h-8 rounded-full bg-black/60 backdrop-blur text-white flex items-center justify-center hover:bg-rose-600 transition"><i class="fa-solid fa-chevron-down text-xs"></i></button>
+
+          <button onclick="scrollReel(-1)"
+                  class="w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center">
+            <i class="fa-solid fa-chevron-up text-xs"></i>
+          </button>
+
+          <button onclick="scrollReel(1)"
+                  class="w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center">
+            <i class="fa-solid fa-chevron-down text-xs"></i>
+          </button>
+
         </div>
-        <div id="reelsContainer" class="reels-container no-scrollbar"></div>
+
+        <div id="reelsContainer"
+             class="reels-container no-scrollbar">
+        </div>
+
       </div>
     </section>
 
-    <!-- VIEW: PRIVATE INBOX / CHAT -->
+
+    <!-- COMMUNITY -->
+    <section id="view-chat"
+             class="hidden max-w-2xl mx-auto glass rounded-3xl overflow-hidden">
+
+      <div class="p-4 border-b border-slate-800">
+        <h3 class="font-bold text-sm">
+          Public Community Chat
+        </h3>
+      </div>
+
+      <div id="pubMessages"
+           class="h-96 p-4 overflow-y-auto space-y-3">
+      </div>
+
+      <form onsubmit="sendPublicMessage(event)"
+            class="p-3 border-t border-slate-800 flex gap-2">
+
+        <input id="pubInput"
+               required
+               maxlength="1000"
+               placeholder="Write message..."
+               class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs">
+
+        <button id="pubSendBtn"
+                class="px-4 rounded-xl bg-rose-600 text-xs font-bold">
+          <i class="fa-solid fa-paper-plane"></i>
+        </button>
+      </form>
+
+    </section>
+
+
+    <!-- PRIVATE INBOX -->
     <section id="view-inbox" class="hidden">
+
       <div class="max-w-4xl mx-auto glass rounded-3xl border border-slate-800 overflow-hidden grid grid-cols-1 md:grid-cols-3 h-[75vh]">
+
         <div class="border-r border-slate-800 p-4 space-y-3 overflow-y-auto">
-          <h2 class="font-bold text-base">Messages</h2>
-          <div id="inboxUsersList" class="space-y-2"></div>
+
+          <h2 class="font-bold text-base">
+            Messages
+          </h2>
+
+          <div id="inboxUsersList"
+               class="space-y-2">
+          </div>
+
         </div>
+
+
         <div class="md:col-span-2 flex flex-col h-full bg-slate-950/50">
-          <div id="chatHeader" class="p-4 border-b border-slate-800 flex items-center justify-between">
-            <h3 id="chatTargetName" class="font-bold text-sm">Select a conversation</h3>
+
+          <div id="chatHeader"
+               class="p-4 border-b border-slate-800">
+
+            <h3 id="chatTargetName"
+                class="font-bold text-sm">
+              Select a conversation
+            </h3>
+
           </div>
-          <div id="privateMessagesList" class="flex-1 p-4 overflow-y-auto space-y-3">
-            <p class="text-center text-xs text-slate-500 mt-10">Select a user to start private live chat</p>
+
+
+          <div id="privateMessagesList"
+               class="flex-1 p-4 overflow-y-auto space-y-3">
+
+            <p class="text-center text-xs text-slate-500 mt-10">
+              Select a user to start private chat
+            </p>
+
           </div>
-          <form id="privateChatForm" onsubmit="sendPrivateMessage(event)" class="p-3 border-t border-slate-800 flex items-center gap-2">
-            <input id="privateInput" placeholder="Type a private message..." class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs focus:outline-none">
-            <button type="button" id="recordVoiceBtn" onclick="toggleVoiceRecord()" class="w-9 h-9 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center hover:bg-slate-700" title="Record Voice Note">
+
+
+          <form id="privateChatForm"
+                onsubmit="sendPrivateMessage(event)"
+                class="p-3 border-t border-slate-800 flex items-center gap-2">
+
+            <input id="privateInput"
+                   maxlength="1000"
+                   placeholder="Type a private message..."
+                   class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs">
+
+            <button type="button"
+                    id="recordVoiceBtn"
+                    onclick="toggleVoiceRecord()"
+                    class="w-9 h-9 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center"
+                    title="Voice note">
+
               <i class="fa-solid fa-microphone text-xs"></i>
             </button>
-            <button class="w-9 h-9 rounded-xl bg-rose-600 text-white flex items-center justify-center"><i class="fa-solid fa-paper-plane text-xs"></i></button>
+
+            <button id="privateSendBtn"
+                    class="w-9 h-9 rounded-xl bg-rose-600 text-white flex items-center justify-center">
+
+              <i class="fa-solid fa-paper-plane text-xs"></i>
+            </button>
+
           </form>
         </div>
       </div>
     </section>
 
-    <!-- VIEW: PUBLIC USER PROFILE -->
-    <section id="view-profile" class="hidden space-y-4">
+
+    <!-- PROFILE -->
+    <section id="view-profile"
+             class="hidden space-y-4">
+
       <div class="glass p-6 rounded-3xl flex items-center gap-4">
-        <img id="profAvatar" src="" class="w-20 h-20 rounded-full border-2 border-rose-500 object-cover">
+
+        <img id="profAvatar"
+             src=""
+             class="w-20 h-20 rounded-full border-2 border-rose-500 object-cover">
+
         <div class="min-w-0">
-          <h2 id="profName" class="text-xl font-bold truncate">--</h2>
-          <p id="profRole" class="text-xs text-rose-400 capitalize">--</p>
+
+          <h2 id="profName"
+              class="text-xl font-bold truncate">
+            --
+          </h2>
+
+          <p id="profRole"
+             class="text-xs text-rose-400 capitalize">
+            --
+          </p>
+
           <div class="flex gap-4 mt-3 text-xs">
-            <div><b id="profFollowersCount">0</b> <span class="text-slate-500">Followers</span></div>
-            <div><b id="profFollowingCount">0</b> <span class="text-slate-500">Following</span></div>
+
+            <div>
+              <b id="profFollowersCount">0</b>
+              <span class="text-slate-500">Followers</span>
+            </div>
+
+            <div>
+              <b id="profFollowingCount">0</b>
+              <span class="text-slate-500">Following</span>
+            </div>
+
           </div>
+
           <div class="flex gap-2 mt-3">
-            <button id="profFollowBtn" onclick="toggleFollowCurrentProfile()" class="px-4 py-1.5 rounded-full bg-rose-600 text-xs font-bold flex items-center gap-1.5"><i class="fa-solid fa-user-plus"></i> <span id="profFollowText">Follow</span></button>
-            <button id="profMsgBtn" onclick="startDirectChat()" class="px-4 py-1.5 rounded-full bg-slate-800 text-xs font-bold"><i class="fa-solid fa-envelope"></i> Message</button>
+
+            <button id="profFollowBtn"
+                    onclick="toggleFollowCurrentProfile()"
+                    class="px-4 py-1.5 rounded-full bg-rose-600 text-xs font-bold">
+
+              <i class="fa-solid fa-user-plus"></i>
+              <span id="profFollowText">Follow</span>
+            </button>
+
+            <button id="profMsgBtn"
+                    onclick="startDirectChat()"
+                    class="px-4 py-1.5 rounded-full bg-slate-800 text-xs font-bold">
+
+              <i class="fa-solid fa-envelope"></i>
+              Message
+            </button>
+
           </div>
+
         </div>
       </div>
-      <h3 id="profContentTitle" class="font-bold text-sm text-slate-300">Creator Uploaded Content</h3>
-      <div id="profMediaGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-4"></div>
+
+
+      <h3 id="profContentTitle"
+          class="font-bold text-sm text-slate-300">
+        Creator Uploaded Content
+      </h3>
+
+      <div id="profMediaGrid"
+           class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      </div>
+
     </section>
 
-    <!-- VIEW: ADMIN PANEL -->
-    <section id="view-admin" class="hidden space-y-6">
-      <div class="glass p-6 rounded-3xl border border-rose-500/30 flex justify-between items-center">
-        <div>
-          <h2 class="text-xl font-black text-rose-500"><i class="fa-solid fa-shield-halved"></i> System Admin Dashboard</h2>
-          <p class="text-xs text-slate-400 mt-1">Full access to all platform accounts and content moderation.</p>
-        </div>
-        <button onclick="loadAdminPanel()" class="px-4 py-2 rounded-xl bg-rose-600 text-xs font-bold"><i class="fa-solid fa-rotate"></i> Refresh Content</button>
+
+    <!-- CREATOR DASHBOARD -->
+    <section id="view-dashboard"
+             class="hidden space-y-4">
+
+      <div class="flex justify-between items-center gap-3">
+
+        <h2 class="font-bold text-lg">
+          Creator Studio Dashboard
+        </h2>
+
+        <button onclick="openUpload()"
+                class="px-4 py-2 rounded-xl bg-rose-600 text-xs font-bold">
+          <i class="fa-solid fa-upload"></i>
+          Upload Content
+        </button>
+
       </div>
+
+      <p class="text-xs text-slate-400">
+        Manage your uploaded content below.
+      </p>
+
+      <div id="creatorContent"
+           class="space-y-3">
+      </div>
+
+    </section>
+
+
+    <!-- ADMIN -->
+    <section id="view-admin"
+             class="hidden space-y-6">
+
+      <div class="glass p-6 rounded-3xl border border-rose-500/30">
+
+        <h2 class="text-xl font-black text-rose-500">
+          <i class="fa-solid fa-shield-halved"></i>
+          System Admin Dashboard
+        </h2>
+
+        <p class="text-xs text-slate-400 mt-1">
+          Manage platform content, users and notifications.
+        </p>
+
+      </div>
+
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <!-- CONTENT -->
         <div class="glass p-4 rounded-2xl">
-          <div class="flex items-center justify-between gap-2 mb-3">
-            <h3 class="font-bold text-sm">All Website Content (Audit & Delete)</h3>
-            <button onclick="loadAdminPanel()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] font-bold">Refresh</button>
+
+          <div class="flex items-center justify-between mb-3">
+
+            <h3 class="font-bold text-sm">
+              All Website Content
+            </h3>
+
+            <button onclick="loadAdminPanel()"
+                    class="px-3 py-1.5 rounded-lg bg-slate-800 text-[10px] font-bold">
+              Refresh
+            </button>
+
           </div>
-          <p class="text-[10px] text-slate-500 mb-3">Review content and remove anything that violates the group/platform rules.</p>
-          <div id="adminContentList" class="space-y-2 max-h-[32rem] overflow-y-auto"></div>
+
+          <p class="text-[10px] text-slate-500 mb-3">
+            Audit and remove content violating platform rules.
+          </p>
+
+          <div id="adminContentList"
+               class="space-y-2 max-h-[32rem] overflow-y-auto">
+          </div>
+
         </div>
+
+
+        <!-- USERS -->
         <div class="glass p-4 rounded-2xl">
-          <div class="flex items-center justify-between gap-2 mb-3">
-            <h3 class="font-bold text-sm">Platform Users Control</h3>
-            <button onclick="loadAdminUsers()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] font-bold">Refresh</button>
+
+          <div class="flex items-center justify-between mb-3">
+
+            <h3 class="font-bold text-sm">
+              Platform Users Control
+            </h3>
+
+            <button onclick="loadAdminUsers()"
+                    class="px-3 py-1.5 rounded-lg bg-slate-800 text-[10px] font-bold">
+              Refresh
+            </button>
+
           </div>
-          <p class="text-[10px] text-slate-500 mb-3">Send notices, manage accounts, or remove users who violate the rules.</p>
-          <div id="adminUsersList" class="space-y-2 max-h-[32rem] overflow-y-auto"></div>
+
+          <p class="text-[10px] text-slate-500 mb-3">
+            Manage users and send notifications.
+          </p>
+
+          <div id="adminUsersList"
+               class="space-y-2 max-h-[32rem] overflow-y-auto">
+          </div>
+
         </div>
+
       </div>
+
+
+      <!-- ADMIN NOTIFICATIONS -->
       <div class="glass p-4 rounded-2xl border border-amber-500/20">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+
+        <div class="flex justify-between items-center gap-3">
+
           <div>
-            <h3 class="font-bold text-sm"><i class="fa-regular fa-bell text-amber-400"></i> Admin Notifications</h3>
-            <p class="text-[10px] text-slate-500 mt-1">Write a notification and send it to one user or everyone.</p>
+            <h3 class="font-bold text-sm">
+              <i class="fa-regular fa-bell text-amber-400"></i>
+              Admin Notifications
+            </h3>
+
+            <p class="text-[10px] text-slate-500">
+              Send a notice to one user or everyone.
+            </p>
           </div>
-          <button onclick="openAdminNotificationComposer()" class="px-4 py-2 rounded-xl bg-amber-500 text-slate-950 text-xs font-black hover:bg-amber-400">
-            <i class="fa-solid fa-pen-to-square"></i> Write Notification
+
+          <button onclick="openAdminNotificationComposer()"
+                  class="px-4 py-2 rounded-xl bg-amber-500 text-slate-950 text-xs font-black">
+            <i class="fa-solid fa-pen-to-square"></i>
+            Write Notification
           </button>
+
         </div>
       </div>
+
+
+      <!-- CALL CENTER -->
       <div class="glass p-4 rounded-2xl border border-sky-500/20">
+
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+
           <div>
-            <h3 class="font-bold text-sm"><i class="fa-solid fa-headset text-sky-400"></i> Call Center</h3>
-            <p class="text-[10px] text-slate-500 mt-1">Support: +250 789 562 272</p>
+
+            <h3 class="font-bold text-sm">
+              <i class="fa-solid fa-headset text-sky-400"></i>
+              Call Center
+            </h3>
+
+            <p class="text-[10px] text-slate-500 mt-1">
+              Support: +250 789 562 272
+            </p>
+
           </div>
+
           <div class="flex gap-2">
-            <a href="tel:+250789562272" class="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold"><i class="fa-solid fa-phone"></i> Call</a>
-            <a href="https://wa.me/250789562272" target="_blank" rel="noopener" class="px-4 py-2 rounded-xl bg-green-600 text-white text-xs font-bold"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+
+            <a href="tel:+250789562272"
+               class="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold">
+              <i class="fa-solid fa-phone"></i>
+              Call
+            </a>
+
+            <a href="https://wa.me/250789562272"
+               target="_blank"
+               rel="noopener"
+               class="px-4 py-2 rounded-xl bg-green-600 text-white text-xs font-bold">
+              <i class="fa-brands fa-whatsapp"></i>
+              WhatsApp
+            </a>
+
           </div>
         </div>
       </div>
+
     </section>
 
-    <!-- VIEW: SETTINGS -->
-    <section id="view-settings" class="hidden max-w-lg mx-auto glass p-6 rounded-3xl space-y-5">
-      <h2 class="text-lg font-bold">Account Settings</h2>
-      
-      <!-- Upload Profile Picture from Device -->
+
+    <!-- SETTINGS -->
+    <section id="view-settings"
+             class="hidden max-w-lg mx-auto glass p-6 rounded-3xl space-y-5">
+
+      <h2 class="text-lg font-bold">
+        Account Settings
+      </h2>
+
+
+      <!-- AVATAR -->
       <div class="space-y-2">
-        <label class="text-xs text-slate-400 block font-bold">Upload Profile Picture from Device</label>
-        <p class="text-[10px] text-slate-500">Choosing an image will instantly replace your profile picture.</p>
-        <div class="flex gap-2 items-center">
-          <input id="avatarFile" type="file" accept="image/*" class="w-full text-xs bg-slate-900 border border-slate-800 rounded-xl p-2">
-          <button onclick="uploadDeviceAvatar()" class="px-4 py-2 rounded-xl bg-rose-600 text-xs font-bold shrink-0">Upload Picture</button>
-        </div>
+
+        <label class="text-xs text-slate-400 block font-bold">
+          Upload Profile Picture
+        </label>
+
+        <input id="avatarFile"
+               type="file"
+               accept="image/*"
+               class="w-full text-xs bg-slate-900 border border-slate-800 rounded-xl p-2">
+
+        <button onclick="uploadDeviceAvatar()"
+                class="w-full px-4 py-2 rounded-xl bg-rose-600 text-xs font-bold">
+          Upload Picture
+        </button>
+
       </div>
 
-      <!-- Essential Settings Options -->
+
       <div class="space-y-3 pt-2 border-t border-slate-800">
-        <label class="text-xs text-slate-400 block font-bold">Preferences & Account Management</label>
+
+        <label class="text-xs text-slate-400 block font-bold">
+          Preferences
+        </label>
+
         <div class="flex items-center justify-between bg-slate-900 p-3 rounded-xl text-xs">
-          <span>Dark Mode Theme</span>
-          <input type="checkbox" checked disabled class="accent-rose-600">
+          <span>Dark Mode</span>
+          <input type="checkbox"
+                 checked
+                 disabled
+                 class="accent-rose-600">
         </div>
+
         <div class="flex items-center justify-between bg-slate-900 p-3 rounded-xl text-xs">
           <span>Push Notifications</span>
-          <input type="checkbox" checked class="accent-rose-600" onchange="toast('Notification preference updated')">
+
+          <input type="checkbox"
+                 id="pushPreference"
+                 checked
+                 class="accent-rose-600">
         </div>
+
       </div>
 
-      <!-- Content Creator Upload shortcut -->
-      <div id="creatorSettings" class="hidden pt-4 border-t border-slate-800 space-y-3">
-        <label class="text-xs text-slate-400 block font-bold">Content Creator Options</label>
-        <button onclick="openUpload()" class="w-full py-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-xs font-bold text-white transition">
-          <i class="fa-solid fa-upload"></i> Upload Content From Device
+
+      <!-- CREATOR -->
+      <div id="creatorSettings"
+           class="hidden pt-4 border-t border-slate-800 space-y-3">
+
+        <label class="text-xs text-slate-400 block font-bold">
+          Content Creator Options
+        </label>
+
+        <button onclick="openUpload()"
+                class="w-full py-3 rounded-xl bg-rose-600 text-xs font-bold text-white">
+          <i class="fa-solid fa-upload"></i>
+          Upload Content From Device
         </button>
+
       </div>
 
-      <button onclick="signOut()" class="w-full py-3 rounded-xl bg-rose-600/20 text-rose-400 hover:bg-rose-600 hover:text-white transition text-xs font-bold">
+
+      <button onclick="signOut()"
+              class="w-full py-3 rounded-xl bg-rose-600/20 text-rose-400 hover:bg-rose-600 hover:text-white text-xs font-bold">
         Sign Out
       </button>
-    </section>
 
-    <!-- VIEW: COMMUNITY CHAT -->
-    <section id="view-chat" class="hidden max-w-2xl mx-auto glass rounded-3xl overflow-hidden">
-      <div class="p-4 border-b border-slate-800"><h3 class="font-bold text-sm">Public Community Chat</h3></div>
-      <div id="pubMessages" class="h-96 p-4 overflow-y-auto space-y-3"></div>
-      <form onsubmit="sendPublicMessage(event)" class="p-3 border-t border-slate-800 flex gap-2">
-        <input id="pubInput" required placeholder="Write message..." class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs">
-        <button class="px-4 rounded-xl bg-rose-600 text-xs font-bold"><i class="fa-solid fa-paper-plane"></i></button>
-      </form>
-    </section>
-
-    <!-- VIEW: CREATOR DASHBOARD -->
-    <section id="view-dashboard" class="hidden space-y-4">
-      <div class="flex justify-between items-center">
-        <h2 class="font-bold text-lg">Creator Studio Dashboard</h2>
-        <button onclick="openUpload()" class="px-4 py-2 rounded-xl bg-rose-600 text-xs font-bold"><i class="fa-solid fa-upload"></i> Upload Content From Device</button>
-      </div>
-      <p class="text-xs text-slate-400">Manage and view all your published items privately below:</p>
-      <div id="creatorContent" class="space-y-3"></div>
     </section>
 
   </main>
 </div>
 
-<!-- FLOATING MEDIA PLAYER BAR -->
-<div id="mediaPlayerBar" class="fixed bottom-0 left-0 right-0 z-50 glass border-t border-slate-800 px-4 py-3 hidden">
-  <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
-    <div class="flex items-center gap-3">
-      <button onclick="playerPrevious()" class="w-9 h-9 rounded-full bg-slate-900 border border-slate-800 text-slate-300 flex items-center justify-center hover:bg-slate-800" title="Back"><i class="fa-solid fa-backward-step text-xs"></i></button>
-      <button id="playerPlayStopBtn" onclick="playerTogglePlayStop()" class="w-10 h-10 rounded-full bg-rose-600 text-white flex items-center justify-center shadow-lg shadow-rose-600/30" title="Play/Stop"><i class="fa-solid fa-pause text-xs" id="playerPlayIcon"></i></button>
-      <button onclick="playerNext()" class="w-9 h-9 rounded-full bg-slate-900 border border-slate-800 text-slate-300 flex items-center justify-center hover:bg-slate-800" title="Next"><i class="fa-solid fa-forward-step text-xs"></i></button>
-    </div>
-    <div class="flex-1 min-w-0 text-center">
-      <p id="playerTrackTitle" class="text-xs font-bold truncate text-slate-200">No media playing</p>
-    </div>
-    <div>
-      <button onclick="closeMediaPlayer()" class="text-slate-400 hover:text-white text-xs"><i class="fa-solid fa-xmark"></i></button>
-    </div>
-  </div>
-</div>
 
-<!-- LIVE STREAM MODAL (Creator Broadcasting & Viewer Confirmation) -->
-<div id="liveModal" class="fixed inset-0 z-[95] hidden bg-black flex flex-col items-center justify-center p-4">
-  <div class="relative w-full max-w-md bg-slate-900 rounded-3xl overflow-hidden border border-rose-500/50 shadow-2xl">
-    <div class="absolute top-4 left-4 z-10 bg-rose-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2 animate-pulse">
-      <i class="fa-solid fa-circle text-[8px]"></i> <span id="liveBadgeText">LIVE STREAMING</span>
-    </div>
-    <button onclick="stopLiveStream()" class="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
-    <video id="liveVideo" autoplay playsinline class="w-full h-[60vh] object-cover bg-black"></video>
-    <div class="p-4 bg-slate-950 flex gap-2 justify-center">
-      <button id="viewerConfirmBtn" onclick="confirmWatchLive()" class="hidden px-5 py-2 rounded-xl bg-emerald-600 text-xs font-bold text-white">Watch Live</button>
-      <button id="viewerDismissBtn" onclick="stopLiveStream()" class="px-5 py-2 rounded-xl bg-rose-600 text-xs font-bold text-white">Decline / Dismiss</button>
-    </div>
-  </div>
-</div>
+<!-- =========================================================
+     UPLOAD MODAL
+========================================================= -->
+<div id="uploadModal"
+     class="fixed inset-0 z-[150] hidden bg-slate-950/90 flex items-center justify-center p-4">
 
-<!-- UPLOAD MODAL -->
-<div id="uploadModal" class="fixed inset-0 z-[80] hidden bg-slate-950/90 flex items-center justify-center p-4">
   <div class="glass rounded-3xl p-6 max-w-md w-full space-y-4">
-    <div class="flex justify-between items-center"><h3 class="font-bold text-sm">Upload Video / Song From Device</h3><button onclick="closeUpload()"><i class="fa-solid fa-xmark"></i></button></div>
-    <form onsubmit="uploadContent(event)" class="space-y-3">
-      <input id="upTitle" required placeholder="Title" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs">
-      <select id="upType" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs">
-        <option value="video">Short Video (Reel)</option>
-        <option value="audio">Audio Track</option>
+
+    <div class="flex justify-between items-center">
+
+      <h3 class="font-bold text-sm">
+        Upload Video / Song
+      </h3>
+
+      <button onclick="closeUpload()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+    </div>
+
+
+    <form onsubmit="uploadContent(event)"
+          class="space-y-3">
+
+      <input id="upTitle"
+             required
+             maxlength="200"
+             placeholder="Title"
+             class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs">
+
+      <select id="upType"
+              class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs">
+
+        <option value="video">
+          Short Video (Reel)
+        </option>
+
+        <option value="audio">
+          Audio Track
+        </option>
+
       </select>
-      <input id="upFile" type="file" accept="video/*,audio/*" required class="w-full text-xs">
-      <button class="w-full py-3 rounded-xl bg-rose-600 text-xs font-bold">Publish Now</button>
+
+
+      <!-- IMPORTANT FILE PICKER -->
+      <input id="upFile"
+             type="file"
+             accept="video/*,audio/*"
+             required
+             class="w-full text-xs bg-slate-900 border border-slate-800 rounded-xl p-2">
+
+
+      <p id="uploadFileName"
+         class="text-[10px] text-slate-500">
+        No file selected.
+      </p>
+
+
+      <button id="uploadSubmitBtn"
+              class="w-full py-3 rounded-xl bg-rose-600 text-xs font-bold">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+        Publish Now
+      </button>
+
     </form>
+
   </div>
 </div>
 
 
-<!-- ADMIN NOTIFICATION COMPOSER -->
-<div id="adminNotificationModal" class="fixed inset-0 z-[96] hidden bg-slate-950/90 flex items-center justify-center p-4">
+<!-- =========================================================
+     COMMENTS
+========================================================= -->
+<div id="commentModal"
+     class="fixed inset-0 z-[160] hidden bg-slate-950/90 flex items-center justify-center p-4">
+
+  <div class="glass rounded-3xl p-5 max-w-md w-full max-h-[80vh] flex flex-col">
+
+    <div class="flex justify-between items-center mb-3">
+
+      <h3 class="font-bold text-sm">
+        Comments
+      </h3>
+
+      <button onclick="closeComments()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+    </div>
+
+
+    <div id="commentList"
+         class="flex-1 overflow-y-auto space-y-2 my-2">
+    </div>
+
+
+    <form onsubmit="postComment(event)"
+          class="flex gap-2">
+
+      <input id="commentInput"
+             required
+             maxlength="1000"
+             placeholder="Add comment..."
+             class="flex-1 bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs">
+
+      <button id="commentSendBtn"
+              class="px-4 rounded-xl bg-rose-600 text-xs font-bold">
+
+        <i class="fa-solid fa-paper-plane"></i>
+
+      </button>
+
+    </form>
+
+  </div>
+</div>
+
+
+<!-- =========================================================
+     ADMIN NOTIFICATION
+========================================================= -->
+<div id="adminNotificationModal"
+     class="fixed inset-0 z-[170] hidden bg-slate-950/90 flex items-center justify-center p-4">
+
   <div class="glass rounded-3xl p-6 max-w-lg w-full space-y-4 border border-amber-500/20">
+
     <div class="flex items-center justify-between">
-      <div>
-        <h3 class="font-bold text-sm">Write Notification</h3>
-        <p class="text-[10px] text-slate-500">Send an in-app notice to one user or all users.</p>
-      </div>
-      <button onclick="closeAdminNotificationComposer()"><i class="fa-solid fa-xmark"></i></button>
+
+      <h3 class="font-bold text-sm">
+        Write Notification
+      </h3>
+
+      <button onclick="closeAdminNotificationComposer()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
     </div>
-    <input id="adminNotifTitle" maxlength="120" placeholder="Notification title" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs focus:outline-none focus:border-amber-500">
-    <textarea id="adminNotifMessage" maxlength="1000" rows="5" placeholder="Write your notification..." class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs focus:outline-none focus:border-amber-500"></textarea>
-    <select id="adminNotifTarget" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs"><option value="all">All users</option></select>
+
+
+    <input id="adminNotifTitle"
+           maxlength="120"
+           placeholder="Notification title"
+           class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs">
+
+
+    <textarea id="adminNotifMessage"
+              maxlength="1000"
+              rows="5"
+              placeholder="Write your notification..."
+              class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs"></textarea>
+
+
+    <select id="adminNotifTarget"
+            class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs">
+
+      <option value="all">
+        All users
+      </option>
+
+    </select>
+
+
     <div class="flex gap-2">
-      <button onclick="closeAdminNotificationComposer()" class="flex-1 py-2.5 rounded-xl bg-slate-800 text-xs font-bold">Cancel</button>
-      <button onclick="sendAdminNotification()" class="flex-1 py-2.5 rounded-xl bg-amber-500 text-slate-950 text-xs font-black"><i class="fa-solid fa-paper-plane"></i> Send Notification</button>
+
+      <button onclick="closeAdminNotificationComposer()"
+              class="flex-1 py-2.5 rounded-xl bg-slate-800 text-xs font-bold">
+        Cancel
+      </button>
+
+      <button onclick="sendAdminNotification()"
+              class="flex-1 py-2.5 rounded-xl bg-amber-500 text-slate-950 text-xs font-black">
+        <i class="fa-solid fa-paper-plane"></i>
+        Send
+      </button>
+
     </div>
+
   </div>
 </div>
 
-<!-- GLOBAL CALL CENTER -->
-<div class="fixed bottom-5 right-5 z-[70] flex flex-col gap-2">
-  <a href="https://wa.me/250789562272" target="_blank" rel="noopener" class="w-12 h-12 rounded-full bg-green-600 hover:bg-green-500 text-white flex items-center justify-center shadow-2xl" title="WhatsApp Call Center"><i class="fa-brands fa-whatsapp text-xl"></i></a>
-  <a href="tel:+250789562272" class="w-12 h-12 rounded-full bg-sky-600 hover:bg-sky-500 text-white flex items-center justify-center shadow-2xl" title="Call Center"><i class="fa-solid fa-phone"></i></a>
-</div>
 
-<!-- GLOBAL AUDIO PLAYER -->
-<div id="globalAudioPlayer" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[90] hidden w-[min(94vw,560px)] glass border border-slate-700 rounded-2xl p-3 shadow-2xl">
-  <div class="flex items-center gap-3">
-    <button onclick="audioPrevious()" class="w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center" title="Previous">
-      <i class="fa-solid fa-backward-step"></i>
-    </button>
-    <button id="globalAudioPlayBtn" onclick="audioPlayPause()" class="w-10 h-10 rounded-full bg-rose-600 hover:bg-rose-500 flex items-center justify-center" title="Play / Stop">
-      <i class="fa-solid fa-play"></i>
-    </button>
-    <button onclick="audioNext()" class="w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center" title="Next">
-      <i class="fa-solid fa-forward-step"></i>
-    </button>
-    <div class="min-w-0 flex-1">
-      <p id="globalAudioTitle" class="text-xs font-bold truncate">Audio</p>
-      <p id="globalAudioCreator" class="text-[10px] text-slate-500 truncate">Creator</p>
-      <audio id="globalAudioElement" class="w-full h-8 mt-1" preload="metadata"></audio>
+<!-- =========================================================
+     LIVE MODAL
+========================================================= -->
+<div id="liveModal"
+     class="fixed inset-0 z-[180] hidden bg-black flex items-center justify-center p-4">
+
+  <div class="relative w-full max-w-md bg-slate-900 rounded-3xl overflow-hidden border border-rose-500/50">
+
+    <div class="absolute top-4 left-4 z-10 bg-rose-600 px-3 py-1 rounded-full text-xs font-bold">
+      <i class="fa-solid fa-circle text-[8px]"></i>
+      <span id="liveBadgeText">LIVE</span>
     </div>
-    <button onclick="closeGlobalAudio()" class="w-8 h-8 rounded-full bg-slate-900 text-slate-400 hover:text-white flex items-center justify-center" title="Close">
+
+
+    <button onclick="stopLiveStream()"
+            class="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-black/60 text-white">
       <i class="fa-solid fa-xmark"></i>
     </button>
+
+
+    <video id="liveVideo"
+           autoplay
+           muted
+           playsinline
+           class="w-full h-[60vh] object-cover bg-black">
+    </video>
+
+
+    <div class="p-4 bg-slate-950 flex justify-center gap-2">
+
+      <button id="viewerConfirmBtn"
+              onclick="confirmWatchLive()"
+              class="hidden px-5 py-2 rounded-xl bg-emerald-600 text-xs font-bold">
+        Watch Live
+      </button>
+
+      <button id="viewerDismissBtn"
+              onclick="stopLiveStream()"
+              class="px-5 py-2 rounded-xl bg-rose-600 text-xs font-bold">
+        End Stream
+      </button>
+
+    </div>
+
   </div>
 </div>
 
-<!-- COMMENTS MODAL -->
-<div id="commentModal" class="fixed inset-0 z-[85] hidden bg-slate-950/90 flex items-center justify-center p-4">
-  <div class="glass rounded-3xl p-5 max-w-md w-full max-h-[80vh] flex flex-col">
-    <div class="flex justify-between items-center mb-3"><h3 class="font-bold text-sm">Comments</h3><button onclick="closeComments()"><i class="fa-solid fa-xmark"></i></button></div>
-    <div id="commentList" class="flex-1 overflow-y-auto space-y-2 my-2"></div>
-    <form onsubmit="postComment(event)" class="flex gap-2">
-      <input id="commentInput" required placeholder="Add comment..." class="flex-1 bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs">
-      <button class="px-4 rounded-xl bg-rose-600 text-xs font-bold"><i class="fa-solid fa-paper-plane"></i></button>
-    </form>
+
+<!-- =========================================================
+     AUDIO PLAYER
+========================================================= -->
+<div id="globalAudioPlayer"
+     class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[120] hidden w-[min(94vw,560px)] glass border border-slate-700 rounded-2xl p-3 shadow-2xl">
+
+  <div class="flex items-center gap-3">
+
+    <button onclick="audioPrevious()"
+            class="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center">
+      <i class="fa-solid fa-backward-step"></i>
+    </button>
+
+
+    <button id="globalAudioPlayBtn"
+            onclick="audioPlayPause()"
+            class="w-10 h-10 rounded-full bg-rose-600 flex items-center justify-center">
+
+      <i class="fa-solid fa-play"></i>
+
+    </button>
+
+
+    <button onclick="audioNext()"
+            class="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center">
+
+      <i class="fa-solid fa-forward-step"></i>
+
+    </button>
+
+
+    <div class="min-w-0 flex-1">
+
+      <p id="globalAudioTitle"
+         class="text-xs font-bold truncate">
+        Audio
+      </p>
+
+      <p id="globalAudioCreator"
+         class="text-[10px] text-slate-500 truncate">
+        Creator
+      </p>
+
+      <audio id="globalAudioElement"
+             controls
+             preload="metadata"
+             class="w-full h-8 mt-1">
+      </audio>
+
+    </div>
+
+
+    <button onclick="closeGlobalAudio()"
+            class="w-8 h-8 rounded-full bg-slate-900 text-slate-400 flex items-center justify-center">
+
+      <i class="fa-solid fa-xmark"></i>
+
+    </button>
+
   </div>
 </div>
 
-<style>
-.navbtn { padding: .5rem .9rem; border-radius: .8rem; color: #94a3b8; font-size: .75rem; font-weight: 700; display: flex; gap: .4rem; align-items: center; background: rgba(15, 23, 42, 0.6); }
-.navbtn.active { background: #e11d48; color: white; }
-</style>
+
+<!-- =========================================================
+     GLOBAL CALL CENTER
+========================================================= -->
+<div class="fixed bottom-5 right-5 z-[110] flex flex-col gap-2">
+
+  <a href="https://wa.me/250789562272"
+     target="_blank"
+     rel="noopener"
+     class="w-12 h-12 rounded-full bg-green-600 text-white flex items-center justify-center shadow-2xl"
+     title="WhatsApp">
+
+    <i class="fa-brands fa-whatsapp text-xl"></i>
+
+  </a>
+
+
+  <a href="tel:+250789562272"
+     class="w-12 h-12 rounded-full bg-sky-600 text-white flex items-center justify-center shadow-2xl"
+     title="Call">
+
+    <i class="fa-solid fa-phone"></i>
+
+  </a>
+
+</div>
+
 
 <script>
-const SUPABASE_URL = "https://hdblzeugfeftkutmqprl.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_yskMxVPr49-HJLubhXgPiA_qESKLUtN";
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+/* =========================================================
+   SUPABASE
+========================================================= */
 
-let session = null, profile = null, media = [], currentChatTarget = null, currentViewedUserId = null;
-let mediaStream = null, mediaRecorder = null, audioChunks = [];
-let activePlayerEl = null, activeTrackIndex = 0;
-let historyStack = ['home'];
+const SUPABASE_URL =
+  "https://hdblzeugfeftkutmqprl.supabase.co";
 
-function toast(msg, ok=true){ const x=document.getElementById('toast'); x.textContent=msg; x.className=`fixed top-4 right-4 z-[100] max-w-sm rounded-2xl px-5 py-3 text-sm font-medium shadow-2xl ${ok?'bg-emerald-600':'bg-rose-600'}`; x.classList.remove('hidden'); setTimeout(()=>x.classList.add('hidden'),3000); }
-function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])) }
+const SUPABASE_ANON_KEY =
+  "sb_publishable_yskMxVPr49-HJLubhXgPiA_qESKLUtN";
 
-function go(tab, push=true){
-  if(push && historyStack[historyStack.length-1] !== tab) historyStack.push(tab);
-  ['home','reels','chat','inbox','dashboard','admin','settings','profile'].forEach(x=>{
-    const el = document.getElementById('view-'+x);
-    if(el) el.classList.toggle('hidden', x!==tab);
-    const n = document.getElementById('nav-'+x);
-    if(n) n.classList.toggle('active', x===tab);
-  });
-  if(tab==='reels') renderReels();
-  if(tab==='admin') loadAdminPanel();
-  if(tab==='inbox') loadInboxList();
-  if(tab==='dashboard') renderCreator();
-}
-
-function goBackHistory(){
-  if(historyStack.length > 1){
-    historyStack.pop();
-    go(historyStack[historyStack.length - 1], false);
-  }
-}
-
-/* AUTHENTICATION */
-function showAuth(mode){
-  document.getElementById('signinForm').classList.toggle('hidden', mode!=='signin');
-  document.getElementById('signupForm').classList.toggle('hidden', mode!=='signup');
-}
-
-async function signUp(e){
-  e.preventDefault();
-  const name=regName.value.trim(), email=regEmail.value.trim().toLowerCase(), role=regRole.value, pass=regPassword.value;
-  const {data, error} = await sb.auth.signUp({ email, password: pass, options:{ data:{ full_name: name, role } } });
-  if(error) return toast(error.message, false);
-  toast('Account created successfully! Please sign in.');
-  showAuth('signin');
-}
-
-async function signIn(e){
-  e.preventDefault();
-  const {data, error} = await sb.auth.signInWithPassword({ email: loginEmail.value.trim().toLowerCase(), password: loginPassword.value });
-  if(error) return toast(error.message, false);
-  await boot(data.session);
-}
-
-async function signOut(){ await sb.auth.signOut(); location.reload(); }
-
-async function boot(s){
-  session = s; if(!session) return;
-  const {data} = await sb.from('profiles').select('*').eq('id', session.user.id).single();
-  profile = data || { id: session.user.id, role: 'client', full_name: 'User' };
-  document.getElementById('authOverlay').classList.add('hidden');
-  document.getElementById('mainApp').classList.remove('hidden');
-  document.getElementById('myAvatar').src = profile.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${profile.id}`;
-
-  const isCreator = profile.role==='creator' || profile.role==='admin';
-  const isAdmin = profile.role==='admin';
-
-  document.getElementById('nav-dashboard').classList.toggle('hidden', !isCreator);
-  document.getElementById('liveStreamBtn').classList.toggle('hidden', !isCreator);
-  document.getElementById('creatorSettings').classList.toggle('hidden', !isCreator);
-  document.getElementById('nav-admin').classList.toggle('hidden', !isAdmin);
-
-  await loadMedia();
-  await loadMyNotifications();
-}
-
-
-/* INSTANT PROFILE PICTURE UPLOAD */
-async function uploadDeviceAvatar(){
-  const fileInput = document.getElementById('avatarFile');
-  if(!fileInput.files || fileInput.files.length === 0) return toast('Please select an image file', false);
-  const file = fileInput.files[0];
-  const fileExt = file.name.split('.').pop();
-  const fileName = `${session.user.id}-${Math.random()}.${fileExt}`;
-  const filePath = `avatars/${fileName}`;
-
-  toast('Uploading profile picture...', true);
-  const { error: uploadError } = await sb.storage.from('media').upload(filePath, file);
-  
-  let publicUrl = '';
-  if(uploadError){
-    // Fallback to Base64 data URL if storage bucket isn't configured yet
-    const reader = new FileReader();
-    reader.onload = async function(e){
-      publicUrl = e.target.result;
-      await saveAvatarUrl(publicUrl);
-    };
-    reader.readAsDataURL(file);
-    return;
-  }
-
-  const { data: publicData } = sb.storage.from('media').getPublicUrl(filePath);
-  publicUrl = publicData.publicUrl;
-  await saveAvatarUrl(publicUrl);
-}
-
-async function saveAvatarUrl(url){
-  const { error } = await sb.from('profiles').update({ avatar_url: url }).eq('id', session.user.id);
-  if(error) return toast(error.message, false);
-  
-  profile.avatar_url = url;
-  document.getElementById('myAvatar').src = url;
-  toast('Profile picture updated successfully!');
-}
-
-/* LIVE STREAMING & VIEWER CONFIRMATION */
-async function startLiveStream(){
-  try {
-    mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-    const modal = document.getElementById('liveModal');
-    const videoEl = document.getElementById('liveVideo');
-    videoEl.srcObject = mediaStream;
-    document.getElementById('liveBadgeText').textContent = 'BROADCASTING LIVE';
-    document.getElementById('viewerConfirmBtn').classList.add('hidden');
-    document.getElementById('viewerDismissBtn').textContent = 'End Stream';
-    modal.classList.remove('hidden');
-    toast('Live stream started!');
-  } catch(err){
-    toast('Camera/Microphone permission denied', false);
-  }
-}
-
-function promptViewLive(creatorName){
-  const modal = document.getElementById('liveModal');
-  const videoEl = document.getElementById('liveVideo');
-  document.getElementById('liveBadgeText').textContent = `${creatorName} IS LIVE`;
-  document.getElementById('viewerConfirmBtn').classList.remove('hidden');
-  document.getElementById('viewerDismissBtn').textContent = 'Decline / Skip';
-  modal.classList.remove('hidden');
-}
-
-async function confirmWatchLive(){
-  try {
-    mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-    document.getElementById('liveVideo').srcObject = mediaStream;
-    document.getElementById('viewerConfirmBtn').classList.add('hidden');
-    toast('Connected to Live Stream');
-  } catch(e){
-    toast('Unable to connect to live stream', false);
-  }
-}
-
-function stopLiveStream(){
-  if(mediaStream){
-    mediaStream.getTracks().forEach(track => track.stop());
-    mediaStream = null;
-  }
-  document.getElementById('liveModal').classList.add('hidden');
-  document.getElementById('liveVideo').srcObject = null;
-  toast('Live stream ended');
-}
-
-/* MEDIA & HOME */
-async function loadMedia(){
-  const {data} = await sb.from('media').select('*, profiles!media_creator_id_fkey(*)').eq('status','published').order('created_at', {ascending:false});
-  media = data || [];
-  buildAudioQueue();
-  renderMedia();
-}
-
-async function checkIsFollowing(creatorId, btnEl){
-  const {data} = await sb.from('follows').select('*').eq('follower_id', session.user.id).eq('following_id', creatorId).maybeSingle();
-  if(data){
-    btnEl.innerHTML = `<i class="fa-solid fa-check text-xs"></i>`;
-    btnEl.classList.add('bg-emerald-600');
-  }
-}
-
-async function renderMedia(){
-  const grid = document.getElementById('mediaGrid');
-  grid.innerHTML = media.map((m, idx)=>`
-    <div class="glass p-4 rounded-2xl border border-slate-800 flex flex-col justify-between space-y-3">
-      <div class="flex items-center justify-between">
-        <button onclick="openUserProfile('${m.creator_id}')" class="flex items-center gap-2 text-xs font-bold">
-          <img src="${m.profiles?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${m.creator_id}`}" class="w-7 h-7 rounded-full object-cover">
-          <span>${esc(m.profiles?.full_name||'Creator')}</span>
-        </button>
-        <button id="follow-btn-${m.id}" onclick="toggleFollow('${m.creator_id}', this)" class="text-[10px] bg-slate-800 hover:bg-rose-600 px-3 py-1 rounded-full transition"><i class="fa-solid fa-user-plus"></i></button>
-      </div>
-
-      <div>
-        <h4 class="font-bold text-sm truncate">${esc(m.title)}</h4>
-        ${m.type==='video'? 
-          `<video controls onplay="incrementView('${m.id}')" class="w-full h-48 rounded-xl object-cover mt-2 bg-black" src="${esc(m.file_url)}"></video>` : 
-          `<button onclick="playAudioById('${m.id}')" class="w-full mt-2 p-3 rounded-xl bg-slate-900 border border-slate-800 text-left hover:border-rose-500 transition">
-            <span class="flex items-center gap-3">
-              <span class="w-10 h-10 rounded-full bg-rose-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-play"></i></span>
-              <span class="min-w-0">
-                <span class="block text-xs font-bold truncate">${esc(m.title)}</span>
-                <span class="block text-[10px] text-slate-500">Tap to play • Previous / Play / Next</span>
-              </span>
-            </span>
-          </button>`}
-      </div>
-
-      <div class="flex items-center justify-between text-slate-400 text-xs pt-2 border-t border-slate-800">
-        <button onclick="toggleLike('${m.id}')" class="hover:text-rose-500 flex items-center gap-1"><i class="fa-regular fa-heart"></i> <span>${m.likes_count||0}</span></button>
-        <button onclick="openComments('${m.id}')" class="hover:text-amber-400 flex items-center gap-1"><i class="fa-regular fa-comment"></i></button>
-        <button onclick="incrementDownload('${m.id}')" class="hover:text-emerald-400 flex items-center gap-1"><i class="fa-solid fa-download"></i> <span>${m.downloads_count||0}</span></button>
-        <button onclick="incrementViewCount('${m.id}')" class="hover:text-sky-400 flex items-center gap-1"><i class="fa-regular fa-eye"></i> <span>${m.views_count||0}</span></button>
-      </div>
-    </div>
-  `).join('');
-
-  media.forEach(m => checkIsFollowing(m.creator_id, document.getElementById(`follow-btn-${m.id}`)));
-}
-
-async function toggleLike(id){
-  const {data} = await sb.from('media').select('likes_count').eq('id', id).single();
-  const newCount = (data?.likes_count || 0) + 1;
-  await sb.from('media').update({ likes_count: newCount }).eq('id', id);
-  loadMedia();
-}
-
-async function incrementView(id){
-  const {data} = await sb.from('media').select('views_count').eq('id', id).single();
-  const newCount = (data?.views_count || 0) + 1;
-  await sb.from('media').update({ views_count: newCount }).eq('id', id);
-}
-
-async function incrementViewCount(id){
-  await incrementView(id);
-  loadMedia();
-  toast('View registered');
-}
-
-async function incrementDownload(id){
-  const {data} = await sb.from('media').select('downloads_count, file_url').eq('id', id).single();
-  const newCount = (data?.downloads_count || 0) + 1;
-  await sb.from('media').update({ downloads_count: newCount }).eq('id', id);
-  window.open(data.file_url, '_blank');
-  loadMedia();
-}
-
-async function toggleFollow(creatorId, btnEl){
-  if(!session?.user?.id) return toast('Please sign in first.', false);
-  if(!creatorId) return;
-  if(creatorId === session.user.id) return toast('You cannot follow yourself.', false);
-
-  const {data, error: checkError} = await sb.from('follows')
-    .select('follower_id')
-    .eq('follower_id', session.user.id)
-    .eq('following_id', creatorId)
-    .maybeSingle();
-
-  if(checkError) return toast('Could not check follow status: ' + checkError.message, false);
-
-  if(data){
-    const {error} = await sb.from('follows')
-      .delete()
-      .eq('follower_id', session.user.id)
-      .eq('following_id', creatorId);
-
-    if(error) return toast('Unfollow failed: ' + error.message, false);
-
-    btnEl.innerHTML = `<i class="fa-solid fa-user-plus"></i>`;
-    btnEl.classList.remove('bg-emerald-600');
-    toast('Unfollowed');
-  } else {
-    const {error} = await sb.from('follows')
-      .insert({ follower_id: session.user.id, following_id: creatorId });
-
-    if(error) return toast('Follow failed: ' + error.message, false);
-
-    btnEl.innerHTML = `<i class="fa-solid fa-check text-xs"></i>`;
-    btnEl.classList.add('bg-emerald-600');
-    toast('Following successfully');
-  }
-
-  await renderMedia();
-}
+const sb =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
 
 
 /* =========================================================
-   FOLLOWING + PROFILE
-   ========================================================= */
+   GLOBAL STATE
+========================================================= */
 
-async function getFollowCounts(userId){
-  if(!userId) return {followers:0, following:0};
+let session = null;
+let profile = null;
+let media = [];
 
-  const [{count: followers}, {count: following}] = await Promise.all([
-    sb.from('follows').select('*', {count:'exact', head:true}).eq('following_id', userId),
-    sb.from('follows').select('*', {count:'exact', head:true}).eq('follower_id', userId)
-  ]);
-
-  return {
-    followers: followers || 0,
-    following: following || 0
-  };
-}
-
-async function updateProfileFollowCounts(userId){
-  const counts = await getFollowCounts(userId);
-  const followersEl = document.getElementById('profFollowersCount');
-  const followingEl = document.getElementById('profFollowingCount');
-  if(followersEl) followersEl.textContent = counts.followers;
-  if(followingEl) followingEl.textContent = counts.following;
-}
-
-async function openOwnProfile(){
-  if(!session?.user?.id) return toast('Please sign in first.', false);
-
-  currentViewedUserId = session.user.id;
-  go('profile');
-
-  document.getElementById('profAvatar').src =
-    profile?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${profile.id}`;
-  document.getElementById('profName').textContent = profile?.full_name || 'My Profile';
-  document.getElementById('profRole').textContent = profile?.role || 'client';
-  document.getElementById('profContentTitle').textContent =
-    profile?.role === 'creator' || profile?.role === 'admin'
-      ? 'My Uploaded Content'
-      : 'My Profile';
-
-  const followBtn = document.getElementById('profFollowBtn');
-  const msgBtn = document.getElementById('profMsgBtn');
-  if(followBtn) followBtn.classList.add('hidden');
-  if(msgBtn) msgBtn.classList.add('hidden');
-
-  await updateProfileFollowCounts(session.user.id);
-
-  const grid = document.getElementById('profMediaGrid');
-  if(!grid) return;
-
-  if(!['creator','admin'].includes(profile?.role)){
-    grid.innerHTML = '<p class="text-xs text-slate-500">You have no creator content.</p>';
-    return;
-  }
-
-  const {data, error} = await sb.from('media')
-    .select('*')
-    .eq('creator_id', session.user.id)
-    .order('created_at', {ascending:false});
-
-  if(error){
-    console.error('Own profile content error:', error);
-    grid.innerHTML = '<p class="text-xs text-rose-400">Unable to load your content.</p>';
-    return;
-  }
-
-  grid.innerHTML = (data || []).map(m => `
-    <div class="glass p-3 rounded-2xl border border-slate-800">
-      <p class="text-xs font-bold truncate">${esc(m.title || 'Untitled')}</p>
-      <p class="text-[10px] text-slate-500 mt-1">${esc(m.status || 'published')}</p>
-      ${m.type === 'video'
-        ? `<video controls class="w-full mt-2 rounded-xl bg-black" src="${esc(m.file_url)}"></video>`
-        : `<button onclick="playAudioById('${m.id}')" class="w-full mt-2 p-3 rounded-xl bg-slate-900 text-left text-xs"><i class="fa-solid fa-play mr-2 text-rose-500"></i> Play audio</button>`}
-    </div>
-  `).join('') || '<p class="text-xs text-slate-500">No uploaded content.</p>';
-}
-
-async function openUserProfile(userId){
-  if(!userId) return;
-  if(session?.user?.id === userId) return openOwnProfile();
-
-  currentViewedUserId = userId;
-  go('profile');
-
-  const {data: user, error} = await sb.from('profiles')
-    .select('id, full_name, avatar_url, role')
-    .eq('id', userId)
-    .single();
-
-  if(error || !user){
-    return toast('Unable to open this profile.', false);
-  }
-
-  document.getElementById('profAvatar').src =
-    user.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.id}`;
-  document.getElementById('profName').textContent = user.full_name || 'User';
-  document.getElementById('profRole').textContent = user.role || 'client';
-  document.getElementById('profContentTitle').textContent =
-    ['creator','admin'].includes(user.role) ? 'Creator Uploaded Content' : 'Uploaded Content';
-
-  const followBtn = document.getElementById('profFollowBtn');
-  const msgBtn = document.getElementById('profMsgBtn');
-  if(followBtn) followBtn.classList.remove('hidden');
-  if(msgBtn) msgBtn.classList.remove('hidden');
-
-  await updateProfileFollowCounts(user.id);
-  await updateCurrentProfileFollowButton();
-
-  const {data: rows, error: mediaError} = await sb.from('media')
-    .select('*')
-    .eq('creator_id', user.id)
-    .eq('status', 'published')
-    .order('created_at', {ascending:false});
-
-  const grid = document.getElementById('profMediaGrid');
-  if(!grid) return;
-
-  if(mediaError){
-    console.error('Profile media error:', mediaError);
-    grid.innerHTML = '<p class="text-xs text-rose-400">Unable to load content.</p>';
-    return;
-  }
-
-  grid.innerHTML = (rows || []).map(m => `
-    <div class="glass p-3 rounded-2xl border border-slate-800">
-      <p class="text-xs font-bold truncate">${esc(m.title || 'Untitled')}</p>
-      ${m.type === 'video'
-        ? `<video controls onplay="incrementView('${m.id}')" class="w-full mt-2 rounded-xl bg-black" src="${esc(m.file_url)}"></video>`
-        : `<button onclick="playAudioById('${m.id}')" class="w-full mt-2 p-3 rounded-xl bg-slate-900 text-left text-xs"><i class="fa-solid fa-play mr-2 text-rose-500"></i> Play audio</button>`}
-    </div>
-  `).join('') || '<p class="text-xs text-slate-500">This creator has not published content yet.</p>';
-}
-
-async function updateCurrentProfileFollowButton(){
-  const btn = document.getElementById('profFollowBtn');
-  const text = document.getElementById('profFollowText');
-  if(!btn || !text || !currentViewedUserId || !session?.user?.id) return;
-
-  if(currentViewedUserId === session.user.id){
-    btn.classList.add('hidden');
-    return;
-  }
-
-  const {data, error} = await sb.from('follows')
-    .select('follower_id')
-    .eq('follower_id', session.user.id)
-    .eq('following_id', currentViewedUserId)
-    .maybeSingle();
-
-  if(error) console.error('Follow status error:', error);
-
-  if(data){
-    text.textContent = 'Following';
-    btn.classList.remove('bg-rose-600');
-    btn.classList.add('bg-emerald-600');
-  }else{
-    text.textContent = 'Follow';
-    btn.classList.add('bg-rose-600');
-    btn.classList.remove('bg-emerald-600');
-  }
-}
-
-async function toggleFollowCurrentProfile(){
-  if(!session?.user?.id) return toast('Please sign in first.', false);
-  if(!currentViewedUserId) return;
-  if(currentViewedUserId === session.user.id) return toast('You cannot follow yourself.', false);
-
-  const {data, error: checkError} = await sb.from('follows')
-    .select('follower_id')
-    .eq('follower_id', session.user.id)
-    .eq('following_id', currentViewedUserId)
-    .maybeSingle();
-
-  if(checkError) return toast('Could not check follow status: ' + checkError.message, false);
-
-  if(data){
-    const {error} = await sb.from('follows')
-      .delete()
-      .eq('follower_id', session.user.id)
-      .eq('following_id', currentViewedUserId);
-
-    if(error) return toast('Unfollow failed: ' + error.message, false);
-    toast('Unfollowed');
-  }else{
-    const {error} = await sb.from('follows')
-      .insert({follower_id: session.user.id, following_id: currentViewedUserId});
-
-    if(error) return toast('Follow failed: ' + error.message, false);
-    toast('Following successfully');
-  }
-
-  await updateCurrentProfileFollowButton();
-  await updateProfileFollowCounts(currentViewedUserId);
-  await renderMedia();
-}
-
-/* =========================================================
-   COMMENTS
-   ========================================================= */
-
+let currentChatTarget = null;
+let currentViewedUserId = null;
 let currentCommentMediaId = null;
 
-async function openComments(mediaId){
-  if(!mediaId) return;
-
-  currentCommentMediaId = mediaId;
-  const modal = document.getElementById('commentModal');
-  const list = document.getElementById('commentList');
-  const input = document.getElementById('commentInput');
-
-  if(!modal || !list) return;
-
-  modal.classList.remove('hidden');
-  if(input) input.value = '';
-  list.innerHTML = '<p class="text-center text-xs text-slate-500">Loading comments...</p>';
-
-  const {data: comments, error} = await sb.from('comments')
-    .select('id, user_id, comment, created_at')
-    .eq('media_id', mediaId)
-    .order('created_at', {ascending:true});
-
-  if(error){
-    console.error('Comments load error:', error);
-    list.innerHTML = `<p class="text-center text-xs text-rose-400">Unable to load comments.<br>${esc(error.message)}</p>`;
-    return;
-  }
-
-  const rows = comments || [];
-  const userIds = [...new Set(rows.map(c => c.user_id).filter(Boolean))];
-  let users = {};
-
-  if(userIds.length){
-    const {data: profilesData} = await sb.from('profiles')
-      .select('id, full_name, avatar_url')
-      .in('id', userIds);
-
-    (profilesData || []).forEach(u => users[u.id] = u);
-  }
-
-  if(!rows.length){
-    list.innerHTML = '<p class="text-center text-xs text-slate-500 mt-8">No comments yet. Be the first to share what you think.</p>';
-    return;
-  }
-
-  list.innerHTML = rows.map(c => {
-    const u = users[c.user_id] || {};
-    const avatar = u.avatar_url ||
-      `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(c.user_id || 'user')}`;
-
-    return `
-      <div class="flex gap-2 items-start">
-        <img src="${esc(avatar)}" class="w-8 h-8 rounded-full object-cover shrink-0">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl px-3 py-2 flex-1">
-          <p class="text-[10px] font-bold text-rose-400">${esc(u.full_name || 'User')}</p>
-          <p class="text-xs text-slate-200 whitespace-pre-wrap break-words">${esc(c.comment || '')}</p>
-          <p class="text-[9px] text-slate-600 mt-1">${c.created_at ? new Date(c.created_at).toLocaleString() : ''}</p>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  list.scrollTop = list.scrollHeight;
-}
-
-function closeComments(){
-  const modal = document.getElementById('commentModal');
-  if(modal) modal.classList.add('hidden');
-  currentCommentMediaId = null;
-}
-
-async function postComment(e){
-  e.preventDefault();
-
-  if(!session?.user?.id) return toast('Please sign in to comment.', false);
-  if(!currentCommentMediaId) return toast('No content selected.', false);
-
-  const input = document.getElementById('commentInput');
-  const text = input?.value.trim();
-  if(!text) return;
-
-  const button = e.submitter;
-  if(button) button.disabled = true;
-
-  const {error} = await sb.from('comments').insert({
-    media_id: currentCommentMediaId,
-    user_id: session.user.id,
-    comment: text
-  });
-
-  if(button) button.disabled = false;
-
-  if(error){
-    console.error('Comment insert error:', error);
-    return toast('Comment failed: ' + error.message, false);
-  }
-
-  input.value = '';
-  await openComments(currentCommentMediaId);
-  toast('Comment posted!');
-}
-
-/* =========================================================
-   SIMPLE AUDIO QUEUE
-   ========================================================= */
+let mediaStream = null;
 
 let audioQueue = [];
 let audioQueueIndex = -1;
 let audioViewCounted = new Set();
 
-function buildAudioQueue(){
-  audioQueue = (media || []).filter(m => m.type === 'audio' && m.status === 'published');
+let historyStack = ["home"];
+
+let realtimeChannels = [];
+
+let isBooting = false;
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function esc(value){
+  return String(value ?? "")
+    .replace(/[&<>"']/g, char => ({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#039;"
+    }[char]));
 }
 
-function updateGlobalAudioPlayer(){
-  const player = document.getElementById('globalAudioPlayer');
-  const el = document.getElementById('globalAudioElement');
-  const playBtn = document.getElementById('globalAudioPlayBtn');
-  const title = document.getElementById('globalAudioTitle');
-  const creator = document.getElementById('globalAudioCreator');
 
-  if(!player || !el) return;
+function avatarUrl(userId, avatar){
+  return avatar ||
+    `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(userId || "user")}`;
+}
 
-  const item = audioQueue[audioQueueIndex];
-  if(!item){
-    player.classList.add('hidden');
+
+function toast(message, success=true){
+
+  const el = document.getElementById("toast");
+
+  if(!el) return;
+
+  el.textContent = message;
+
+  el.className =
+    `fixed top-4 right-4 z-[200] max-w-sm rounded-2xl px-5 py-3 text-sm font-medium shadow-2xl ${
+      success ? "bg-emerald-600 text-white" : "bg-rose-600 text-white"
+    }`;
+
+  el.classList.remove("hidden");
+
+  clearTimeout(el._timer);
+
+  el._timer =
+    setTimeout(() => el.classList.add("hidden"), 3500);
+}
+
+
+function setAuthStatus(message=""){
+  const el = document.getElementById("authStatus");
+  if(el) el.textContent = message;
+}
+
+
+function setButtonLoading(button, loading, text){
+
+  if(!button) return;
+
+  button.disabled = loading;
+
+  if(loading){
+    button.dataset.oldText = button.innerHTML;
+
+    button.innerHTML =
+      `<i class="fa-solid fa-spinner fa-spin mr-2"></i>${text || "Please wait..."}`;
+  }else if(button.dataset.oldText){
+    button.innerHTML = button.dataset.oldText;
+    delete button.dataset.oldText;
+  }
+}
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+function go(tab, push=true){
+
+  const validTabs = [
+    "home",
+    "reels",
+    "chat",
+    "inbox",
+    "dashboard",
+    "admin",
+    "settings",
+    "profile"
+  ];
+
+  if(!validTabs.includes(tab)) tab = "home";
+
+  if(push && historyStack[historyStack.length - 1] !== tab){
+    historyStack.push(tab);
+  }
+
+  validTabs.forEach(name => {
+
+    const view =
+      document.getElementById(`view-${name}`);
+
+    if(view){
+      view.classList.toggle("hidden", name !== tab);
+    }
+
+    const nav =
+      document.getElementById(`nav-${name}`);
+
+    if(nav){
+      nav.classList.toggle("active", name === tab);
+    }
+  });
+
+
+  if(tab === "reels"){
+    renderReels();
+  }
+
+  if(tab === "chat"){
+    loadPublicMessages();
+  }
+
+  if(tab === "inbox"){
+    loadInboxList();
+  }
+
+  if(tab === "dashboard"){
+    renderCreator();
+  }
+
+  if(tab === "admin"){
+    loadAdminPanel();
+  }
+}
+
+
+function goBackHistory(){
+
+  if(historyStack.length <= 1){
     return;
   }
 
-  player.classList.remove('hidden');
-  el.src = item.file_url;
-  if(title) title.textContent = item.title || 'Audio';
-  if(creator) creator.textContent = item.profiles?.full_name || 'Creator';
+  historyStack.pop();
 
-  el.onplay = () => {
+  const previous =
+    historyStack[historyStack.length - 1];
+
+  go(previous, false);
+}
+
+
+/* =========================================================
+   AUTH TABS
+========================================================= */
+
+function showAuth(mode){
+
+  const signin =
+    document.getElementById("signinForm");
+
+  const signup =
+    document.getElementById("signupForm");
+
+  const signinTab =
+    document.getElementById("tabSignin");
+
+  const signupTab =
+    document.getElementById("tabSignup");
+
+
+  signin.classList.toggle("hidden", mode !== "signin");
+
+  signup.classList.toggle("hidden", mode !== "signup");
+
+
+  signinTab.className =
+    mode === "signin"
+      ? "flex-1 py-2 rounded-lg bg-rose-600 text-sm font-bold"
+      : "flex-1 py-2 rounded-lg text-sm text-slate-400";
+
+
+  signupTab.className =
+    mode === "signup"
+      ? "flex-1 py-2 rounded-lg bg-rose-600 text-sm font-bold"
+      : "flex-1 py-2 rounded-lg text-sm text-slate-400";
+
+  setAuthStatus("");
+}
+
+
+/* =========================================================
+   SIGN UP
+========================================================= */
+
+async function signUp(event){
+
+  event.preventDefault();
+
+  const name =
+    document.getElementById("regName").value.trim();
+
+  const email =
+    document.getElementById("regEmail").value.trim().toLowerCase();
+
+  const role =
+    document.getElementById("regRole").value;
+
+  const password =
+    document.getElementById("regPassword").value;
+
+  const button =
+    document.getElementById("signupButton");
+
+
+  if(name.length < 2){
+    return toast("Please enter your full name.", false);
+  }
+
+
+  setButtonLoading(button, true, "Creating account...");
+
+
+  try{
+
+    const {data, error} =
+      await sb.auth.signUp({
+        email,
+        password,
+        options:{
+          data:{
+            full_name:name,
+            role:role
+          }
+        }
+      });
+
+
+    if(error){
+      throw error;
+    }
+
+
+    /*
+      If email confirmation is disabled,
+      Supabase normally gives us a session.
+    */
+
+    if(data?.session){
+
+      toast("Account created successfully!");
+
+      await boot(data.session);
+
+    }else{
+
+      /*
+        If email confirmation is enabled,
+        the account is created but no session exists yet.
+      */
+
+      toast(
+        "Account created. Check your email if confirmation is required."
+      );
+
+      showAuth("signin");
+
+      document.getElementById("loginEmail").value = email;
+    }
+
+  }catch(error){
+
+    console.error("Sign up error:", error);
+
+    toast(
+      error.message || "Registration failed.",
+      false
+    );
+
+  }finally{
+
+    setButtonLoading(button, false);
+  }
+}
+
+
+/* =========================================================
+   SIGN IN
+========================================================= */
+
+async function signIn(event){
+
+  event.preventDefault();
+
+  const email =
+    document.getElementById("loginEmail").value.trim().toLowerCase();
+
+  const password =
+    document.getElementById("loginPassword").value;
+
+  const button =
+    document.getElementById("signinButton");
+
+
+  setButtonLoading(button, true, "Signing in...");
+
+
+  try{
+
+    const {data, error} =
+      await sb.auth.signInWithPassword({
+        email,
+        password
+      });
+
+
+    if(error){
+      throw error;
+    }
+
+
+    await boot(data.session);
+
+  }catch(error){
+
+    console.error("Sign in error:", error);
+
+    toast(
+      error.message || "Sign in failed.",
+      false
+    );
+
+  }finally{
+
+    setButtonLoading(button, false);
+  }
+}
+
+
+/* =========================================================
+   SIGN OUT
+========================================================= */
+
+async function signOut(){
+
+  try{
+
+    await sb.auth.signOut();
+
+    session = null;
+    profile = null;
+
+    location.reload();
+
+  }catch(error){
+
+    console.error(error);
+
+    toast(
+      error.message || "Could not sign out.",
+      false
+    );
+  }
+}
+
+
+/* =========================================================
+   BOOT / SESSION RESTORE
+========================================================= */
+
+async function boot(currentSession){
+
+  if(!currentSession?.user?.id){
+    return;
+  }
+
+  if(isBooting){
+    return;
+  }
+
+  isBooting = true;
+
+  try{
+
+    session = currentSession;
+
+
+    /*
+      Load profile.
+    */
+
+    let {data:profileData, error:profileError} =
+      await sb
+        .from("profiles")
+        .select("*")
+        .eq("id", session.user.id)
+        .maybeSingle();
+
+
+    /*
+      If profile does not exist, create it from
+      auth metadata.
+    */
+
+    if(!profileData && !profileError){
+
+      const metadata =
+        session.user.user_metadata || {};
+
+      const newProfile = {
+        id: session.user.id,
+        full_name:
+          metadata.full_name ||
+          session.user.email?.split("@")[0] ||
+          "User",
+        role:
+          metadata.role === "creator"
+            ? "creator"
+            : "client"
+      };
+
+
+      const {data:createdProfile} =
+        await sb
+          .from("profiles")
+          .upsert(newProfile, {onConflict:"id"})
+          .select("*")
+          .single();
+
+      profileData = createdProfile;
+    }
+
+
+    profile =
+      profileData || {
+        id:session.user.id,
+        full_name:
+          session.user.email?.split("@")[0] ||
+          "User",
+        role:"client"
+      };
+
+
+    /*
+      SHOW APP
+    */
+
+    document
+      .getElementById("authOverlay")
+      .classList.add("hidden");
+
+    document
+      .getElementById("mainApp")
+      .classList.remove("hidden");
+
+
+    /*
+      Avatar
+    */
+
+    document.getElementById("myAvatar").src =
+      avatarUrl(
+        profile.id,
+        profile.avatar_url
+      );
+
+
+    const isCreator =
+      ["creator","admin"].includes(profile.role);
+
+    const isAdmin =
+      profile.role === "admin";
+
+
+    document
+      .getElementById("nav-dashboard")
+      .classList.toggle("hidden", !isCreator);
+
+    document
+      .getElementById("creatorSettings")
+      .classList.toggle("hidden", !isCreator);
+
+    document
+      .getElementById("liveStreamBtn")
+      .classList.toggle("hidden", !isCreator);
+
+    document
+      .getElementById("nav-admin")
+      .classList.toggle("hidden", !isAdmin);
+
+
+    await loadMedia();
+
+    await loadMyNotifications();
+
+    setupRealtime();
+
+    /*
+      Restore current view.
+      This means refresh does not automatically
+      force the user to another view.
+    */
+
+    const savedView =
+      localStorage.getItem("iz_current_view");
+
+    const allowed =
+      ["home","reels","chat","inbox","dashboard","admin","settings","profile"];
+
+    let view = allowed.includes(savedView)
+      ? savedView
+      : "home";
+
+
+    if(view === "dashboard" && !isCreator){
+      view = "home";
+    }
+
+    if(view === "admin" && !isAdmin){
+      view = "home";
+    }
+
+
+    historyStack = [view];
+
+    go(view, false);
+
+  }catch(error){
+
+    console.error("Boot error:", error);
+
+    toast(
+      "Could not load your account. Please refresh.",
+      false
+    );
+
+  }finally{
+
+    isBooting = false;
+  }
+}
+
+
+/* =========================================================
+   AUTH SESSION LISTENER
+========================================================= */
+
+sb.auth.onAuthStateChange(async (event, newSession) => {
+
+  if(event === "SIGNED_IN" && newSession){
+
+    if(!session){
+      await boot(newSession);
+    }
+
+  }
+
+  if(event === "TOKEN_REFRESHED" && newSession){
+
+    session = newSession;
+  }
+
+  if(event === "SIGNED_OUT"){
+
+    session = null;
+    profile = null;
+  }
+});
+
+
+/* =========================================================
+   PAGE START
+========================================================= */
+
+async function initializeApp(){
+
+  try{
+
+    const {data, error} =
+      await sb.auth.getSession();
+
+    if(error){
+      console.error(error);
+    }
+
+
+    if(data?.session){
+
+      /*
+        THIS IS THE IMPORTANT FIX:
+        Existing Supabase session is restored.
+      */
+
+      await boot(data.session);
+
+    }else{
+
+      document
+        .getElementById("authOverlay")
+        .classList.remove("hidden");
+
+      document
+        .getElementById("mainApp")
+        .classList.add("hidden");
+    }
+
+  }catch(error){
+
+    console.error("Initialization error:", error);
+
+  }
+}
+
+
+window.addEventListener("DOMContentLoaded", initializeApp);
+
+
+/* =========================================================
+   SAVE CURRENT VIEW
+========================================================= */
+
+const originalGoFunction = go;
+
+go = function(tab, push=true){
+
+  localStorage.setItem("iz_current_view", tab);
+
+  originalGoFunction(tab, push);
+};
+
+
+/* =========================================================
+   PROFILE PICTURE
+========================================================= */
+
+async function uploadDeviceAvatar(){
+
+  if(!session?.user?.id){
+    return toast("Please sign in first.", false);
+  }
+
+
+  const input =
+    document.getElementById("avatarFile");
+
+  const file =
+    input?.files?.[0];
+
+
+  if(!file){
+    return toast("Please select an image.", false);
+  }
+
+
+  if(!file.type.startsWith("image/")){
+    return toast("Please select an image file.", false);
+  }
+
+
+  const extension =
+    file.name.split(".").pop().toLowerCase();
+
+  const path =
+    `avatars/${session.user.id}-${Date.now()}.${extension}`;
+
+
+  toast("Uploading profile picture...");
+
+
+  try{
+
+    const {error} =
+      await sb.storage
+        .from("media")
+        .upload(path, file, {
+          upsert:true,
+          contentType:file.type,
+          cacheControl:"3600"
+        });
+
+
+    if(error){
+      throw error;
+    }
+
+
+    const {data} =
+      sb.storage
+        .from("media")
+        .getPublicUrl(path);
+
+
+    const publicUrl =
+      data?.publicUrl;
+
+
+    if(!publicUrl){
+      throw new Error("Could not create image URL.");
+    }
+
+
+    const {error:updateError} =
+      await sb
+        .from("profiles")
+        .update({
+          avatar_url:publicUrl
+        })
+        .eq("id",session.user.id);
+
+
+    if(updateError){
+      throw updateError;
+    }
+
+
+    profile.avatar_url = publicUrl;
+
+    document.getElementById("myAvatar").src =
+      publicUrl;
+
+    document.getElementById("avatarFile").value =
+      "";
+
+
+    toast("Profile picture updated successfully!");
+
+  }catch(error){
+
+    console.error("Avatar upload error:", error);
+
+    toast(
+      "Profile picture upload failed: " +
+      error.message,
+      false
+    );
+  }
+}
+
+
+/* =========================================================
+   MEDIA
+========================================================= */
+
+async function loadMedia(){
+
+  const {data, error} =
+    await sb
+      .from("media")
+      .select(`
+        *,
+        profiles!media_creator_id_fkey(
+          id,
+          full_name,
+          avatar_url,
+          role
+        )
+      `)
+      .eq("status","published")
+      .order("created_at",{ascending:false});
+
+
+  if(error){
+
+    console.error("Media load error:", error);
+
+    media = [];
+
+    toast(
+      "Could not load content.",
+      false
+    );
+
+  }else{
+
+    media = data || [];
+  }
+
+
+  buildAudioQueue();
+
+  renderMedia();
+}
+
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+function getFilteredMedia(){
+
+  const search =
+    document
+      .getElementById("search")
+      ?.value
+      ?.trim()
+      ?.toLowerCase() || "";
+
+
+  if(!search){
+    return media;
+  }
+
+
+  return media.filter(item => {
+
+    const title =
+      String(item.title || "").toLowerCase();
+
+    const creator =
+      String(
+        item.profiles?.full_name || ""
+      ).toLowerCase();
+
+    return (
+      title.includes(search) ||
+      creator.includes(search)
+    );
+  });
+}
+
+
+/* =========================================================
+   RENDER HOME
+========================================================= */
+
+async function renderMedia(){
+
+  const grid =
+    document.getElementById("mediaGrid");
+
+  if(!grid) return;
+
+
+  const rows =
+    getFilteredMedia();
+
+
+  if(!rows.length){
+
+    grid.innerHTML = `
+      <div class="col-span-full text-center py-16">
+        <i class="fa-solid fa-music text-4xl text-slate-700"></i>
+        <p class="text-sm font-bold mt-3">
+          No content found
+        </p>
+        <p class="text-xs text-slate-500 mt-1">
+          Try another search.
+        </p>
+      </div>
+    `;
+
+    return;
+  }
+
+
+  grid.innerHTML =
+    rows.map((m) => `
+
+      <div class="glass p-4 rounded-2xl border border-slate-800 flex flex-col space-y-3">
+
+        <!-- CREATOR -->
+        <div class="flex items-center justify-between">
+
+          <button onclick="openUserProfile('${m.creator_id}')"
+                  class="flex items-center gap-2 text-xs font-bold min-w-0">
+
+            <img src="${esc(avatarUrl(m.creator_id,m.profiles?.avatar_url))}"
+                 class="w-7 h-7 rounded-full object-cover shrink-0">
+
+            <span class="truncate">
+              ${esc(m.profiles?.full_name || "Creator")}
+            </span>
+
+          </button>
+
+
+          <button id="follow-btn-${m.id}"
+                  onclick="toggleFollow('${m.creator_id}',this)"
+                  class="text-[10px] bg-slate-800 px-3 py-1 rounded-full shrink-0">
+
+            <i class="fa-solid fa-user-plus"></i>
+          </button>
+
+        </div>
+
+
+        <!-- CONTENT -->
+
+        <div>
+
+          <h4 class="font-bold text-sm truncate">
+            ${esc(m.title || "Untitled")}
+          </h4>
+
+
+          ${
+            m.type === "video"
+
+            ?
+
+            `<video
+                controls
+                preload="metadata"
+                onplay="incrementViewOnce('${m.id}')"
+                class="w-full h-48 rounded-xl object-cover mt-2 bg-black"
+                src="${esc(m.file_url)}">
+             </video>`
+
+            :
+
+            `<button onclick="playAudioById('${m.id}')"
+                     class="w-full mt-2 p-3 rounded-xl bg-slate-900 border border-slate-800 text-left">
+
+              <span class="flex items-center gap-3">
+
+                <span class="w-10 h-10 rounded-full bg-rose-600 flex items-center justify-center shrink-0">
+                  <i class="fa-solid fa-play"></i>
+                </span>
+
+                <span class="min-w-0">
+
+                  <span class="block text-xs font-bold truncate">
+                    ${esc(m.title || "Audio")}
+                  </span>
+
+                  <span class="block text-[10px] text-slate-500">
+                    Play audio
+                  </span>
+
+                </span>
+
+              </span>
+             </button>`
+          }
+
+        </div>
+
+
+        <!-- ACTIONS -->
+
+        <div class="flex items-center justify-between text-slate-400 text-xs pt-2 border-t border-slate-800">
+
+          <button onclick="toggleLike('${m.id}')"
+                  class="hover:text-rose-500 flex items-center gap-1">
+
+            <i class="fa-regular fa-heart"></i>
+            <span>${Number(m.likes_count || 0)}</span>
+
+          </button>
+
+
+          <button onclick="openComments('${m.id}')"
+                  class="hover:text-amber-400">
+
+            <i class="fa-regular fa-comment"></i>
+
+          </button>
+
+
+          <button onclick="incrementDownload('${m.id}')"
+                  class="hover:text-emerald-400 flex items-center gap-1">
+
+            <i class="fa-solid fa-download"></i>
+            <span>${Number(m.downloads_count || 0)}</span>
+
+          </button>
+
+
+          <button onclick="incrementViewCount('${m.id}')"
+                  class="hover:text-sky-400 flex items-center gap-1">
+
+            <i class="fa-regular fa-eye"></i>
+            <span>${Number(m.views_count || 0)}</span>
+
+          </button>
+
+        </div>
+
+      </div>
+
+    `).join("");
+
+
+  /*
+    Check follow status safely.
+  */
+
+  rows.forEach(m => {
+
+    const btn =
+      document.getElementById(
+        `follow-btn-${m.id}`
+      );
+
+    if(btn){
+      checkIsFollowing(m.creator_id, btn);
+    }
+  });
+}
+
+
+/* =========================================================
+   FOLLOW STATUS
+========================================================= */
+
+async function checkIsFollowing(creatorId, button){
+
+  if(!button || !session?.user?.id) return;
+
+  if(creatorId === session.user.id){
+
+    button.classList.add("hidden");
+
+    return;
+  }
+
+
+  const {data,error} =
+    await sb
+      .from("follows")
+      .select("follower_id")
+      .eq("follower_id",session.user.id)
+      .eq("following_id",creatorId)
+      .maybeSingle();
+
+
+  if(error){
+    console.warn(error);
+    return;
+  }
+
+
+  if(data){
+
+    button.innerHTML =
+      `<i class="fa-solid fa-check"></i>`;
+
+    button.classList.add("bg-emerald-600");
+
+  }else{
+
+    button.innerHTML =
+      `<i class="fa-solid fa-user-plus"></i>`;
+
+    button.classList.remove("bg-emerald-600");
+  }
+}
+
+
+/* =========================================================
+   LIKE
+========================================================= */
+
+async function toggleLike(id){
+
+  if(!session?.user?.id){
+    return toast("Please sign in first.",false);
+  }
+
+
+  const {data,error} =
+    await sb
+      .from("media")
+      .select("likes_count")
+      .eq("id",id)
+      .single();
+
+
+  if(error){
+    return toast(error.message,false);
+  }
+
+
+  const count =
+    Number(data?.likes_count || 0) + 1;
+
+
+  const {error:updateError} =
+    await sb
+      .from("media")
+      .update({
+        likes_count:count
+      })
+      .eq("id",id);
+
+
+  if(updateError){
+    return toast(updateError.message,false);
+  }
+
+
+  const item =
+    media.find(m => m.id === id);
+
+  if(item){
+    item.likes_count = count;
+  }
+
+
+  renderMedia();
+}
+
+
+/* =========================================================
+   VIEWS
+========================================================= */
+
+const viewCounted =
+  new Set();
+
+
+async function incrementView(id){
+
+  if(!id) return;
+
+  const {data,error} =
+    await sb
+      .from("media")
+      .select("views_count")
+      .eq("id",id)
+      .single();
+
+
+  if(error){
+    console.warn(error);
+    return;
+  }
+
+
+  const count =
+    Number(data?.views_count || 0) + 1;
+
+
+  await sb
+    .from("media")
+    .update({
+      views_count:count
+    })
+    .eq("id",id);
+
+
+  const item =
+    media.find(m => m.id === id);
+
+  if(item){
+    item.views_count = count;
+  }
+}
+
+
+async function incrementViewOnce(id){
+
+  if(viewCounted.has(id)){
+    return;
+  }
+
+  viewCounted.add(id);
+
+  await incrementView(id);
+}
+
+
+async function incrementViewCount(id){
+
+  await incrementView(id);
+
+  renderMedia();
+
+  toast("View registered");
+}
+
+
+/* =========================================================
+   DOWNLOAD
+========================================================= */
+
+async function incrementDownload(id){
+
+  if(!session?.user?.id){
+    return toast("Please sign in first.",false);
+  }
+
+
+  const {data,error} =
+    await sb
+      .from("media")
+      .select("downloads_count,file_url")
+      .eq("id",id)
+      .single();
+
+
+  if(error){
+    return toast(error.message,false);
+  }
+
+
+  const count =
+    Number(data?.downloads_count || 0) + 1;
+
+
+  await sb
+    .from("media")
+    .update({
+      downloads_count:count
+    })
+    .eq("id",id);
+
+
+  if(data?.file_url){
+
+    const link =
+      document.createElement("a");
+
+    link.href = data.file_url;
+    link.target = "_blank";
+    link.rel = "noopener";
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  }
+
+
+  const item =
+    media.find(m => m.id === id);
+
+  if(item){
+    item.downloads_count = count;
+  }
+
+
+  renderMedia();
+}
+
+
+/* =========================================================
+   FOLLOW
+========================================================= */
+
+async function toggleFollow(creatorId,button){
+
+  if(!session?.user?.id){
+    return toast("Please sign in first.",false);
+  }
+
+
+  if(creatorId === session.user.id){
+    return toast("You cannot follow yourself.",false);
+  }
+
+
+  const {data,error} =
+    await sb
+      .from("follows")
+      .select("follower_id")
+      .eq("follower_id",session.user.id)
+      .eq("following_id",creatorId)
+      .maybeSingle();
+
+
+  if(error){
+    return toast(error.message,false);
+  }
+
+
+  if(data){
+
+    const {error:deleteError} =
+      await sb
+        .from("follows")
+        .delete()
+        .eq("follower_id",session.user.id)
+        .eq("following_id",creatorId);
+
+
+    if(deleteError){
+      return toast(deleteError.message,false);
+    }
+
+
+    if(button){
+      button.innerHTML =
+        `<i class="fa-solid fa-user-plus"></i>`;
+
+      button.classList.remove("bg-emerald-600");
+    }
+
+
+    toast("Unfollowed");
+
+  }else{
+
+    const {error:insertError} =
+      await sb
+        .from("follows")
+        .insert({
+          follower_id:session.user.id,
+          following_id:creatorId
+        });
+
+
+    if(insertError){
+      return toast(insertError.message,false);
+    }
+
+
+    if(button){
+
+      button.innerHTML =
+        `<i class="fa-solid fa-check"></i>`;
+
+      button.classList.add("bg-emerald-600");
+    }
+
+
+    toast("Following successfully");
+  }
+
+
+  await renderMedia();
+}
+
+
+/* =========================================================
+   FOLLOW COUNTS
+========================================================= */
+
+async function getFollowCounts(userId){
+
+  const followers =
+    await sb
+      .from("follows")
+      .select("*",{count:"exact",head:true})
+      .eq("following_id",userId);
+
+
+  const following =
+    await sb
+      .from("follows")
+      .select("*",{count:"exact",head:true})
+      .eq("follower_id",userId);
+
+
+  return {
+    followers:followers.count || 0,
+    following:following.count || 0
+  };
+}
+
+
+async function updateProfileFollowCounts(userId){
+
+  const counts =
+    await getFollowCounts(userId);
+
+
+  document.getElementById(
+    "profFollowersCount"
+  ).textContent = counts.followers;
+
+
+  document.getElementById(
+    "profFollowingCount"
+  ).textContent = counts.following;
+}
+
+
+/* =========================================================
+   OWN PROFILE
+========================================================= */
+
+async function openOwnProfile(){
+
+  if(!session?.user?.id){
+    return toast("Please sign in first.",false);
+  }
+
+
+  currentViewedUserId =
+    session.user.id;
+
+
+  go("profile");
+
+
+  document.getElementById("profAvatar").src =
+    avatarUrl(
+      profile.id,
+      profile.avatar_url
+    );
+
+
+  document.getElementById("profName").textContent =
+    profile.full_name || "My Profile";
+
+
+  document.getElementById("profRole").textContent =
+    profile.role || "client";
+
+
+  document.getElementById("profFollowBtn")
+    .classList.add("hidden");
+
+
+  document.getElementById("profMsgBtn")
+    .classList.add("hidden");
+
+
+  document.getElementById("profContentTitle")
+    .textContent =
+      ["creator","admin"].includes(profile.role)
+        ? "My Uploaded Content"
+        : "My Profile";
+
+
+  await updateProfileFollowCounts(
+    session.user.id
+  );
+
+
+  const grid =
+    document.getElementById("profMediaGrid");
+
+
+  if(!["creator","admin"].includes(profile.role)){
+
+    grid.innerHTML =
+      `<p class="text-xs text-slate-500">
+        You have no creator content.
+       </p>`;
+
+    return;
+  }
+
+
+  const {data,error} =
+    await sb
+      .from("media")
+      .select("*")
+      .eq("creator_id",session.user.id)
+      .order("created_at",{ascending:false});
+
+
+  if(error){
+
+    console.error(error);
+
+    grid.innerHTML =
+      `<p class="text-xs text-rose-400">
+        Unable to load your content.
+       </p>`;
+
+    return;
+  }
+
+
+  grid.innerHTML =
+    (data || []).map(m => `
+
+      <div class="glass p-3 rounded-2xl border border-slate-800">
+
+        <p class="text-xs font-bold truncate">
+          ${esc(m.title || "Untitled")}
+        </p>
+
+        <p class="text-[10px] text-slate-500 mt-1">
+          ${esc(m.status || "published")}
+        </p>
+
+        ${
+          m.type === "video"
+
+          ?
+
+          `<video
+              controls
+              class="w-full mt-2 rounded-xl bg-black"
+              src="${esc(m.file_url)}">
+           </video>`
+
+          :
+
+          `<button
+              onclick="playAudioById('${m.id}')"
+              class="w-full mt-2 p-3 rounded-xl bg-slate-900 text-left text-xs">
+
+              <i class="fa-solid fa-play mr-2 text-rose-500"></i>
+              Play audio
+
+           </button>`
+        }
+
+      </div>
+
+    `).join("") ||
+
+    `<p class="text-xs text-slate-500">
+      No uploaded content.
+     </p>`;
+}
+
+
+/* =========================================================
+   USER PROFILE
+========================================================= */
+
+async function openUserProfile(userId){
+
+  if(!userId) return;
+
+
+  if(userId === session?.user?.id){
+    return openOwnProfile();
+  }
+
+
+  currentViewedUserId =
+    userId;
+
+
+  go("profile");
+
+
+  const {data:user,error} =
+    await sb
+      .from("profiles")
+      .select("id,full_name,avatar_url,role")
+      .eq("id",userId)
+      .single();
+
+
+  if(error || !user){
+    return toast("Unable to open profile.",false);
+  }
+
+
+  document.getElementById("profAvatar").src =
+    avatarUrl(user.id,user.avatar_url);
+
+
+  document.getElementById("profName").textContent =
+    user.full_name || "User";
+
+
+  document.getElementById("profRole").textContent =
+    user.role || "client";
+
+
+  document.getElementById("profFollowBtn")
+    .classList.remove("hidden");
+
+
+  document.getElementById("profMsgBtn")
+    .classList.remove("hidden");
+
+
+  await updateProfileFollowCounts(user.id);
+
+  await updateCurrentProfileFollowButton();
+
+
+  const {data:rows,error:mediaError} =
+    await sb
+      .from("media")
+      .select("*")
+      .eq("creator_id",user.id)
+      .eq("status","published")
+      .order("created_at",{ascending:false});
+
+
+  const grid =
+    document.getElementById("profMediaGrid");
+
+
+  if(mediaError){
+
+    grid.innerHTML =
+      `<p class="text-xs text-rose-400">
+        Unable to load content.
+       </p>`;
+
+    return;
+  }
+
+
+  grid.innerHTML =
+    (rows || []).map(m => `
+
+      <div class="glass p-3 rounded-2xl border border-slate-800">
+
+        <p class="text-xs font-bold truncate">
+          ${esc(m.title || "Untitled")}
+        </p>
+
+        ${
+          m.type === "video"
+
+          ?
+
+          `<video
+              controls
+              onplay="incrementViewOnce('${m.id}')"
+              class="w-full mt-2 rounded-xl bg-black"
+              src="${esc(m.file_url)}">
+           </video>`
+
+          :
+
+          `<button
+              onclick="playAudioById('${m.id}')"
+              class="w-full mt-2 p-3 rounded-xl bg-slate-900 text-left text-xs">
+
+              <i class="fa-solid fa-play mr-2 text-rose-500"></i>
+              Play audio
+
+           </button>`
+        }
+
+      </div>
+
+    `).join("") ||
+
+    `<p class="text-xs text-slate-500">
+      This creator has not published content yet.
+     </p>`;
+}
+
+
+/* =========================================================
+   PROFILE FOLLOW BUTTON
+========================================================= */
+
+async function updateCurrentProfileFollowButton(){
+
+  const btn =
+    document.getElementById("profFollowBtn");
+
+  const text =
+    document.getElementById("profFollowText");
+
+
+  if(
+    !btn ||
+    !text ||
+    !currentViewedUserId ||
+    !session?.user?.id
+  ){
+    return;
+  }
+
+
+  if(currentViewedUserId === session.user.id){
+
+    btn.classList.add("hidden");
+
+    return;
+  }
+
+
+  const {data,error} =
+    await sb
+      .from("follows")
+      .select("follower_id")
+      .eq("follower_id",session.user.id)
+      .eq("following_id",currentViewedUserId)
+      .maybeSingle();
+
+
+  if(error){
+    console.warn(error);
+  }
+
+
+  if(data){
+
+    text.textContent =
+      "Following";
+
+    btn.classList.remove("bg-rose-600");
+
+    btn.classList.add("bg-emerald-600");
+
+  }else{
+
+    text.textContent =
+      "Follow";
+
+    btn.classList.add("bg-rose-600");
+
+    btn.classList.remove("bg-emerald-600");
+  }
+}
+
+
+async function toggleFollowCurrentProfile(){
+
+  if(!session?.user?.id){
+    return toast("Please sign in first.",false);
+  }
+
+
+  if(!currentViewedUserId){
+    return toast("User not found.",false);
+  }
+
+
+  if(currentViewedUserId === session.user.id){
+    return toast("You cannot follow yourself.",false);
+  }
+
+
+  const {data,error} =
+    await sb
+      .from("follows")
+      .select("follower_id")
+      .eq("follower_id",session.user.id)
+      .eq("following_id",currentViewedUserId)
+      .maybeSingle();
+
+
+  if(error){
+    return toast(error.message,false);
+  }
+
+
+  if(data){
+
+    const {error:deleteError} =
+      await sb
+        .from("follows")
+        .delete()
+        .eq("follower_id",session.user.id)
+        .eq("following_id",currentViewedUserId);
+
+
+    if(deleteError){
+      return toast(deleteError.message,false);
+    }
+
+    toast("Unfollowed");
+
+  }else{
+
+    const {error:insertError} =
+      await sb
+        .from("follows")
+        .insert({
+          follower_id:session.user.id,
+          following_id:currentViewedUserId
+        });
+
+
+    if(insertError){
+      return toast(insertError.message,false);
+    }
+
+    toast("Following successfully");
+  }
+
+
+  await updateCurrentProfileFollowButton();
+
+  await updateProfileFollowCounts(
+    currentViewedUserId
+  );
+
+  await renderMedia();
+}
+
+
+/* =========================================================
+   COMMENTS
+========================================================= */
+
+async function openComments(mediaId){
+
+  if(!mediaId) return;
+
+
+  currentCommentMediaId =
+    mediaId;
+
+
+  const modal =
+    document.getElementById("commentModal");
+
+  const list =
+    document.getElementById("commentList");
+
+
+  modal.classList.remove("hidden");
+
+  list.innerHTML =
+    `<p class="text-center text-xs text-slate-500">
+      Loading comments...
+     </p>`;
+
+
+  const {data:comments,error} =
+    await sb
+      .from("comments")
+      .select("id,user_id,comment,created_at")
+      .eq("media_id",mediaId)
+      .order("created_at",{ascending:true});
+
+
+  if(error){
+
+    console.error("Comment load:",error);
+
+    list.innerHTML =
+      `<p class="text-center text-xs text-rose-400">
+        Unable to load comments.
+       </p>`;
+
+    return;
+  }
+
+
+  const rows =
+    comments || [];
+
+
+  if(!rows.length){
+
+    list.innerHTML =
+      `<p class="text-center text-xs text-slate-500 mt-8">
+        No comments yet. Be the first.
+       </p>`;
+
+    return;
+  }
+
+
+  const ids =
+    [...new Set(
+      rows.map(x => x.user_id).filter(Boolean)
+    )];
+
+
+  let users = {};
+
+
+  if(ids.length){
+
+    const {data:profilesData} =
+      await sb
+        .from("profiles")
+        .select("id,full_name,avatar_url")
+        .in("id",ids);
+
+
+    (profilesData || []).forEach(
+      u => users[u.id] = u
+    );
+  }
+
+
+  list.innerHTML =
+    rows.map(c => {
+
+      const user =
+        users[c.user_id] || {};
+
+
+      return `
+
+        <div class="flex gap-2 items-start">
+
+          <img
+            src="${esc(avatarUrl(c.user_id,user.avatar_url))}"
+            class="w-8 h-8 rounded-full object-cover shrink-0">
+
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl px-3 py-2 flex-1">
+
+            <p class="text-[10px] font-bold text-rose-400">
+              ${esc(user.full_name || "User")}
+            </p>
+
+            <p class="text-xs text-slate-200 whitespace-pre-wrap break-words">
+              ${esc(c.comment || "")}
+            </p>
+
+            <p class="text-[9px] text-slate-600 mt-1">
+              ${c.created_at
+                ? new Date(c.created_at).toLocaleString()
+                : ""}
+            </p>
+
+          </div>
+
+        </div>
+
+      `;
+    }).join("");
+
+
+  list.scrollTop =
+    list.scrollHeight;
+}
+
+
+function closeComments(){
+
+  document
+    .getElementById("commentModal")
+    ?.classList.add("hidden");
+
+  currentCommentMediaId = null;
+}
+
+
+async function postComment(event){
+
+  event.preventDefault();
+
+
+  if(!session?.user?.id){
+    return toast("Please sign in to comment.",false);
+  }
+
+
+  if(!currentCommentMediaId){
+    return toast("No content selected.",false);
+  }
+
+
+  const input =
+    document.getElementById("commentInput");
+
+  const button =
+    document.getElementById("commentSendBtn");
+
+
+  const text =
+    input.value.trim();
+
+
+  if(!text) return;
+
+
+  setButtonLoading(
+    button,
+    true,
+    "Sending..."
+  );
+
+
+  try{
+
+    const {error} =
+      await sb
+        .from("comments")
+        .insert({
+          media_id:currentCommentMediaId,
+          user_id:session.user.id,
+          comment:text
+        });
+
+
+    if(error){
+      throw error;
+    }
+
+
+    input.value = "";
+
+    await openComments(
+      currentCommentMediaId
+    );
+
+    toast("Comment posted!");
+
+  }catch(error){
+
+    console.error(error);
+
+    toast(
+      "Comment failed: " + error.message,
+      false
+    );
+
+  }finally{
+
+    setButtonLoading(button,false);
+  }
+}
+
+
+/* =========================================================
+   AUDIO
+========================================================= */
+
+function buildAudioQueue(){
+
+  audioQueue =
+    (media || []).filter(
+      item =>
+        item.type === "audio" &&
+        item.status === "published"
+    );
+
+
+  if(
+    audioQueueIndex >= audioQueue.length
+  ){
+    audioQueueIndex = -1;
+  }
+}
+
+
+function updateGlobalAudioPlayer(){
+
+  const player =
+    document.getElementById("globalAudioPlayer");
+
+  const audio =
+    document.getElementById("globalAudioElement");
+
+  const title =
+    document.getElementById("globalAudioTitle");
+
+  const creator =
+    document.getElementById("globalAudioCreator");
+
+  const button =
+    document.getElementById("globalAudioPlayBtn");
+
+
+  const item =
+    audioQueue[audioQueueIndex];
+
+
+  if(!item){
+
+    player.classList.add("hidden");
+
+    return;
+  }
+
+
+  player.classList.remove("hidden");
+
+
+  if(audio.src !== item.file_url){
+    audio.src = item.file_url;
+  }
+
+
+  title.textContent =
+    item.title || "Audio";
+
+
+  creator.textContent =
+    item.profiles?.full_name || "Creator";
+
+
+  audio.onplay = () => {
+
     if(!audioViewCounted.has(item.id)){
+
       audioViewCounted.add(item.id);
+
       incrementView(item.id);
     }
-    if(playBtn) playBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+
+
+    button.innerHTML =
+      `<i class="fa-solid fa-pause"></i>`;
   };
 
-  el.onpause = () => {
-    if(playBtn) playBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+
+  audio.onpause = () => {
+
+    button.innerHTML =
+      `<i class="fa-solid fa-play"></i>`;
   };
 
-  el.onended = () => {
+
+  audio.onended = () => {
+
     audioNext(true);
   };
 }
 
+
 async function playAudioById(mediaId){
+
   buildAudioQueue();
 
-  const index = audioQueue.findIndex(m => m.id === mediaId);
-  if(index < 0) return toast('Audio not found.', false);
 
-  audioQueueIndex = index;
+  const index =
+    audioQueue.findIndex(
+      item => item.id === mediaId
+    );
+
+
+  if(index < 0){
+    return toast("Audio not found.",false);
+  }
+
+
+  audioQueueIndex =
+    index;
+
+
   updateGlobalAudioPlayer();
 
-  const el = document.getElementById('globalAudioElement');
-  if(!el) return;
+
+  const audio =
+    document.getElementById(
+      "globalAudioElement"
+    );
+
 
   try{
-    await el.play();
+
+    await audio.play();
+
   }catch(error){
-    console.error('Audio play error:', error);
-    toast('Tap the Play button to start the audio.', false);
+
+    console.warn(error);
+
+    toast(
+      "Tap Play to start the audio.",
+      false
+    );
   }
 }
+
 
 async function audioPlayPause(){
-  const el = document.getElementById('globalAudioElement');
-  if(!el || audioQueueIndex < 0) return;
 
-  if(el.paused){
-    try{ await el.play(); }catch(e){ console.error(e); }
-  }else{
-    el.pause();
+  const audio =
+    document.getElementById(
+      "globalAudioElement"
+    );
+
+
+  if(
+    !audio ||
+    audioQueueIndex < 0
+  ){
+    return;
+  }
+
+
+  try{
+
+    if(audio.paused){
+      await audio.play();
+    }else{
+      audio.pause();
+    }
+
+  }catch(error){
+
+    console.warn(error);
   }
 }
+
 
 async function audioPrevious(){
+
   buildAudioQueue();
+
   if(!audioQueue.length) return;
 
-  if(audioQueueIndex <= 0) audioQueueIndex = audioQueue.length - 1;
-  else audioQueueIndex--;
+
+  if(audioQueueIndex <= 0){
+
+    audioQueueIndex =
+      audioQueue.length - 1;
+
+  }else{
+
+    audioQueueIndex--;
+  }
+
 
   updateGlobalAudioPlayer();
-  const el = document.getElementById('globalAudioElement');
-  try{ await el.play(); }catch(e){ console.error(e); }
+
+
+  try{
+
+    await document
+      .getElementById("globalAudioElement")
+      .play();
+
+  }catch(error){
+    console.warn(error);
+  }
 }
 
-async function audioNext(auto=false){
+
+async function audioNext(){
+
   buildAudioQueue();
+
   if(!audioQueue.length) return;
 
-  if(audioQueueIndex < 0) audioQueueIndex = 0;
-  else audioQueueIndex = (audioQueueIndex + 1) % audioQueue.length;
+
+  if(audioQueueIndex < 0){
+
+    audioQueueIndex = 0;
+
+  }else{
+
+    audioQueueIndex =
+      (audioQueueIndex + 1) %
+      audioQueue.length;
+  }
+
 
   updateGlobalAudioPlayer();
-  const el = document.getElementById('globalAudioElement');
-  try{ await el.play(); }catch(e){ console.error(e); }
+
+
+  try{
+
+    await document
+      .getElementById("globalAudioElement")
+      .play();
+
+  }catch(error){
+    console.warn(error);
+  }
 }
+
 
 function closeGlobalAudio(){
-  const el = document.getElementById('globalAudioElement');
-  if(el){
-    el.pause();
-    el.removeAttribute('src');
-    el.load();
+
+  const audio =
+    document.getElementById(
+      "globalAudioElement"
+    );
+
+
+  if(audio){
+
+    audio.pause();
+
+    audio.removeAttribute("src");
+
+    audio.load();
   }
-  const player = document.getElementById('globalAudioPlayer');
-  if(player) player.classList.add('hidden');
+
+
+  document
+    .getElementById("globalAudioPlayer")
+    .classList.add("hidden");
 }
 
-/* REELS */
-function renderReels(){
-  const container = document.getElementById('reelsContainer');
-  const videos = media.filter(m=>m.type==='video');
-
-  container.innerHTML = videos.map((m, idx)=>`
-    <div class="reel-card flex items-center justify-center bg-black">
-      <video id="reelVideo-${idx}" onclick="toggleReelPlay(this)" loop playsinline class="w-full h-full object-cover" src="${esc(m.file_url)}"></video>
-      <div class="absolute bottom-6 right-3 z-10 flex flex-col items-center gap-4 text-white">
-        <button onclick="openUserProfile('${m.creator_id}')" class="w-10 h-10 rounded-full border-2 border-rose-500 overflow-hidden"><img src="${m.profiles?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${m.creator_id}`}"></button>
-        <button onclick="toggleFollow('${m.creator_id}', this)" class="w-6 h-6 rounded-full bg-rose-600 text-[10px] flex items-center justify-center -mt-3"><i class="fa-solid fa-plus"></i></button>
-        <button onclick="toggleLike('${m.id}')" class="flex flex-col items-center"><i class="fa-solid fa-heart text-xl hover:text-rose-500"></i><span class="text-[10px]">${m.likes_count||0}</span></button>
-        <button onclick="openComments('${m.id}')" class="flex flex-col items-center"><i class="fa-solid fa-comment text-xl hover:text-amber-400"></i></button>
-        <button onclick="incrementDownload('${m.id}')" class="flex flex-col items-center"><i class="fa-solid fa-download text-xl hover:text-emerald-400"></i></button>
-        <button onclick="incrementViewCount('${m.id}')" class="flex flex-col items-center"><i class="fa-regular fa-eye text-xl hover:text-sky-400"></i><span class="text-[10px]">${m.views_count||0}</span></button>
-      </div>
-      <div class="absolute bottom-6 left-4 z-10 text-white max-w-[70%]">
-        <h4 class="font-bold text-sm">${esc(m.title)}</h4>
-        <p class="text-xs text-slate-300">@${esc(m.profiles?.full_name||'creator')}</p>
-      </div>
-    </div>
-  `).join('');
-}
-
-function toggleReelPlay(videoEl){
-  if(videoEl.paused) videoEl.play(); else videoEl.pause();
-}
-
-function scrollReel(dir){
-  const container = document.getElementById('reelsContainer');
-  container.scrollBy({ top: dir * container.clientHeight, behavior: 'smooth' });
-}
 
 /* =========================================================
-   FIXES: UPLOAD + COMMUNITY CHAT + PRIVATE INBOX
-   ========================================================= */
+   REELS
+========================================================= */
+
+function renderReels(){
+
+  const container =
+    document.getElementById("reelsContainer");
+
+
+  if(!container) return;
+
+
+  const videos =
+    media.filter(
+      item =>
+        item.type === "video" &&
+        item.status === "published"
+    );
+
+
+  if(!videos.length){
+
+    container.innerHTML = `
+      <div class="h-full flex items-center justify-center text-center p-6">
+        <div>
+          <i class="fa-solid fa-video text-4xl text-slate-700"></i>
+          <p class="text-sm font-bold mt-3">
+            No reels available
+          </p>
+        </div>
+      </div>
+    `;
+
+    return;
+  }
+
+
+  container.innerHTML =
+    videos.map((m,index) => `
+
+      <div class="reel-card flex items-center justify-center bg-black">
+
+        <video
+          id="reelVideo-${index}"
+          onclick="toggleReelPlay(this)"
+          loop
+          playsinline
+          onplay="incrementViewOnce('${m.id}')"
+          class="w-full h-full object-cover"
+          src="${esc(m.file_url)}">
+        </video>
+
+
+        <div class="absolute bottom-6 right-3 z-10 flex flex-col items-center gap-4 text-white">
+
+          <button onclick="openUserProfile('${m.creator_id}')"
+                  class="w-10 h-10 rounded-full border-2 border-rose-500 overflow-hidden">
+
+            <img src="${esc(avatarUrl(m.creator_id,m.profiles?.avatar_url))}"
+                 class="w-full h-full object-cover">
+
+          </button>
+
+
+          <button onclick="toggleFollow('${m.creator_id}',this)"
+                  class="w-7 h-7 rounded-full bg-rose-600 text-[10px] flex items-center justify-center">
+
+            <i class="fa-solid fa-plus"></i>
+
+          </button>
+
+
+          <button onclick="toggleLike('${m.id}')"
+                  class="flex flex-col items-center">
+
+            <i class="fa-solid fa-heart text-xl"></i>
+
+            <span class="text-[10px]">
+              ${Number(m.likes_count || 0)}
+            </span>
+
+          </button>
+
+
+          <button onclick="openComments('${m.id}')"
+                  class="flex flex-col items-center">
+
+            <i class="fa-solid fa-comment text-xl"></i>
+
+          </button>
+
+
+          <button onclick="incrementDownload('${m.id}')"
+                  class="flex flex-col items-center">
+
+            <i class="fa-solid fa-download text-xl"></i>
+
+          </button>
+
+        </div>
+
+
+        <div class="absolute bottom-6 left-4 z-10 text-white max-w-[70%]">
+
+          <h4 class="font-bold text-sm">
+            ${esc(m.title || "Untitled")}
+          </h4>
+
+          <p class="text-xs text-slate-300">
+            @${esc(m.profiles?.full_name || "creator")}
+          </p>
+
+        </div>
+
+      </div>
+
+    `).join("");
+}
+
+
+function toggleReelPlay(video){
+
+  if(video.paused){
+
+    video.play().catch(() => {});
+
+  }else{
+
+    video.pause();
+  }
+}
+
+
+function scrollReel(direction){
+
+  const container =
+    document.getElementById(
+      "reelsContainer"
+    );
+
+
+  container.scrollBy({
+    top:
+      direction *
+      container.clientHeight,
+    behavior:"smooth"
+  });
+}
+
+
+/* =========================================================
+   UPLOAD
+========================================================= */
 
 function openUpload(){
-  const modal = document.getElementById('uploadModal');
-  if(!modal) return;
-  modal.classList.remove('hidden');
-  const file = document.getElementById('upFile');
-  if(file) file.value = '';
+
+  if(!session?.user?.id){
+    return toast("Please sign in first.",false);
+  }
+
+
+  if(!profile ||
+     !["creator","admin"].includes(profile.role)
+  ){
+
+    return toast(
+      "Only Content Creators can upload.",
+      false
+    );
+  }
+
+
+  document
+    .getElementById("uploadModal")
+    .classList.remove("hidden");
+
+
+  document.getElementById("upFile").value = "";
+
+  document.getElementById("upTitle").value = "";
+
+  document.getElementById("uploadFileName").textContent =
+    "No file selected.";
 }
+
 
 function closeUpload(){
-  const modal = document.getElementById('uploadModal');
-  if(modal) modal.classList.add('hidden');
+
+  document
+    .getElementById("uploadModal")
+    .classList.add("hidden");
 }
 
-async function uploadContent(e){
-  e.preventDefault();
+
+/* Show selected filename */
+
+document
+  .getElementById("upFile")
+  ?.addEventListener("change",function(){
+
+    const file =
+      this.files?.[0];
+
+    document.getElementById(
+      "uploadFileName"
+    ).textContent =
+      file
+        ? `${file.name} (${Math.round(file.size / 1024 / 1024 * 10) / 10} MB)`
+        : "No file selected.";
+  });
+
+
+/* Change accepted file types */
+
+document
+  .getElementById("upType")
+  ?.addEventListener("change",function(){
+
+    const input =
+      document.getElementById("upFile");
+
+    input.value = "";
+
+    input.accept =
+      this.value === "video"
+        ? "video/*"
+        : "audio/*";
+
+    document.getElementById(
+      "uploadFileName"
+    ).textContent =
+      "No file selected.";
+  });
+
+
+async function uploadContent(event){
+
+  event.preventDefault();
+
 
   if(!session?.user?.id){
-    return toast('Please sign in first.', false);
+    return toast("Please sign in first.",false);
   }
 
-  if(!profile || !['creator','admin'].includes(profile.role)){
-    return toast('Only a Content Creator can upload content.', false);
+
+  if(!["creator","admin"].includes(profile?.role)){
+    return toast("You do not have upload permission.",false);
   }
 
-  const title = document.getElementById('upTitle').value.trim();
-  const type = document.getElementById('upType').value;
-  const input = document.getElementById('upFile');
 
-  if(!title) return toast('Please enter a title.', false);
-  if(!input.files || input.files.length === 0){
-    return toast('Please choose a video or audio file from your device.', false);
+  const title =
+    document.getElementById("upTitle")
+      .value.trim();
+
+
+  const type =
+    document.getElementById("upType")
+      .value;
+
+
+  const input =
+    document.getElementById("upFile");
+
+
+  const button =
+    document.getElementById(
+      "uploadSubmitBtn"
+    );
+
+
+  const file =
+    input.files?.[0];
+
+
+  if(!title){
+    return toast("Please enter a title.",false);
   }
 
-  const file = input.files[0];
 
-  if(type === 'video' && !file.type.startsWith('video/')){
-    return toast('Please select a video file.', false);
+  if(!file){
+    return toast(
+      "Please choose a file from your device.",
+      false
+    );
   }
 
-  if(type === 'audio' && !file.type.startsWith('audio/')){
-    return toast('Please select an audio file.', false);
+
+  if(type === "video" &&
+     !file.type.startsWith("video/")
+  ){
+
+    return toast(
+      "Please select a video file.",
+      false
+    );
   }
 
-  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-  const filePath = `content/${session.user.id}/${Date.now()}-${safeName}`;
 
-  toast('Uploading content...', true);
+  if(type === "audio" &&
+     !file.type.startsWith("audio/")
+  ){
+
+    return toast(
+      "Please select an audio file.",
+      false
+    );
+  }
+
+
+  /*
+    Basic browser-side size protection.
+    Supabase limits depend on project/storage settings.
+  */
+
+  const maxSize =
+    500 * 1024 * 1024;
+
+
+  if(file.size > maxSize){
+
+    return toast(
+      "File is larger than 500 MB.",
+      false
+    );
+  }
+
+
+  setButtonLoading(
+    button,
+    true,
+    "Uploading..."
+  );
+
+
+  let storagePath = null;
+
 
   try{
-    const { error: storageError } = await sb.storage
-      .from('media')
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: false,
-        contentType: file.type
-      });
+
+    const safeName =
+      file.name.replace(
+        /[^a-zA-Z0-9._-]/g,
+        "_"
+      );
+
+
+    storagePath =
+      `content/${session.user.id}/${Date.now()}-${safeName}`;
+
+
+    const {error:storageError} =
+      await sb.storage
+        .from("media")
+        .upload(
+          storagePath,
+          file,
+          {
+            cacheControl:"3600",
+            upsert:false,
+            contentType:file.type
+          }
+        );
+
 
     if(storageError){
-      console.error('Storage upload error:', storageError);
-      return toast('Upload failed: ' + storageError.message, false);
+      throw storageError;
     }
 
-    const { data: publicData } = sb.storage
-      .from('media')
-      .getPublicUrl(filePath);
 
-    const fileUrl = publicData?.publicUrl;
+    const {data:urlData} =
+      sb.storage
+        .from("media")
+        .getPublicUrl(storagePath);
+
+
+    const fileUrl =
+      urlData?.publicUrl;
+
 
     if(!fileUrl){
-      return toast('Could not create the public file URL.', false);
+      throw new Error(
+        "Could not create public file URL."
+      );
     }
 
-    const { data: savedMedia, error: dbError } = await sb
-      .from('media')
-      .insert({
-        creator_id: session.user.id,
-        title: title,
-        type: type,
-        file_url: fileUrl,
-        status: 'published',
-        likes_count: 0,
-        downloads_count: 0,
-        views_count: 0
-      })
-      .select()
-      .single();
+
+    const {data:saved,error:dbError} =
+      await sb
+        .from("media")
+        .insert({
+          creator_id:session.user.id,
+          title:title,
+          type:type,
+          file_url:fileUrl,
+          status:"published",
+          likes_count:0,
+          downloads_count:0,
+          views_count:0
+        })
+        .select()
+        .single();
+
 
     if(dbError){
-      console.error('Media database error:', dbError);
-      // Remove the uploaded file if the database insert failed.
-      await sb.storage.from('media').remove([filePath]);
-      return toast('Content was not saved: ' + dbError.message, false);
+
+      /*
+        Remove storage file if database
+        insert failed.
+      */
+
+      await sb.storage
+        .from("media")
+        .remove([storagePath]);
+
+      throw dbError;
     }
 
-    document.getElementById('upTitle').value = '';
-    input.value = '';
+
     closeUpload();
 
-    try{
-      await loadMedia();
+    await loadMedia();
+
+    if(
+      document
+        .getElementById("view-dashboard")
+        ?.classList
+        .contains("hidden") === false
+    ){
       await renderCreator();
-    }catch(refreshError){
-      console.warn('Post-upload refresh error:', refreshError);
     }
 
-    toast('Content uploaded and published successfully!');
-  }catch(err){
-    console.error(err);
-    toast('Unexpected upload error: ' + (err.message || err), false);
+
+    toast(
+      "Content uploaded and published successfully!"
+    );
+
+  }catch(error){
+
+    console.error(
+      "Upload error:",
+      error
+    );
+
+
+    toast(
+      "Upload failed: " +
+      (error.message || "Unknown error"),
+      false
+    );
+
+  }finally{
+
+    setButtonLoading(
+      button,
+      false
+    );
   }
 }
 
 
 /* =========================================================
-   CREATOR STUDIO MANAGEMENT
-   Shows only the signed-in creator's own uploaded content.
-   Supports preview, edit title, and delete.
-   ========================================================= */
+   CREATOR STUDIO
+========================================================= */
 
 async function renderCreator(){
-  const box = document.getElementById('creatorContent');
+
+  const box =
+    document.getElementById(
+      "creatorContent"
+    );
+
+
   if(!box) return;
 
+
   if(!session?.user?.id){
-    box.innerHTML = '<p class="text-xs text-rose-400">Please sign in first.</p>';
     return;
   }
 
-  if(!profile || !['creator','admin'].includes(profile.role)){
-    box.innerHTML = '<p class="text-xs text-slate-500">Creator Studio is available only for content creators.</p>';
+
+  if(!["creator","admin"].includes(profile?.role)){
+
+    box.innerHTML =
+      `<p class="text-xs text-slate-500">
+        Creator Studio is available only to creators.
+       </p>`;
+
     return;
   }
 
-  box.innerHTML = `
-    <div class="glass rounded-2xl p-4 border border-slate-800 text-xs text-slate-400">
-      <i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading your content...
-    </div>
-  `;
 
-  const { data: myMedia, error } = await sb
-    .from('media')
-    .select('*')
-    .eq('creator_id', session.user.id)
-    .order('created_at', { ascending: false });
+  box.innerHTML =
+    `<div class="glass p-4 rounded-2xl text-xs text-slate-400">
+      <i class="fa-solid fa-spinner fa-spin mr-2"></i>
+      Loading your content...
+     </div>`;
+
+
+  const {data,error} =
+    await sb
+      .from("media")
+      .select("*")
+      .eq("creator_id",session.user.id)
+      .order("created_at",{ascending:false});
+
 
   if(error){
-    console.error('Creator Studio load error:', error);
-    box.innerHTML = `
-      <div class="glass rounded-2xl p-4 border border-rose-500/20">
-        <p class="text-sm font-bold text-rose-400">Unable to load your content.</p>
-        <p class="text-xs text-slate-500 mt-1">${esc(error.message)}</p>
-      </div>
-    `;
+
+    box.innerHTML =
+      `<p class="text-xs text-rose-400">
+        ${esc(error.message)}
+       </p>`;
+
     return;
   }
 
-  if(!myMedia?.length){
-    box.innerHTML = `
-      <div class="glass rounded-2xl p-8 border border-slate-800 text-center">
-        <i class="fa-solid fa-cloud-arrow-up text-3xl text-slate-600 mb-3"></i>
-        <p class="font-bold text-sm">No content uploaded yet</p>
-        <p class="text-xs text-slate-500 mt-1">Upload your first video or audio from the button above.</p>
-      </div>
-    `;
+
+  if(!data?.length){
+
+    box.innerHTML =
+      `<div class="glass p-8 rounded-2xl text-center">
+        <i class="fa-solid fa-cloud-arrow-up text-3xl text-slate-600"></i>
+
+        <p class="font-bold text-sm mt-3">
+          No content uploaded yet
+        </p>
+
+        <p class="text-xs text-slate-500 mt-1">
+          Upload your first video or audio.
+        </p>
+       </div>`;
+
     return;
   }
 
-  box.innerHTML = myMedia.map(m => {
-    const created = m.created_at
-      ? new Date(m.created_at).toLocaleString()
-      : 'Unknown date';
 
-    const status = m.status || 'published';
-    const statusClass =
-      status === 'published'
-        ? 'bg-emerald-600/20 text-emerald-400'
-        : 'bg-amber-600/20 text-amber-400';
+  box.innerHTML =
+    data.map(m => `
 
-    return `
       <div class="glass rounded-2xl p-4 border border-slate-800 space-y-3">
-        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+
+        <div class="flex justify-between gap-3">
+
           <div class="min-w-0">
-            <div class="flex items-center gap-2 flex-wrap">
-              <span class="px-2 py-1 rounded-full ${statusClass} text-[9px] font-bold uppercase">
-                ${esc(status)}
-              </span>
-              <span class="px-2 py-1 rounded-full bg-slate-800 text-slate-400 text-[9px] font-bold uppercase">
-                ${esc(m.type || 'media')}
-              </span>
-            </div>
-            <h3 class="font-bold text-sm mt-2 break-words">${esc(m.title || 'Untitled')}</h3>
-            <p class="text-[10px] text-slate-500 mt-1">Uploaded: ${esc(created)}</p>
+
+            <span class="px-2 py-1 rounded-full bg-slate-800 text-[9px] uppercase">
+              ${esc(m.status || "published")}
+            </span>
+
+            <span class="px-2 py-1 rounded-full bg-slate-800 text-[9px] uppercase">
+              ${esc(m.type || "media")}
+            </span>
+
+            <h3 class="font-bold text-sm mt-2 break-words">
+              ${esc(m.title || "Untitled")}
+            </h3>
+
+            <p class="text-[10px] text-slate-500 mt-1">
+              ${m.created_at
+                ? new Date(m.created_at).toLocaleString()
+                : ""}
+            </p>
+
           </div>
+
 
           <div class="flex gap-2 shrink-0">
-            <button
-              onclick="editCreatorMediaTitle('${m.id}')"
-              class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-[10px] font-bold">
-              <i class="fa-solid fa-pen mr-1"></i> Edit
+
+            <button onclick="editCreatorMediaTitle('${m.id}')"
+                    class="px-3 py-2 rounded-xl bg-slate-800 text-[10px] font-bold">
+
+              <i class="fa-solid fa-pen"></i>
+              Edit
+
             </button>
-            <button
-              onclick="deleteCreatorMedia('${m.id}')"
-              class="px-3 py-2 rounded-xl bg-rose-600/20 text-rose-400 hover:bg-rose-600 hover:text-white text-[10px] font-bold">
-              <i class="fa-solid fa-trash mr-1"></i> Delete
+
+
+            <button onclick="deleteCreatorMedia('${m.id}')"
+                    class="px-3 py-2 rounded-xl bg-rose-600/20 text-rose-400 text-[10px] font-bold">
+
+              <i class="fa-solid fa-trash"></i>
+              Delete
+
             </button>
+
           </div>
+
         </div>
 
-        <div class="rounded-xl overflow-hidden bg-black border border-slate-800">
+
+        <div class="rounded-xl overflow-hidden bg-black">
+
           ${
-            m.type === 'video'
-              ? `<video controls preload="metadata" class="w-full max-h-80 bg-black" src="${esc(m.file_url)}"></video>`
-              : `<div class="p-4"><audio controls class="w-full" src="${esc(m.file_url)}"></audio></div>`
+            m.type === "video"
+
+            ?
+
+            `<video
+                controls
+                preload="metadata"
+                class="w-full max-h-80"
+                src="${esc(m.file_url)}">
+             </video>`
+
+            :
+
+            `<div class="p-4">
+                <audio controls class="w-full"
+                       src="${esc(m.file_url)}">
+                </audio>
+             </div>`
           }
+
         </div>
+
 
         <div class="grid grid-cols-3 gap-2 text-center">
+
           <div class="bg-slate-900 rounded-xl p-2">
-            <p class="font-bold text-sm">${Number(m.views_count || 0)}</p>
-            <p class="text-[9px] text-slate-500">Views</p>
+            <p class="font-bold">
+              ${Number(m.views_count || 0)}
+            </p>
+            <p class="text-[9px] text-slate-500">
+              Views
+            </p>
           </div>
+
           <div class="bg-slate-900 rounded-xl p-2">
-            <p class="font-bold text-sm">${Number(m.likes_count || 0)}</p>
-            <p class="text-[9px] text-slate-500">Likes</p>
+            <p class="font-bold">
+              ${Number(m.likes_count || 0)}
+            </p>
+            <p class="text-[9px] text-slate-500">
+              Likes
+            </p>
           </div>
+
           <div class="bg-slate-900 rounded-xl p-2">
-            <p class="font-bold text-sm">${Number(m.downloads_count || 0)}</p>
-            <p class="text-[9px] text-slate-500">Downloads</p>
+            <p class="font-bold">
+              ${Number(m.downloads_count || 0)}
+            </p>
+            <p class="text-[9px] text-slate-500">
+              Downloads
+            </p>
           </div>
+
         </div>
+
       </div>
-    `;
-  }).join('');
-}
 
-async function editCreatorMediaTitle(mediaId){
-  if(!session?.user?.id) return toast('Please sign in first.', false);
-
-  const { data: item, error: findError } = await sb
-    .from('media')
-    .select('id, title')
-    .eq('id', mediaId)
-    .eq('creator_id', session.user.id)
-    .single();
-
-  if(findError || !item){
-    return toast('Content not found or you do not own it.', false);
-  }
-
-  const newTitle = prompt('Enter the new title:', item.title || '');
-  if(newTitle === null) return;
-
-  const title = newTitle.trim();
-  if(!title) return toast('Title cannot be empty.', false);
-
-  const { error } = await sb
-    .from('media')
-    .update({ title })
-    .eq('id', mediaId)
-    .eq('creator_id', session.user.id);
-
-  if(error){
-    console.error('Edit media error:', error);
-    return toast('Could not update title: ' + error.message, false);
-  }
-
-  await loadMedia();
-  await renderCreator();
-  toast('Title updated successfully!');
-}
-
-async function deleteCreatorMedia(mediaId){
-  if(!session?.user?.id) return toast('Please sign in first.', false);
-
-  const { data: item, error: findError } = await sb
-    .from('media')
-    .select('id, title, file_url')
-    .eq('id', mediaId)
-    .eq('creator_id', session.user.id)
-    .single();
-
-  if(findError || !item){
-    return toast('Content not found or you do not own it.', false);
-  }
-
-  const confirmed = confirm(
-    `Delete "${item.title || 'this content'}"?\n\nThis will remove the content from the website.`
-  );
-  if(!confirmed) return;
-
-  const { error: dbError } = await sb
-    .from('media')
-    .delete()
-    .eq('id', mediaId)
-    .eq('creator_id', session.user.id);
-
-  if(dbError){
-    console.error('Delete media database error:', dbError);
-    return toast('Delete failed: ' + dbError.message, false);
-  }
-
-  /* Best-effort removal from Storage.
-     The database record is already removed, so the content disappears
-     from the website even if the storage policy does not allow cleanup. */
-  try{
-    const markerIndex = String(item.file_url || '').indexOf('/content/');
-    if(markerIndex !== -1){
-      const storagePath = String(item.file_url)
-        .substring(markerIndex + '/content/'.length)
-        .split('?')[0];
-
-      if(storagePath){
-        await sb.storage.from('media').remove([`content/${storagePath}`]);
-      }
-    }
-  }catch(storageDeleteError){
-    console.warn('Storage cleanup skipped:', storageDeleteError);
-  }
-
-  await loadMedia();
-  await renderCreator();
-  toast('Content deleted successfully!');
+    `).join("");
 }
 
 
 /* =========================================================
-   ADMIN PANEL: CONTENT / USERS / NOTIFICATIONS
-   ========================================================= */
+   EDIT CREATOR CONTENT
+========================================================= */
 
-function isCurrentAdmin(){
-  return !!(session?.user?.id && profile?.role === 'admin');
+async function editCreatorMediaTitle(mediaId){
+
+  if(!session?.user?.id){
+    return toast("Please sign in first.",false);
+  }
+
+
+  const {data:item,error} =
+    await sb
+      .from("media")
+      .select("id,title")
+      .eq("id",mediaId)
+      .eq("creator_id",session.user.id)
+      .single();
+
+
+  if(error || !item){
+    return toast(
+      "Content not found.",
+      false
+    );
+  }
+
+
+  const newTitle =
+    prompt(
+      "Enter new title:",
+      item.title || ""
+    );
+
+
+  if(newTitle === null) return;
+
+
+  const title =
+    newTitle.trim();
+
+
+  if(!title){
+    return toast(
+      "Title cannot be empty.",
+      false
+    );
+  }
+
+
+  const {error:updateError} =
+    await sb
+      .from("media")
+      .update({
+        title:title
+      })
+      .eq("id",mediaId)
+      .eq("creator_id",session.user.id);
+
+
+  if(updateError){
+    return toast(
+      updateError.message,
+      false
+    );
+  }
+
+
+  await loadMedia();
+
+  await renderCreator();
+
+  toast("Title updated.");
 }
 
-async function loadAdminPanel(){
-  if(!isCurrentAdmin()) return toast('Admin access required.', false);
-  const contentBox=document.getElementById('adminContentList');
-  if(contentBox) contentBox.innerHTML='<p class="text-xs text-slate-500">Loading content...</p>';
 
-  const {data: rows,error}=await sb.from('media')
-    .select('id,title,type,status,file_url,creator_id,created_at,profiles!media_creator_id_fkey(full_name)')
-    .order('created_at',{ascending:false});
+/* =========================================================
+   DELETE CREATOR CONTENT
+========================================================= */
+
+async function deleteCreatorMedia(mediaId){
+
+  if(!session?.user?.id){
+    return toast("Please sign in first.",false);
+  }
+
+
+  const {data:item,error} =
+    await sb
+      .from("media")
+      .select("id,title,file_url")
+      .eq("id",mediaId)
+      .eq("creator_id",session.user.id)
+      .single();
+
+
+  if(error || !item){
+    return toast(
+      "Content not found.",
+      false
+    );
+  }
+
+
+  if(!confirm(
+    `Delete "${item.title || "this content"}"?`
+  )){
+    return;
+  }
+
+
+  const {error:deleteError} =
+    await sb
+      .from("media")
+      .delete()
+      .eq("id",mediaId)
+      .eq("creator_id",session.user.id);
+
+
+  if(deleteError){
+
+    return toast(
+      "Delete failed: " +
+      deleteError.message,
+      false
+    );
+  }
+
+
+  /*
+    Try to delete storage file.
+  */
+
+  try{
+
+    const url =
+      String(item.file_url || "");
+
+    const marker =
+      "/storage/v1/object/public/media/";
+
+    const index =
+      url.indexOf(marker);
+
+
+    if(index !== -1){
+
+      const path =
+        url
+          .substring(index + marker.length)
+          .split("?")[0];
+
+
+      if(path){
+
+        await sb.storage
+          .from("media")
+          .remove([path]);
+      }
+    }
+
+  }catch(error){
+
+    console.warn(
+      "Storage cleanup failed:",
+      error
+    );
+  }
+
+
+  await loadMedia();
+
+  await renderCreator();
+
+  toast("Content deleted successfully.");
+}
+
+
+/* =========================================================
+   PUBLIC COMMUNITY CHAT
+========================================================= */
+
+async function loadPublicMessages(){
+
+  const box =
+    document.getElementById(
+      "pubMessages"
+    );
+
+
+  if(!box || !session?.user?.id){
+    return;
+  }
+
+
+  const {data,error} =
+    await sb
+      .from("community_messages")
+      .select(`
+        id,
+        user_id,
+        message,
+        created_at,
+        profiles!community_messages_user_id_fkey(
+          full_name,
+          avatar_url
+        )
+      `)
+      .order("created_at",{ascending:true})
+      .limit(100);
+
 
   if(error){
-    console.error('Admin content load:',error);
-    if(contentBox) contentBox.innerHTML=`<p class="text-xs text-rose-400">${esc(error.message)}</p>`;
-  }else if(contentBox){
-    contentBox.innerHTML=(rows||[]).map(m=>`
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-3">
-        <div class="flex items-start justify-between gap-3">
-          <div class="min-w-0">
-            <p class="text-xs font-bold truncate">${esc(m.title||'Untitled')}</p>
-            <p class="text-[10px] text-slate-500 mt-1">${esc(m.type||'media')} • ${esc(m.status||'published')} • ${esc(m.profiles?.full_name||'Unknown user')}</p>
-            <p class="text-[9px] text-slate-600 mt-1">${m.created_at?new Date(m.created_at).toLocaleString():''}</p>
-          </div>
-          <button onclick="adminDeleteContent('${m.id}')" class="shrink-0 px-3 py-2 rounded-lg bg-rose-600/20 text-rose-400 hover:bg-rose-600 hover:text-white text-[10px] font-bold"><i class="fa-solid fa-trash"></i> Delete</button>
-        </div>
-        <a href="${esc(m.file_url||'#')}" target="_blank" rel="noopener" class="inline-flex mt-2 text-[10px] text-sky-400 hover:text-sky-300">Open content</a>
-      </div>
-    `).join('')||'<p class="text-xs text-slate-500">No content found.</p>';
+
+    console.error(
+      "Community load:",
+      error
+    );
+
+
+    box.innerHTML =
+      `<p class="text-center text-xs text-rose-400">
+        Unable to load community messages.
+       </p>`;
+
+    return;
   }
+
+
+  renderPublicMessages(
+    data || []
+  );
+}
+
+
+function renderPublicMessages(rows){
+
+  const box =
+    document.getElementById(
+      "pubMessages"
+    );
+
+
+  if(!box) return;
+
+
+  if(!rows.length){
+
+    box.innerHTML =
+      `<p class="text-center text-xs text-slate-500 mt-10">
+        No messages yet. Be the first!
+       </p>`;
+
+    return;
+  }
+
+
+  box.innerHTML =
+    rows.map(m => `
+
+      <div class="flex items-start gap-2">
+
+        <img
+          src="${esc(
+            avatarUrl(
+              m.user_id,
+              m.profiles?.avatar_url
+            )
+          )}"
+          class="w-8 h-8 rounded-full object-cover shrink-0">
+
+
+        <div class="max-w-[85%]">
+
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl px-3 py-2">
+
+            <p class="text-[10px] font-bold text-rose-400">
+              ${esc(
+                m.profiles?.full_name ||
+                "User"
+              )}
+            </p>
+
+            <p class="text-xs text-slate-200 break-words whitespace-pre-wrap">
+              ${esc(m.message)}
+            </p>
+
+            <p class="text-[9px] text-slate-600 mt-1">
+              ${m.created_at
+                ? new Date(m.created_at).toLocaleString()
+                : ""}
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    `).join("");
+
+
+  box.scrollTop =
+    box.scrollHeight;
+}
+
+
+async function sendPublicMessage(event){
+
+  event.preventDefault();
+
+
+  if(!session?.user?.id){
+    return toast("Please sign in first.",false);
+  }
+
+
+  const input =
+    document.getElementById("pubInput");
+
+  const button =
+    document.getElementById("pubSendBtn");
+
+
+  const message =
+    input.value.trim();
+
+
+  if(!message) return;
+
+
+  setButtonLoading(
+    button,
+    true,
+    "Sending..."
+  );
+
+
+  try{
+
+    const {error} =
+      await sb
+        .from("community_messages")
+        .insert({
+          user_id:session.user.id,
+          message:message
+        });
+
+
+    if(error){
+      throw error;
+    }
+
+
+    input.value = "";
+
+    await loadPublicMessages();
+
+  }catch(error){
+
+    console.error(
+      "Community send:",
+      error
+    );
+
+    toast(
+      "Message failed: " +
+      error.message,
+      false
+    );
+
+  }finally{
+
+    setButtonLoading(
+      button,
+      false
+    );
+  }
+}
+
+
+/* =========================================================
+   PRIVATE INBOX USER LIST
+========================================================= */
+
+async function loadInboxList(){
+
+  const box =
+    document.getElementById(
+      "inboxUsersList"
+    );
+
+
+  if(!box || !session?.user?.id){
+    return;
+  }
+
+
+  box.innerHTML =
+    `<p class="text-xs text-slate-500">
+      Loading users...
+     </p>`;
+
+
+  const {data:users,error} =
+    await sb
+      .from("profiles")
+      .select("id,full_name,avatar_url,role")
+      .neq("id",session.user.id)
+      .order("full_name",{ascending:true});
+
+
+  if(error){
+
+    console.error(error);
+
+    box.innerHTML =
+      `<p class="text-xs text-rose-400">
+        Unable to load users.
+       </p>`;
+
+    return;
+  }
+
+
+  if(!users?.length){
+
+    box.innerHTML =
+      `<p class="text-xs text-slate-500">
+        No other users yet.
+       </p>`;
+
+    return;
+  }
+
+
+  box.innerHTML =
+    users.map(u => `
+
+      <button
+        onclick="selectPrivateChat('${u.id}')"
+        class="w-full flex items-center gap-2 p-2 rounded-xl hover:bg-slate-800 text-left">
+
+        <img
+          src="${esc(avatarUrl(u.id,u.avatar_url))}"
+          class="w-9 h-9 rounded-full object-cover shrink-0">
+
+        <span class="min-w-0">
+
+          <span class="block text-xs font-bold truncate">
+            ${esc(u.full_name || "User")}
+          </span>
+
+          <span class="block text-[10px] text-slate-500 capitalize">
+            ${esc(u.role || "client")}
+          </span>
+
+        </span>
+
+      </button>
+
+    `).join("");
+}
+
+
+/* =========================================================
+   SELECT PRIVATE CHAT
+========================================================= */
+
+async function selectPrivateChat(userId){
+
+  if(
+    !session?.user?.id ||
+    !userId ||
+    userId === session.user.id
+  ){
+    return;
+  }
+
+
+  const {data:target,error} =
+    await sb
+      .from("profiles")
+      .select("id,full_name,avatar_url,role")
+      .eq("id",userId)
+      .single();
+
+
+  if(error || !target){
+
+    return toast(
+      "Could not open conversation.",
+      false
+    );
+  }
+
+
+  currentChatTarget =
+    target;
+
+
+  document.getElementById(
+    "chatTargetName"
+  ).textContent =
+    target.full_name || "User";
+
+
+  await loadPrivateMessages();
+
+
+  document
+    .getElementById("privateInput")
+    ?.focus();
+}
+
+
+/* =========================================================
+   LOAD PRIVATE MESSAGES
+========================================================= */
+
+async function loadPrivateMessages(){
+
+  const box =
+    document.getElementById(
+      "privateMessagesList"
+    );
+
+
+  if(
+    !box ||
+    !session?.user?.id ||
+    !currentChatTarget?.id
+  ){
+    return;
+  }
+
+
+  const me =
+    session.user.id;
+
+  const other =
+    currentChatTarget.id;
+
+
+  const {data,error} =
+    await sb
+      .from("private_messages")
+      .select(
+        "id,sender_id,receiver_id,message,created_at"
+      )
+      .or(
+        `and(sender_id.eq.${me},receiver_id.eq.${other}),and(sender_id.eq.${other},receiver_id.eq.${me})`
+      )
+      .order("created_at",{ascending:true})
+      .limit(200);
+
+
+  if(error){
+
+    console.error(
+      "Private messages:",
+      error
+    );
+
+
+    box.innerHTML =
+      `<p class="text-center text-xs text-rose-400">
+        Unable to load messages.
+       </p>`;
+
+    return;
+  }
+
+
+  if(!data?.length){
+
+    box.innerHTML =
+      `<p class="text-center text-xs text-slate-500 mt-10">
+        No messages yet. Start the conversation.
+       </p>`;
+
+    return;
+  }
+
+
+  box.innerHTML =
+    data.map(m => {
+
+      const mine =
+        m.sender_id === me;
+
+
+      return `
+
+        <div class="flex ${
+          mine
+            ? "justify-end"
+            : "justify-start"
+        }">
+
+          <div class="max-w-[80%] ${
+            mine
+              ? "bg-rose-600 text-white"
+              : "bg-slate-900 border border-slate-800 text-slate-200"
+          } rounded-2xl px-3 py-2">
+
+            <p class="text-xs break-words whitespace-pre-wrap">
+              ${esc(m.message)}
+            </p>
+
+            <p class="text-[9px] opacity-60 mt-1">
+              ${m.created_at
+                ? new Date(m.created_at).toLocaleString()
+                : ""}
+            </p>
+
+          </div>
+
+        </div>
+
+      `;
+    }).join("");
+
+
+  box.scrollTop =
+    box.scrollHeight;
+}
+
+
+/* =========================================================
+   SEND PRIVATE MESSAGE
+========================================================= */
+
+async function sendPrivateMessage(event){
+
+  event.preventDefault();
+
+
+  if(!session?.user?.id){
+    return toast("Please sign in first.",false);
+  }
+
+
+  if(!currentChatTarget?.id){
+    return toast(
+      "Select a user first.",
+      false
+    );
+  }
+
+
+  const input =
+    document.getElementById(
+      "privateInput"
+    );
+
+  const button =
+    document.getElementById(
+      "privateSendBtn"
+    );
+
+
+  const message =
+    input.value.trim();
+
+
+  if(!message) return;
+
+
+  setButtonLoading(
+    button,
+    true,
+    "Sending..."
+  );
+
+
+  try{
+
+    const {error} =
+      await sb
+        .from("private_messages")
+        .insert({
+          sender_id:session.user.id,
+          receiver_id:currentChatTarget.id,
+          message:message
+        });
+
+
+    if(error){
+      throw error;
+    }
+
+
+    input.value = "";
+
+    await loadPrivateMessages();
+
+  }catch(error){
+
+    console.error(
+      "Private message:",
+      error
+    );
+
+    toast(
+      "Message failed: " +
+      error.message,
+      false
+    );
+
+  }finally{
+
+    setButtonLoading(
+      button,
+      false
+    );
+  }
+}
+
+
+/* =========================================================
+   PROFILE -> PRIVATE CHAT
+========================================================= */
+
+function startDirectChat(){
+
+  if(!currentViewedUserId){
+    return toast("User not found.",false);
+  }
+
+
+  if(currentViewedUserId === session?.user?.id){
+    return toast(
+      "You cannot message yourself.",
+      false
+    );
+  }
+
+
+  go("inbox");
+
+
+  setTimeout(
+    () =>
+      selectPrivateChat(
+        currentViewedUserId
+      ),
+    100
+  );
+}
+
+
+/* =========================================================
+   NOTIFICATIONS
+========================================================= */
+
+async function loadMyNotifications(){
+
+  if(!session?.user?.id){
+    return;
+  }
+
+
+  const list =
+    document.getElementById(
+      "notifList"
+    );
+
+  const badge =
+    document.getElementById(
+      "notifBadge"
+    );
+
+
+  const {data,error} =
+    await sb
+      .from("notifications")
+      .select(
+        "id,title,message,created_at,read_at"
+      )
+      .eq("user_id",session.user.id)
+      .order("created_at",{ascending:false})
+      .limit(30);
+
+
+  if(error){
+
+    console.warn(
+      "Notifications:",
+      error.message
+    );
+
+    return;
+  }
+
+
+  const rows =
+    data || [];
+
+
+  badge.classList.toggle(
+    "hidden",
+    !rows.some(
+      n => !n.read_at
+    )
+  );
+
+
+  list.innerHTML =
+    rows.map(n => `
+
+      <button
+        onclick="markNotificationRead('${n.id}')"
+        class="w-full text-left rounded-xl p-3 border ${
+          n.read_at
+            ? "border-slate-800 bg-slate-900/50"
+            : "border-amber-500/30 bg-amber-500/5"
+        }">
+
+        <p class="font-bold text-[11px]">
+          ${esc(n.title || "Notification")}
+        </p>
+
+        <p class="text-[10px] text-slate-300 mt-1 whitespace-pre-wrap">
+          ${esc(n.message || "")}
+        </p>
+
+        <p class="text-[9px] text-slate-600 mt-1">
+          ${n.created_at
+            ? new Date(n.created_at).toLocaleString()
+            : ""}
+        </p>
+
+      </button>
+
+    `).join("") ||
+    `<p class="text-slate-500">
+      No notifications.
+     </p>`;
+}
+
+
+async function markNotificationRead(id){
+
+  if(!session?.user?.id || !id){
+    return;
+  }
+
+
+  await sb
+    .from("notifications")
+    .update({
+      read_at:new Date().toISOString()
+    })
+    .eq("id",id)
+    .eq("user_id",session.user.id);
+
+
+  await loadMyNotifications();
+}
+
+
+function toggleNotifications(){
+
+  const panel =
+    document.getElementById(
+      "notifPanel"
+    );
+
+
+  panel.classList.toggle(
+    "hidden"
+  );
+
+
+  if(!panel.classList.contains("hidden")){
+    loadMyNotifications();
+  }
+}
+
+
+/* =========================================================
+   ADMIN
+========================================================= */
+
+function isCurrentAdmin(){
+
+  return !!(
+    session?.user?.id &&
+    profile?.role === "admin"
+  );
+}
+
+
+async function loadAdminPanel(){
+
+  if(!isCurrentAdmin()){
+    return;
+  }
+
+
+  const box =
+    document.getElementById(
+      "adminContentList"
+    );
+
+
+  box.innerHTML =
+    `<p class="text-xs text-slate-500">
+      Loading content...
+     </p>`;
+
+
+  const {data,error} =
+    await sb
+      .from("media")
+      .select(`
+        id,
+        title,
+        type,
+        status,
+        file_url,
+        creator_id,
+        created_at,
+        profiles!media_creator_id_fkey(
+          full_name
+        )
+      `)
+      .order("created_at",{ascending:false});
+
+
+  if(error){
+
+    console.error(error);
+
+    box.innerHTML =
+      `<p class="text-xs text-rose-400">
+        ${esc(error.message)}
+       </p>`;
+
+    return;
+  }
+
+
+  box.innerHTML =
+    (data || []).map(m => `
+
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-3">
+
+        <div class="flex items-start justify-between gap-3">
+
+          <div class="min-w-0">
+
+            <p class="text-xs font-bold truncate">
+              ${esc(m.title || "Untitled")}
+            </p>
+
+            <p class="text-[10px] text-slate-500 mt-1">
+              ${esc(m.type || "media")}
+              •
+              ${esc(m.status || "published")}
+              •
+              ${esc(m.profiles?.full_name || "Unknown")}
+            </p>
+
+            <p class="text-[9px] text-slate-600 mt-1">
+              ${m.created_at
+                ? new Date(m.created_at).toLocaleString()
+                : ""}
+            </p>
+
+          </div>
+
+
+          <button
+            onclick="adminDeleteContent('${m.id}')"
+            class="px-3 py-2 rounded-lg bg-rose-600/20 text-rose-400 text-[10px] font-bold">
+
+            <i class="fa-solid fa-trash"></i>
+            Delete
+
+          </button>
+
+        </div>
+
+
+        <a
+          href="${esc(m.file_url || "#")}"
+          target="_blank"
+          rel="noopener"
+          class="inline-flex mt-2 text-[10px] text-sky-400">
+
+          Open content
+
+        </a>
+
+      </div>
+
+    `).join("") ||
+
+    `<p class="text-xs text-slate-500">
+      No content found.
+     </p>`;
+
+
   await loadAdminUsers();
 }
 
+
+/* =========================================================
+   ADMIN USERS
+========================================================= */
+
 async function loadAdminUsers(){
-  if(!isCurrentAdmin()) return toast('Admin access required.', false);
-  const box=document.getElementById('adminUsersList');
-  if(box) box.innerHTML='<p class="text-xs text-slate-500">Loading users...</p>';
 
-  const {data:users,error}=await sb.from('profiles')
-    .select('id,full_name,avatar_url,role,updated_at').order('full_name',{ascending:true});
-
-  if(error){
-    console.error('Admin users load:',error);
-    if(box) box.innerHTML=`<p class="text-xs text-rose-400">${esc(error.message)}</p>`;
+  if(!isCurrentAdmin()){
     return;
   }
 
-  const select=document.getElementById('adminNotifTarget');
-  if(select){
-    const current=select.value||'all';
-    select.innerHTML='<option value="all">All users</option>'+(users||[]).filter(u=>u.id!==session.user.id)
-      .map(u=>`<option value="${esc(u.id)}">${esc(u.full_name||'User')} — ${esc(u.role||'client')}</option>`).join('');
-    select.value=[...select.options].some(o=>o.value===current)?current:'all';
+
+  const box =
+    document.getElementById(
+      "adminUsersList"
+    );
+
+
+  box.innerHTML =
+    `<p class="text-xs text-slate-500">
+      Loading users...
+     </p>`;
+
+
+  const {data:users,error} =
+    await sb
+      .from("profiles")
+      .select(
+        "id,full_name,avatar_url,role,updated_at"
+      )
+      .order("full_name",{ascending:true});
+
+
+  if(error){
+
+    box.innerHTML =
+      `<p class="text-xs text-rose-400">
+        ${esc(error.message)}
+       </p>`;
+
+    return;
   }
 
-  if(box){
-    box.innerHTML=(users||[]).map(u=>`
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-3">
-        <div class="flex items-center gap-3">
-          <img src="${esc(u.avatar_url||`https://api.dicebear.com/7.x/bottts/svg?seed=${u.id}`)}" class="w-9 h-9 rounded-full object-cover">
-          <div class="min-w-0 flex-1">
-            <p class="text-xs font-bold truncate">${esc(u.full_name||'User')}</p>
-            <p class="text-[10px] text-slate-500 capitalize">${esc(u.role||'client')}</p>
-          </div>
-          <div class="flex gap-1.5">
-            <button onclick="openAdminNotificationComposer('${u.id}')" class="px-2.5 py-2 rounded-lg bg-amber-500/20 text-amber-400 text-[9px] font-bold" title="Notify"><i class="fa-regular fa-bell"></i></button>
-            ${u.id!==session.user.id?`<button onclick="adminDeleteUser('${u.id}')" class="px-2.5 py-2 rounded-lg bg-rose-600/20 text-rose-400 hover:bg-rose-600 hover:text-white text-[9px] font-bold" title="Delete user"><i class="fa-solid fa-user-xmark"></i></button>`:''}
-          </div>
-        </div>
-      </div>
-    `).join('')||'<p class="text-xs text-slate-500">No users found.</p>';
+
+  const select =
+    document.getElementById(
+      "adminNotifTarget"
+    );
+
+
+  if(select){
+
+    const old =
+      select.value || "all";
+
+
+    select.innerHTML =
+      `<option value="all">
+        All users
+       </option>`;
+
+
+    (users || [])
+      .filter(
+        u =>
+          u.id !== session.user.id
+      )
+      .forEach(u => {
+
+        const option =
+          document.createElement("option");
+
+        option.value = u.id;
+
+        option.textContent =
+          `${u.full_name || "User"} — ${u.role || "client"}`;
+
+        select.appendChild(option);
+      });
+
+
+    if(
+      [...select.options]
+        .some(o => o.value === old)
+    ){
+      select.value = old;
+    }
   }
+
+
+  box.innerHTML =
+    (users || []).map(u => `
+
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-3">
+
+        <div class="flex items-center gap-3">
+
+          <img
+            src="${esc(avatarUrl(u.id,u.avatar_url))}"
+            class="w-9 h-9 rounded-full object-cover">
+
+
+          <div class="min-w-0 flex-1">
+
+            <p class="text-xs font-bold truncate">
+              ${esc(u.full_name || "User")}
+            </p>
+
+            <p class="text-[10px] text-slate-500 capitalize">
+              ${esc(u.role || "client")}
+            </p>
+
+          </div>
+
+
+          <div class="flex gap-1.5">
+
+            <button
+              onclick="openAdminNotificationComposer('${u.id}')"
+              class="px-2.5 py-2 rounded-lg bg-amber-500/20 text-amber-400 text-[9px]">
+
+              <i class="fa-regular fa-bell"></i>
+
+            </button>
+
+
+            ${
+              u.id !== session.user.id
+
+              ?
+
+              `<button
+                onclick="adminDeleteUser('${u.id}')"
+                class="px-2.5 py-2 rounded-lg bg-rose-600/20 text-rose-400 text-[9px]">
+
+                <i class="fa-solid fa-user-xmark"></i>
+
+               </button>`
+
+              :
+
+              ""
+            }
+
+          </div>
+
+        </div>
+
+      </div>
+
+    `).join("") ||
+
+    `<p class="text-xs text-slate-500">
+      No users found.
+     </p>`;
 }
+
+
+/* =========================================================
+   ADMIN DELETE CONTENT
+========================================================= */
 
 async function adminDeleteContent(mediaId){
-  if(!isCurrentAdmin()) return toast('Admin access required.',false);
-  if(!confirm('Delete this content because it violates the group/platform rules?')) return;
-  const {error}=await sb.rpc('admin_delete_media',{target_media_id:mediaId});
-  if(error){
-    console.error('Admin delete content:',error);
-    return toast('Delete failed. Run the supplied SQL fix in Supabase.',false);
+
+  if(!isCurrentAdmin()){
+    return toast("Admin access required.",false);
   }
-  await loadAdminPanel(); await loadMedia();
-  toast('Content removed successfully.');
+
+
+  if(!confirm(
+    "Delete this content because it violates platform rules?"
+  )){
+    return;
+  }
+
+
+  /*
+    Uses your existing secure RPC.
+  */
+
+  const {error} =
+    await sb.rpc(
+      "admin_delete_media",
+      {
+        target_media_id:mediaId
+      }
+    );
+
+
+  if(error){
+
+    console.error(error);
+
+    return toast(
+      "Admin delete failed: " +
+      error.message,
+      false
+    );
+  }
+
+
+  await loadAdminPanel();
+
+  await loadMedia();
+
+  toast("Content removed successfully.");
 }
+
+
+/* =========================================================
+   ADMIN DELETE USER
+========================================================= */
 
 async function adminDeleteUser(userId){
-  if(!isCurrentAdmin()) return toast('Admin access required.',false);
-  if(userId===session.user.id) return toast('You cannot delete your own admin account here.',false);
-  if(!confirm('Delete this user account and remove their profile/content? This cannot be undone.')) return;
 
-  const {error}=await sb.rpc('admin_delete_user',{target_user_id:userId});
-  if(error){
-    console.error('Admin delete user:',error);
-    return toast('User deletion is not enabled yet. Run the supplied SQL fix in Supabase.',false);
+  if(!isCurrentAdmin()){
+    return toast("Admin access required.",false);
   }
-  await loadAdminUsers(); await loadMedia();
-  toast('User account removed.');
+
+
+  if(userId === session.user.id){
+    return toast(
+      "You cannot delete your own admin account.",
+      false
+    );
+  }
+
+
+  if(!confirm(
+    "Delete this user and their content? This cannot be undone."
+  )){
+    return;
+  }
+
+
+  const {error} =
+    await sb.rpc(
+      "admin_delete_user",
+      {
+        target_user_id:userId
+      }
+    );
+
+
+  if(error){
+
+    console.error(error);
+
+    return toast(
+      "User deletion failed: " +
+      error.message,
+      false
+    );
+  }
+
+
+  await loadAdminUsers();
+
+  await loadMedia();
+
+  toast("User account removed.");
 }
 
-function openAdminNotificationComposer(targetId='all'){
-  if(!isCurrentAdmin()) return toast('Admin access required.',false);
-  const modal=document.getElementById('adminNotificationModal');
-  if(!modal) return;
-  modal.classList.remove('hidden');
-  const select=document.getElementById('adminNotifTarget');
-  if(select) select.value=targetId||'all';
-  document.getElementById('adminNotifTitle')?.focus();
+
+/* =========================================================
+   ADMIN NOTIFICATION
+========================================================= */
+
+function openAdminNotificationComposer(targetId="all"){
+
+  if(!isCurrentAdmin()){
+    return toast("Admin access required.",false);
+  }
+
+
+  const modal =
+    document.getElementById(
+      "adminNotificationModal"
+    );
+
+
+  modal.classList.remove("hidden");
+
+
+  const select =
+    document.getElementById(
+      "adminNotifTarget"
+    );
+
+
+  if(select){
+
+    select.value =
+      targetId || "all";
+  }
+
+
+  document
+    .getElementById("adminNotifTitle")
+    .focus();
 }
-function closeAdminNotificationComposer(){document.getElementById('adminNotificationModal')?.classList.add('hidden');}
+
+
+function closeAdminNotificationComposer(){
+
+  document
+    .getElementById(
+      "adminNotificationModal"
+    )
+    .classList.add("hidden");
+}
+
 
 async function sendAdminNotification(){
-  if(!isCurrentAdmin()) return toast('Admin access required.',false);
-  const title=document.getElementById('adminNotifTitle')?.value.trim();
-  const message=document.getElementById('adminNotifMessage')?.value.trim();
-  const target=document.getElementById('adminNotifTarget')?.value||'all';
-  if(!title||!message) return toast('Write both a title and message.',false);
 
-  const {error}=await sb.rpc('admin_send_notification',{
-    target_user_id:target==='all'?null:target,
-    notification_title:title,
-    notification_message:message
-  });
-  if(error){
-    console.error('Admin notification:',error);
-    return toast('Notification failed. Run the supplied SQL fix first.',false);
-  }
-  document.getElementById('adminNotifTitle').value='';
-  document.getElementById('adminNotifMessage').value='';
-  closeAdminNotificationComposer();
-  toast('Notification sent successfully.');
-}
-
-async function loadMyNotifications(){
-  if(!session?.user?.id) return;
-  const list=document.getElementById('notifList'),badge=document.getElementById('notifBadge');
-  if(!list) return;
-  const {data,error}=await sb.from('notifications')
-    .select('id,title,message,created_at,read_at').eq('user_id',session.user.id)
-    .order('created_at',{ascending:false}).limit(30);
-  if(error){console.warn('Notifications unavailable:',error.message);return;}
-  if(badge) badge.classList.toggle('hidden',!(data||[]).some(n=>!n.read_at));
-  list.innerHTML=(data||[]).map(n=>`
-    <button onclick="markNotificationRead('${n.id}')" class="w-full text-left rounded-xl p-3 border ${n.read_at?'border-slate-800 bg-slate-900/50':'border-amber-500/30 bg-amber-500/5'}">
-      <p class="font-bold text-[11px]">${esc(n.title||'Notification')}</p>
-      <p class="text-[10px] text-slate-300 mt-1 whitespace-pre-wrap">${esc(n.message||'')}</p>
-      <p class="text-[9px] text-slate-600 mt-1">${n.created_at?new Date(n.created_at).toLocaleString():''}</p>
-    </button>`).join('')||'<p class="text-slate-500">No notifications.</p>';
-}
-async function markNotificationRead(id){
-  if(!session?.user?.id||!id) return;
-  await sb.from('notifications').update({read_at:new Date().toISOString()}).eq('id',id).eq('user_id',session.user.id);
-  await loadMyNotifications();
-}
-function toggleNotifications(){
-  const panel=document.getElementById('notifPanel'); if(!panel) return;
-  panel.classList.toggle('hidden');
-  if(!panel.classList.contains('hidden')) loadMyNotifications();
-}
-
-/* COMMUNITY CHAT */
-
-async function loadPublicMessages(){
-  const box = document.getElementById('pubMessages');
-  if(!box) return;
-
-  box.innerHTML = '<p class="text-center text-xs text-slate-500">Loading messages...</p>';
-
-  const { data, error } = await sb
-    .from('community_messages')
-    .select('id, user_id, message, created_at, profiles!community_messages_user_id_fkey(full_name, avatar_url)')
-    .order('created_at', { ascending: true })
-    .limit(100);
-
-  if(error){
-    console.error('Community load error:', error);
-    box.innerHTML = `<p class="text-center text-xs text-rose-400">Unable to load messages.</p>`;
-    return;
+  if(!isCurrentAdmin()){
+    return toast("Admin access required.",false);
   }
 
-  renderPublicMessages(data || []);
-}
 
-function renderPublicMessages(rows){
-  const box = document.getElementById('pubMessages');
-  if(!box) return;
+  const title =
+    document
+      .getElementById("adminNotifTitle")
+      .value.trim();
 
-  if(!rows.length){
-    box.innerHTML = '<p class="text-center text-xs text-slate-500 mt-10">No messages yet. Be the first to write!</p>';
-    return;
+
+  const message =
+    document
+      .getElementById("adminNotifMessage")
+      .value.trim();
+
+
+  const target =
+    document
+      .getElementById("adminNotifTarget")
+      .value;
+
+
+  if(!title || !message){
+
+    return toast(
+      "Write both title and message.",
+      false
+    );
   }
 
-  box.innerHTML = rows.map(m => {
-    const name = m.profiles?.full_name || 'User';
-    const avatar = m.profiles?.avatar_url ||
-      `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(m.user_id)}`;
 
-    return `
-      <div class="flex items-start gap-2">
-        <img src="${esc(avatar)}" class="w-8 h-8 rounded-full object-cover shrink-0">
-        <div class="max-w-[85%]">
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl px-3 py-2">
-            <p class="text-[10px] font-bold text-rose-400">${esc(name)}</p>
-            <p class="text-xs text-slate-200 break-words">${esc(m.message)}</p>
-          </div>
-        </div>
-      </div>
-    `;
-  }).join('');
+  const {error} =
+    await sb.rpc(
+      "admin_send_notification",
+      {
+        target_user_id:
+          target === "all"
+            ? null
+            : target,
 
-  box.scrollTop = box.scrollHeight;
-}
+        notification_title:title,
 
-async function sendPublicMessage(e){
-  e.preventDefault();
-
-  if(!session?.user?.id){
-    return toast('Please sign in first.', false);
-  }
-
-  const input = document.getElementById('pubInput');
-  const message = input?.value.trim();
-
-  if(!message) return;
-
-  const button = e.submitter;
-  if(button) button.disabled = true;
-
-  const { error } = await sb
-    .from('community_messages')
-    .insert({
-      user_id: session.user.id,
-      message: message
-    });
-
-  if(button) button.disabled = false;
-
-  if(error){
-    console.error('Community send error:', error);
-    return toast('Message failed: ' + error.message, false);
-  }
-
-  input.value = '';
-  await loadPublicMessages();
-}
-
-/* PRIVATE INBOX */
-
-async function loadInboxList(){
-  const box = document.getElementById('inboxUsersList');
-  if(!box || !session?.user?.id) return;
-
-  box.innerHTML = '<p class="text-xs text-slate-500">Loading users...</p>';
-
-  const { data: users, error } = await sb
-    .from('profiles')
-    .select('id, full_name, avatar_url, role')
-    .neq('id', session.user.id)
-    .order('full_name', { ascending: true });
-
-  if(error){
-    console.error('Inbox users error:', error);
-    box.innerHTML = '<p class="text-xs text-rose-400">Unable to load users.</p>';
-    return;
-  }
-
-  if(!users?.length){
-    box.innerHTML = '<p class="text-xs text-slate-500">No other users yet.</p>';
-    return;
-  }
-
-  box.innerHTML = users.map(u => `
-    <button onclick="selectPrivateChat('${u.id}')"
-      class="w-full flex items-center gap-2 p-2 rounded-xl hover:bg-slate-800 text-left transition">
-      <img src="${esc(u.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${u.id}`)}"
-        class="w-9 h-9 rounded-full object-cover shrink-0">
-      <span class="min-w-0">
-        <span class="block text-xs font-bold truncate">${esc(u.full_name || 'User')}</span>
-        <span class="block text-[10px] text-slate-500 capitalize">${esc(u.role || 'client')}</span>
-      </span>
-    </button>
-  `).join('');
-}
-
-async function selectPrivateChat(userId){
-  if(!session?.user?.id || !userId) return;
-
-  const { data: target, error } = await sb
-    .from('profiles')
-    .select('id, full_name, avatar_url, role')
-    .eq('id', userId)
-    .single();
-
-  if(error || !target){
-    return toast('Could not open this conversation.', false);
-  }
-
-  currentChatTarget = target;
-
-  document.getElementById('chatTargetName').textContent =
-    target.full_name || 'User';
-
-  await loadPrivateMessages();
-  document.getElementById('privateInput')?.focus();
-}
-
-async function loadPrivateMessages(){
-  const box = document.getElementById('privateMessagesList');
-  if(!box || !session?.user?.id || !currentChatTarget?.id) return;
-
-  box.innerHTML = '<p class="text-center text-xs text-slate-500">Loading...</p>';
-
-  const me = session.user.id;
-  const other = currentChatTarget.id;
-
-  const { data, error } = await sb
-    .from('private_messages')
-    .select('id, sender_id, receiver_id, message, created_at')
-    .or(`and(sender_id.eq.${me},receiver_id.eq.${other}),and(sender_id.eq.${other},receiver_id.eq.${me})`)
-    .order('created_at', { ascending: true })
-    .limit(200);
-
-  if(error){
-    console.error('Private messages load error:', error);
-    box.innerHTML = '<p class="text-center text-xs text-rose-400">Unable to load messages.</p>';
-    return;
-  }
-
-  if(!data?.length){
-    box.innerHTML = '<p class="text-center text-xs text-slate-500 mt-10">No messages yet. Start the conversation.</p>';
-    return;
-  }
-
-  box.innerHTML = data.map(m => {
-    const mine = m.sender_id === me;
-
-    return `
-      <div class="flex ${mine ? 'justify-end' : 'justify-start'}">
-        <div class="max-w-[80%] ${mine ? 'bg-rose-600 text-white' : 'bg-slate-900 border border-slate-800 text-slate-200'} rounded-2xl px-3 py-2">
-          <p class="text-xs break-words">${esc(m.message)}</p>
-          <p class="text-[9px] opacity-60 mt-1">${new Date(m.created_at).toLocaleString()}</p>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  box.scrollTop = box.scrollHeight;
-}
-
-async function sendPrivateMessage(e){
-  e.preventDefault();
-
-  if(!session?.user?.id){
-    return toast('Please sign in first.', false);
-  }
-
-  if(!currentChatTarget?.id){
-    return toast('Select a user first.', false);
-  }
-
-  const input = document.getElementById('privateInput');
-  const message = input?.value.trim();
-
-  if(!message) return;
-
-  const button = e.submitter;
-  if(button) button.disabled = true;
-
-  const { error } = await sb
-    .from('private_messages')
-    .insert({
-      sender_id: session.user.id,
-      receiver_id: currentChatTarget.id,
-      message: message
-    });
-
-  if(button) button.disabled = false;
-
-  if(error){
-    console.error('Private send error:', error);
-    return toast('Message failed: ' + error.message, false);
-  }
-
-  input.value = '';
-  await loadPrivateMessages();
-}
-
-/* Open a private chat from a creator/user profile */
-function startDirectChat(){
-  if(!currentViewedUserId) return toast('User not found.', false);
-  go('inbox');
-  setTimeout(() => selectPrivateChat(currentViewedUserId), 0);
-}
-
-/* Load public chat whenever the Community tab is opened */
-const originalGo = go;
-go = function(tab, push=true){
-  originalGo(tab, push);
-  if(tab === 'chat') loadPublicMessages();
-  if(tab === 'inbox') loadInboxList();
-};
-
-/* Refresh both chat areas when Supabase Realtime is available */
-try{
-  sb.channel('notifications-live')
-    .on('postgres_changes',{event:'*',schema:'public',table:'notifications'},()=>loadMyNotifications())
-    .subscribe();
-
-  sb.channel('community-messages-live')
-    .on('postgres_changes',
-      { event:'*', schema:'public', table:'community_messages' },
-      () => loadPublicMessages()
-    )
-    .subscribe();
-
-  sb.channel('private-messages-live')
-    .on('postgres_changes',
-      { event:'*', schema:'public', table:'private_messages' },
-      payload => {
-        if(!currentChatTarget) return;
-
-        const me = session?.user?.id;
-        const other = currentChatTarget.id;
-        const row = payload.new || payload.old;
-
-        if(row && (
-          (row.sender_id === me && row.receiver_id === other) ||
-          (row.sender_id === other && row.receiver_id === me)
-        )){
-          loadPrivateMessages();
-        }
+        notification_message:message
       }
-    )
-    .subscribe();
-}catch(err){
-  console.warn('Realtime setup skipped:', err);
+    );
+
+
+  if(error){
+
+    console.error(error);
+
+    return toast(
+      "Notification failed: " +
+      error.message,
+      false
+    );
+  }
+
+
+  document.getElementById(
+    "adminNotifTitle"
+  ).value = "";
+
+
+  document.getElementById(
+    "adminNotifMessage"
+  ).value = "";
+
+
+  closeAdminNotificationComposer();
+
+  toast("Notification sent successfully.");
 }
 
+
+/* =========================================================
+   LIVE CAMERA
+========================================================= */
+
+async function startLiveStream(){
+
+  if(!["creator","admin"].includes(profile?.role)){
+    return toast(
+      "Only creators can start live.",
+      false
+    );
+  }
+
+
+  try{
+
+    mediaStream =
+      await navigator.mediaDevices.getUserMedia({
+        video:true,
+        audio:true
+      });
+
+
+    const video =
+      document.getElementById(
+        "liveVideo"
+      );
+
+
+    video.srcObject =
+      mediaStream;
+
+    video.muted = true;
+
+
+    document.getElementById(
+      "liveBadgeText"
+    ).textContent =
+      "BROADCASTING LIVE";
+
+
+    document.getElementById(
+      "viewerConfirmBtn"
+    ).classList.add("hidden");
+
+
+    document.getElementById(
+      "viewerDismissBtn"
+    ).textContent =
+      "End Stream";
+
+
+    document
+      .getElementById("liveModal")
+      .classList.remove("hidden");
+
+
+    toast("Camera is live.");
+
+  }catch(error){
+
+    console.error(error);
+
+    toast(
+      "Camera/Microphone permission denied.",
+      false
+    );
+  }
+}
+
+
+function promptViewLive(creatorName){
+
+  document.getElementById(
+    "liveBadgeText"
+  ).textContent =
+    `${creatorName} IS LIVE`;
+
+
+  document.getElementById(
+    "viewerConfirmBtn"
+  ).classList.remove("hidden");
+
+
+  document.getElementById(
+    "viewerDismissBtn"
+  ).textContent =
+    "Dismiss";
+
+
+  document
+    .getElementById("liveModal")
+    .classList.remove("hidden");
+}
+
+
+async function confirmWatchLive(){
+
+  /*
+    NOTE:
+    This opens the user's own camera.
+    Real multi-user live streaming requires
+    WebRTC signaling/server infrastructure.
+  */
+
+  toast(
+    "Live viewer connection requires a WebRTC signaling server.",
+    false
+  );
+}
+
+
+function stopLiveStream(){
+
+  if(mediaStream){
+
+    mediaStream
+      .getTracks()
+      .forEach(track => track.stop());
+
+    mediaStream = null;
+  }
+
+
+  const video =
+    document.getElementById(
+      "liveVideo"
+    );
+
+
+  video.srcObject = null;
+
+
+  document
+    .getElementById("liveModal")
+    .classList.add("hidden");
+}
+
+
+/* =========================================================
+   VOICE RECORD BUTTON
+========================================================= */
+
+let voiceRecorder = null;
+let voiceChunks = [];
+
+
+async function toggleVoiceRecord(){
+
+  /*
+    Voice recording UI is provided.
+    Sending voice files would require a dedicated
+    storage/message schema.
+  */
+
+  if(voiceRecorder?.state === "recording"){
+
+    voiceRecorder.stop();
+
+    return;
+  }
+
+
+  if(!navigator.mediaDevices?.getUserMedia){
+
+    return toast(
+      "Voice recording is not supported by this browser.",
+      false
+    );
+  }
+
+
+  try{
+
+    const stream =
+      await navigator.mediaDevices.getUserMedia({
+        audio:true
+      });
+
+
+    voiceChunks = [];
+
+
+    voiceRecorder =
+      new MediaRecorder(stream);
+
+
+    voiceRecorder.ondataavailable =
+      e => voiceChunks.push(e.data);
+
+
+    voiceRecorder.onstop = () => {
+
+      stream
+        .getTracks()
+        .forEach(
+          track => track.stop()
+        );
+
+
+      toast(
+        "Voice recording completed. Voice-message upload is not enabled in the current database schema.",
+        false
+      );
+    };
+
+
+    voiceRecorder.start();
+
+
+    toast("Recording voice... Click microphone again to stop.");
+
+  }catch(error){
+
+    console.error(error);
+
+    toast(
+      "Microphone permission denied.",
+      false
+    );
+  }
+}
+
+
+/* =========================================================
+   REALTIME
+========================================================= */
+
+function cleanupRealtime(){
+
+  realtimeChannels.forEach(
+    channel => {
+      try{
+        sb.removeChannel(channel);
+      }catch(error){
+        console.warn(error);
+      }
+    }
+  );
+
+
+  realtimeChannels = [];
+}
+
+
+function setupRealtime(){
+
+  cleanupRealtime();
+
+
+  /*
+    Notifications
+  */
+
+  const notificationChannel =
+    sb
+      .channel(
+        `notifications-${session.user.id}-${Date.now()}`
+      )
+      .on(
+        "postgres_changes",
+        {
+          event:"*",
+          schema:"public",
+          table:"notifications",
+          filter:`user_id=eq.${session.user.id}`
+        },
+        () => loadMyNotifications()
+      )
+      .subscribe();
+
+
+  realtimeChannels.push(
+    notificationChannel
+  );
+
+
+  /*
+    Community
+  */
+
+  const communityChannel =
+    sb
+      .channel(
+        `community-${Date.now()}`
+      )
+      .on(
+        "postgres_changes",
+        {
+          event:"*",
+          schema:"public",
+          table:"community_messages"
+        },
+        () => {
+
+          if(
+            !document
+              .getElementById("view-chat")
+              ?.classList
+              .contains("hidden")
+          ){
+            loadPublicMessages();
+          }
+        }
+      )
+      .subscribe();
+
+
+  realtimeChannels.push(
+    communityChannel
+  );
+
+
+  /*
+    Private messages
+  */
+
+  const privateChannel =
+    sb
+      .channel(
+        `private-${session.user.id}-${Date.now()}`
+      )
+      .on(
+        "postgres_changes",
+        {
+          event:"*",
+          schema:"public",
+          table:"private_messages"
+        },
+        payload => {
+
+          if(!currentChatTarget){
+            return;
+          }
+
+
+          const row =
+            payload.new ||
+            payload.old;
+
+
+          if(!row){
+            return;
+          }
+
+
+          const me =
+            session.user.id;
+
+          const other =
+            currentChatTarget.id;
+
+
+          const belongs =
+            (
+              row.sender_id === me &&
+              row.receiver_id === other
+            )
+            ||
+            (
+              row.sender_id === other &&
+              row.receiver_id === me
+            );
+
+
+          if(belongs){
+            loadPrivateMessages();
+          }
+        }
+      )
+      .subscribe();
+
+
+  realtimeChannels.push(
+    privateChannel
+  );
+
+
+  /*
+    Media changes
+  */
+
+  const mediaChannel =
+    sb
+      .channel(
+        `media-${Date.now()}`
+      )
+      .on(
+        "postgres_changes",
+        {
+          event:"*",
+          schema:"public",
+          table:"media"
+        },
+        () => loadMedia()
+      )
+      .subscribe();
+
+
+  realtimeChannels.push(
+    mediaChannel
+  );
+
+
+  /*
+    Comments
+  */
+
+  const commentsChannel =
+    sb
+      .channel(
+        `comments-${Date.now()}`
+      )
+      .on(
+        "postgres_changes",
+        {
+          event:"*",
+          schema:"public",
+          table:"comments"
+        },
+        payload => {
+
+          const row =
+            payload.new ||
+            payload.old;
+
+
+          if(
+            row &&
+            row.media_id ===
+              currentCommentMediaId
+          ){
+            openComments(
+              currentCommentMediaId
+            );
+          }
+        }
+      )
+      .subscribe();
+
+
+  realtimeChannels.push(
+    commentsChannel
+  );
+}
+
+
+/* =========================================================
+   SAVE CURRENT VIEW WHEN LEAVING PAGE
+========================================================= */
+
+window.addEventListener(
+  "beforeunload",
+  () => {
+
+    const visible =
+      [
+        "home",
+        "reels",
+        "chat",
+        "inbox",
+        "dashboard",
+        "admin",
+        "settings",
+        "profile"
+      ].find(name => {
+
+        const el =
+          document.getElementById(
+            `view-${name}`
+          );
+
+        return el &&
+          !el.classList.contains("hidden");
+      });
+
+
+    if(visible){
+      localStorage.setItem(
+        "iz_current_view",
+        visible
+      );
+    }
+  }
+);
+
+
+/* =========================================================
+   ESC KEY CLOSE MODALS
+========================================================= */
+
+document.addEventListener(
+  "keydown",
+  event => {
+
+    if(event.key !== "Escape"){
+      return;
+    }
+
+
+    closeComments();
+
+    closeUpload();
+
+    closeAdminNotificationComposer();
+
+    const live =
+      document.getElementById(
+        "liveModal"
+      );
+
+
+    if(
+      live &&
+      !live.classList.contains("hidden")
+    ){
+      stopLiveStream();
+    }
+  }
+);
 </script>
+
 </body>
 </html>
