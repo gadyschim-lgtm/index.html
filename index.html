@@ -14,7 +14,6 @@
     .no-scrollbar { scrollbar-width: none; }
     .hidden { display: none !important; }
 
-    /* TikTok-style Vertical Scroll Snap for Reels */
     .reels-container {
       height: calc(100vh - 140px);
       scroll-snap-type: y mandatory;
@@ -53,14 +52,19 @@
       <button class="w-full py-3 rounded-xl bg-rose-600 hover:bg-rose-500 font-bold shadow-lg shadow-rose-600/30 transition">Sign In</button>
     </form>
 
+    <!-- Signup Form updated with Gmail check, Password, and Confirm Password -->
     <form id="signupForm" class="hidden space-y-3" onsubmit="signUp(event)">
       <input id="regName" type="text" required placeholder="Full Name" class="w-full rounded-xl bg-slate-900 border border-slate-800 p-3 text-sm">
-      <input id="regEmail" type="email" required placeholder="Email" class="w-full rounded-xl bg-slate-900 border border-slate-800 p-3 text-sm">
-      <select id="regRole" required class="w-full rounded-xl bg-slate-900 border border-slate-800 p-3 text-sm">
-        <option value="client">Client (Viewer)</option>
-        <option value="creator">Content Creator</option>
-      </select>
-      <input id="regPassword" type="password" minlength="6" required placeholder="Password" class="w-full rounded-xl bg-slate-900 border border-slate-800 p-3 text-sm">
+      <input id="regEmail" type="email" required placeholder="Gmail Address (e.g. name@gmail.com)" class="w-full rounded-xl bg-slate-900 border border-slate-800 p-3 text-sm">
+      <div class="space-y-1">
+        <label class="text-[10px] text-slate-400">Select Account Role</label>
+        <select id="regRole" required class="w-full rounded-xl bg-slate-900 border border-slate-800 p-3 text-sm text-slate-200">
+          <option value="client">Client (Viewer)</option>
+          <option value="creator">Content Creator (Ushaka gushyiraho ibihangano)</option>
+        </select>
+      </div>
+      <input id="regPassword" type="password" required placeholder="Write Password (Inyuguti nkuru, nto, imibare, ikimenyetso)" class="w-full rounded-xl bg-slate-900 border border-slate-800 p-3 text-sm">
+      <input id="regConfirmPassword" type="password" required placeholder="Confirm Password" class="w-full rounded-xl bg-slate-900 border border-slate-800 p-3 text-sm">
       <button class="w-full py-3 rounded-xl bg-rose-600 font-bold shadow-lg shadow-rose-600/30">Create Account</button>
     </form>
   </div>
@@ -73,7 +77,6 @@
   <header class="sticky top-0 z-40 glass border-b border-slate-800/80">
     <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
       <div class="flex items-center gap-3">
-        <!-- Back Button -->
         <button onclick="goBackHistory()" class="w-9 h-9 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:bg-slate-800">
           <i class="fa-solid fa-arrow-left text-xs"></i>
         </button>
@@ -91,20 +94,17 @@
       </div>
 
       <div class="flex items-center gap-2">
-        <!-- Notification Button -->
         <button onclick="toggleNotifications()" class="relative w-9 h-9 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center">
           <i class="fa-regular fa-bell text-slate-300 text-sm"></i>
           <span id="notifBadge" class="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500 hidden"></span>
         </button>
 
-        <!-- Live Stream Button for Creator -->
         <button id="liveStreamBtn" onclick="startLiveStream()" class="hidden px-3 py-1.5 rounded-full bg-rose-600 hover:bg-rose-500 text-xs font-bold flex items-center gap-1.5 animate-pulse">
           <i class="fa-solid fa-tower-broadcast"></i> Go LIVE
         </button>
 
-        <!-- Profile Avatar -->
         <button onclick="go('settings')" class="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 overflow-hidden">
-          <img id="myAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=User" class="w-full h-full object-cover">
+          <img id="myAvatar" src="" class="w-full h-full object-cover">
         </button>
       </div>
     </div>
@@ -142,7 +142,6 @@
     <!-- VIEW: REELS -->
     <section id="view-reels" class="hidden">
       <div class="max-w-sm mx-auto bg-black rounded-3xl overflow-hidden relative border border-slate-800 shadow-2xl">
-        <!-- Scroll Up / Down Floating Buttons inside Reel Container (Non-blocking) -->
         <div class="absolute top-4 right-4 z-20 flex flex-col gap-2">
           <button onclick="scrollReel(-1)" class="w-8 h-8 rounded-full bg-black/60 backdrop-blur text-white flex items-center justify-center hover:bg-rose-600 transition"><i class="fa-solid fa-chevron-up text-xs"></i></button>
           <button onclick="scrollReel(1)" class="w-8 h-8 rounded-full bg-black/60 backdrop-blur text-white flex items-center justify-center hover:bg-rose-600 transition"><i class="fa-solid fa-chevron-down text-xs"></i></button>
@@ -195,9 +194,12 @@
 
     <!-- VIEW: ADMIN PANEL -->
     <section id="view-admin" class="hidden space-y-6">
-      <div class="glass p-6 rounded-3xl border border-rose-500/30">
-        <h2 class="text-xl font-black text-rose-500"><i class="fa-solid fa-shield-halved"></i> System Admin Dashboard</h2>
-        <p class="text-xs text-slate-400 mt-1">Full access to all platform accounts, content moderation, and direct communication.</p>
+      <div class="glass p-6 rounded-3xl border border-rose-500/30 flex justify-between items-center">
+        <div>
+          <h2 class="text-xl font-black text-rose-500"><i class="fa-solid fa-shield-halved"></i> System Admin Dashboard</h2>
+          <p class="text-xs text-slate-400 mt-1">Full access to all platform accounts and content moderation.</p>
+        </div>
+        <button onclick="loadAdminPanel()" class="px-4 py-2 rounded-xl bg-rose-600 text-xs font-bold"><i class="fa-solid fa-rotate"></i> Refresh Content</button>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -216,16 +218,15 @@
     <section id="view-settings" class="hidden max-w-lg mx-auto glass p-6 rounded-3xl space-y-5">
       <h2 class="text-lg font-bold">Account Settings</h2>
       
-      <!-- Upload Profile Picture from Device -->
       <div class="space-y-2">
-        <label class="text-xs text-slate-400 block">Upload Profile Picture from Device</label>
+        <label class="text-xs text-slate-400 block font-bold">Upload Profile Picture from Device</label>
+        <p class="text-[10px] text-slate-500">Choosing an image will instantly replace your profile picture.</p>
         <div class="flex gap-2 items-center">
           <input id="avatarFile" type="file" accept="image/*" class="w-full text-xs bg-slate-900 border border-slate-800 rounded-xl p-2">
-          <button onclick="uploadDeviceAvatar()" class="px-4 py-2 rounded-xl bg-rose-600 text-xs font-bold shrink-0">Upload</button>
+          <button onclick="uploadDeviceAvatar()" class="px-4 py-2 rounded-xl bg-rose-600 text-xs font-bold shrink-0">Upload Picture</button>
         </div>
       </div>
 
-      <!-- Essential Settings Options -->
       <div class="space-y-3 pt-2 border-t border-slate-800">
         <label class="text-xs text-slate-400 block font-bold">Preferences & Account Management</label>
         <div class="flex items-center justify-between bg-slate-900 p-3 rounded-xl text-xs">
@@ -238,12 +239,14 @@
         </div>
       </div>
 
-      <!-- Switch Role to Creator -->
-      <div class="pt-4 border-t border-slate-800 space-y-2">
-        <label class="text-xs text-slate-400 block">Account Role Switch</label>
+      <div class="pt-4 border-t border-slate-800 space-y-3">
+        <label class="text-xs text-slate-400 block font-bold">Content Creator Options</label>
         <p class="text-xs">Current Account Role: <b id="currentRoleDisplay" class="text-rose-400 uppercase">--</b></p>
         <button id="switchRoleBtn" onclick="toggleAccountRole()" class="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold border border-slate-700 transition">
           Switch Account to Content Creator
+        </button>
+        <button id="settingsUploadBtn" onclick="openUpload()" class="hidden w-full py-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-xs font-bold text-white transition">
+          <i class="fa-solid fa-upload"></i> Upload Content From Device
         </button>
       </div>
 
@@ -266,7 +269,7 @@
     <section id="view-dashboard" class="hidden space-y-4">
       <div class="flex justify-between items-center">
         <h2 class="font-bold text-lg">Creator Studio Dashboard</h2>
-        <button onclick="openUpload()" class="px-4 py-2 rounded-xl bg-rose-600 text-xs font-bold"><i class="fa-solid fa-upload"></i> Upload Content</button>
+        <button onclick="openUpload()" class="px-4 py-2 rounded-xl bg-rose-600 text-xs font-bold"><i class="fa-solid fa-upload"></i> Upload Content From Device</button>
       </div>
       <p class="text-xs text-slate-400">Manage and view all your published items privately below:</p>
       <div id="creatorContent" class="space-y-3"></div>
@@ -275,10 +278,9 @@
   </main>
 </div>
 
-<!-- FLOATING MEDIA PLAYER BAR WITH LEFT CONTROLS -->
+<!-- MEDIA PLAYER BAR -->
 <div id="mediaPlayerBar" class="fixed bottom-0 left-0 right-0 z-50 glass border-t border-slate-800 px-4 py-3 hidden">
   <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
-    <!-- Left Controls: Back, Play/Stop, Next -->
     <div class="flex items-center gap-3">
       <button onclick="playerPrevious()" class="w-9 h-9 rounded-full bg-slate-900 border border-slate-800 text-slate-300 flex items-center justify-center hover:bg-slate-800" title="Back"><i class="fa-solid fa-backward-step text-xs"></i></button>
       <button id="playerPlayStopBtn" onclick="playerTogglePlayStop()" class="w-10 h-10 rounded-full bg-rose-600 text-white flex items-center justify-center shadow-lg shadow-rose-600/30" title="Play/Stop"><i class="fa-solid fa-pause text-xs" id="playerPlayIcon"></i></button>
@@ -293,7 +295,7 @@
   </div>
 </div>
 
-<!-- LIVE STREAM MODAL (Ephemeral - Zero Saving) -->
+<!-- LIVE STREAM MODAL -->
 <div id="liveModal" class="fixed inset-0 z-[95] hidden bg-black flex flex-col items-center justify-center p-4">
   <div class="relative w-full max-w-md bg-slate-900 rounded-3xl overflow-hidden border border-rose-500/50 shadow-2xl">
     <div class="absolute top-4 left-4 z-10 bg-rose-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2 animate-pulse">
@@ -310,7 +312,7 @@
 <!-- UPLOAD MODAL -->
 <div id="uploadModal" class="fixed inset-0 z-[80] hidden bg-slate-950/90 flex items-center justify-center p-4">
   <div class="glass rounded-3xl p-6 max-w-md w-full space-y-4">
-    <div class="flex justify-between items-center"><h3 class="font-bold text-sm">Upload Video / Song</h3><button onclick="closeUpload()"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="flex justify-between items-center"><h3 class="font-bold text-sm">Upload Video / Song From Device</h3><button onclick="closeUpload()"><i class="fa-solid fa-xmark"></i></button></div>
     <form onsubmit="uploadContent(event)" class="space-y-3">
       <input id="upTitle" required placeholder="Title" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs">
       <select id="upType" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs">
@@ -350,7 +352,7 @@ let mediaStream = null, mediaRecorder = null, audioChunks = [];
 let activePlayerEl = null, activeTrackIndex = 0;
 let historyStack = ['home'];
 
-function toast(msg, ok=true){ const x=document.getElementById('toast'); x.textContent=msg; x.className=`fixed top-4 right-4 z-[100] max-w-sm rounded-2xl px-5 py-3 text-sm font-medium shadow-2xl ${ok?'bg-emerald-600':'bg-rose-600'}`; x.classList.remove('hidden'); setTimeout(()=>x.classList.add('hidden'),3000); }
+function toast(msg, ok=true){ const x=document.getElementById('toast'); x.textContent=msg; x.className=`fixed top-4 right-4 z-[100] max-w-sm rounded-2xl px-5 py-3 text-sm font-medium shadow-2xl ${ok?'bg-emerald-600':'bg-rose-600'}`; x.classList.remove('hidden'); setTimeout(()=>x.classList.add('hidden'),4000); }
 function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])) }
 
 function go(tab, push=true){
@@ -382,7 +384,28 @@ function showAuth(mode){
 
 async function signUp(e){
   e.preventDefault();
-  const name=regName.value.trim(), email=regEmail.value.trim().toLowerCase(), role=regRole.value, pass=regPassword.value;
+  const name = regName.value.trim();
+  const email = regEmail.value.trim().toLowerCase();
+  const role = regRole.value;
+  const pass = regPassword.value;
+  const confirmPass = regConfirmPassword.value;
+
+  // 1. Isuzuma niba email ari iya Gmail
+  if(!email.endsWith('@gmail.com')){
+    return toast('Ugomba gukoresha email yanditse kuri Gmail (eg: izina@gmail.com)', false);
+  }
+
+  // 2. Isuzuma niba Password na Confirm Password bihura
+  if(pass !== confirmPass){
+    return toast('Password na Confirm Password ntizihura!', false);
+  }
+
+  // 3. Isuzuma ubukomeye bwa Password (Inyuguti nkuru, nto, imibare n'ibimenyetso, uburebure >= 8)
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+  if(!passwordRegex.test(pass)){
+    return toast('Password igomba kugira uburebure bwa 8 kuzamura, ikarimo inyuguti nkuru, ntoya, umubare, n\'ikimenyetso!', false);
+  }
+
   const {data, error} = await sb.auth.signUp({ email, password: pass, options:{ data:{ full_name: name, role } } });
   if(error) return toast(error.message, false);
   toast('Account created successfully! Please sign in.');
@@ -413,6 +436,7 @@ async function boot(s){
 
   document.getElementById('nav-dashboard').classList.toggle('hidden', !isCreator);
   document.getElementById('liveStreamBtn').classList.toggle('hidden', !isCreator);
+  document.getElementById('settingsUploadBtn').classList.toggle('hidden', !isCreator);
   document.getElementById('nav-admin').classList.toggle('hidden', !isAdmin);
 
   await loadMedia();
@@ -452,7 +476,6 @@ async function renderMedia(){
           `<audio controls onplay="incrementView('${m.id}')" class="w-full mt-2" src="${esc(m.file_url)}"></audio>`}
       </div>
 
-      <!-- Icon-Only Action Bar -->
       <div class="flex items-center justify-between text-slate-400 text-xs pt-2 border-t border-slate-800">
         <button onclick="toggleLike('${m.id}')" class="hover:text-rose-500 flex items-center gap-1"><i class="fa-regular fa-heart"></i> <span>${m.likes_count||0}</span></button>
         <button onclick="openComments('${m.id}')" class="hover:text-amber-400 flex items-center gap-1"><i class="fa-regular fa-comment"></i></button>
@@ -465,7 +488,6 @@ async function renderMedia(){
   media.forEach(m => checkIsFollowing(m.creator_id, document.getElementById(`follow-btn-${m.id}`)));
 }
 
-/* ACCURATE COUNTERS */
 async function toggleLike(id){
   const {data} = await sb.from('media').select('likes_count').eq('id', id).single();
   const newCount = (data?.likes_count || 0) + 1;
@@ -504,7 +526,7 @@ async function toggleFollow(creatorId, btnEl){
     await sb.from('follows').insert({ follower_id: session.user.id, following_id: creatorId });
     btnEl.innerHTML = `<i class="fa-solid fa-check text-xs"></i>`;
     btnEl.classList.add('bg-emerald-600');
-    toast('Followed successfully (Yes)');
+    toast('Followed successfully');
   }
 }
 
@@ -517,14 +539,13 @@ function renderReels(){
     <div class="reel-card flex items-center justify-center bg-black">
       <video id="reelVideo-${idx}" onclick="toggleReelPlay(this)" loop playsinline class="w-full h-full object-cover" src="${esc(m.file_url)}"></video>
       
-      <!-- Icon-only bar on the bottom right -->
       <div class="absolute bottom-6 right-3 z-10 flex flex-col items-center gap-4 text-white">
         <button onclick="openUserProfile('${m.creator_id}')" class="w-10 h-10 rounded-full border-2 border-rose-500 overflow-hidden"><img src="${m.profiles?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${m.creator_id}`}"></button>
         <button onclick="toggleFollow('${m.creator_id}', this)" class="w-6 h-6 rounded-full bg-rose-600 text-[10px] flex items-center justify-center -mt-3"><i class="fa-solid fa-plus"></i></button>
         
         <button onclick="toggleLike('${m.id}')" class="flex flex-col items-center"><i class="fa-solid fa-heart text-xl hover:text-rose-500"></i><span class="text-[10px]">${m.likes_count||0}</span></button>
         <button onclick="openComments('${m.id}')" class="flex flex-col items-center"><i class="fa-solid fa-comment text-xl hover:text-amber-400"></i></button>
-        <button onclick="incrementDownload('${m.file_url}')" class="flex flex-col items-center"><i class="fa-solid fa-download text-xl hover:text-emerald-400"></i></button>
+        <button onclick="incrementDownload('${m.id}')" class="flex flex-col items-center"><i class="fa-solid fa-download text-xl hover:text-emerald-400"></i></button>
         <button onclick="incrementViewCount('${m.id}')" class="flex flex-col items-center"><i class="fa-regular fa-eye text-xl hover:text-sky-400"></i><span class="text-[10px]">${m.views_count||0}</span></button>
       </div>
 
@@ -542,13 +563,13 @@ function scrollReel(dir){
   container.scrollBy({ top: dir * (window.innerHeight - 140), behavior: 'smooth' });
 }
 
-/* LIVE STREAMING (Ephemeral - Zero Saving) */
+/* LIVE STREAMING */
 async function startLiveStream(){
   try {
     mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
     document.getElementById('liveVideo').srcObject = mediaStream;
     document.getElementById('liveModal').classList.remove('hidden');
-    toast('Live stream started securely (Ephemeral)');
+    toast('Live stream started securely');
   } catch(err){
     toast('Camera & Microphone access required for Live Stream', false);
   }
@@ -560,7 +581,6 @@ function stopLiveStream(){
   toast('Live stream ended.');
 }
 
-/* PUBLIC USER PROFILE VIEW */
 async function openUserProfile(userId){
   currentViewedUserId = userId;
   const {data: userProf} = await sb.from('profiles').select('*').eq('id', userId).single();
@@ -587,7 +607,6 @@ function startDirectChat(){
   go('inbox');
 }
 
-/* PRIVATE INBOX & VOICE NOTES */
 async function loadInboxList(){
   const {data} = await sb.from('profiles').select('*').neq('id', session.user.id);
   document.getElementById('inboxUsersList').innerHTML = (data||[]).map(u=>`
@@ -657,7 +676,6 @@ async function toggleVoiceRecord(){
   }
 }
 
-/* SETTINGS & DEVICE AVATAR UPLOAD */
 async function uploadDeviceAvatar(){
   const fileInput = document.getElementById('avatarFile');
   if(fileInput.files.length === 0) return toast('Please select an image file', false);
@@ -667,8 +685,9 @@ async function uploadDeviceAvatar(){
   const {data:{publicUrl}} = sb.storage.from('media').getPublicUrl(path);
 
   await sb.from('profiles').update({ avatar_url: publicUrl }).eq('id', session.user.id);
+  profile.avatar_url = publicUrl;
   document.getElementById('myAvatar').src = publicUrl;
-  toast('Profile picture updated from device!');
+  toast('Profile picture successfully replaced!');
 }
 
 async function toggleAccountRole(){
@@ -680,9 +699,9 @@ async function toggleAccountRole(){
   boot(session);
 }
 
-/* ADMIN PANEL */
 async function loadAdminPanel(){
-  if(profile.role !== 'admin') return;
+  if(profile.role !== 'admin') return toast('Unauthorized access', false);
+  
   const {data: allMedia} = await sb.from('media').select('*, profiles!media_creator_id_fkey(*)');
   document.getElementById('adminContentList').innerHTML = (allMedia||[]).map(m=>`
     <div class="flex justify-between items-center p-2 rounded-xl bg-slate-900 text-xs">
@@ -698,6 +717,8 @@ async function loadAdminPanel(){
       <button onclick="selectPrivateTarget('${u.id}', '${esc(u.full_name)}'); go('inbox');" class="text-rose-400 font-bold">Message</button>
     </div>
   `).join('');
+  
+  toast('Admin Panel content refreshed successfully');
 }
 
 async function adminDeleteMedia(id){
@@ -708,7 +729,6 @@ async function adminDeleteMedia(id){
   loadMedia();
 }
 
-/* CREATOR DASHBOARD UPLOAD */
 async function renderCreator(){
   const {data} = await sb.from('media').select('*').eq('creator_id', session.user.id);
   document.getElementById('creatorContent').innerHTML = (data||[]).map(m=>`
@@ -731,7 +751,7 @@ async function uploadContent(e){
   const {data:{publicUrl}} = sb.storage.from('media').getPublicUrl(path);
 
   await sb.from('media').insert({ title, type, file_url: publicUrl, creator_id: session.user.id, status: 'published' });
-  toast('Content uploaded successfully!');
+  toast('Content uploaded successfully from device!');
   closeUpload();
   loadMedia();
   renderCreator();
@@ -744,13 +764,11 @@ async function deleteCreatorMedia(id){
   loadMedia();
 }
 
-/* MEDIA BAR CONTROLS */
 function playerPrevious(){ toast('Previous media item'); }
 function playerNext(){ toast('Next media item'); }
 function playerTogglePlayStop(){ toast('Play / Stop toggled'); }
 function closeMediaPlayer(){ document.getElementById('mediaPlayerBar').classList.add('hidden'); }
 
-/* MODALS & HELPERS */
 function openUpload(){ document.getElementById('uploadModal').classList.remove('hidden'); }
 function closeUpload(){ document.getElementById('uploadModal').classList.add('hidden'); }
 function openComments(){ document.getElementById('commentModal').classList.remove('hidden'); }
