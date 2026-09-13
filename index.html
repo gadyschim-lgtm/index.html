@@ -212,12 +212,43 @@
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="glass p-4 rounded-2xl">
-          <h3 class="font-bold text-sm mb-3">All Website Content (Audit & Delete)</h3>
-          <div id="adminContentList" class="space-y-2 max-h-96 overflow-y-auto"></div>
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <h3 class="font-bold text-sm">All Website Content (Audit & Delete)</h3>
+            <button onclick="loadAdminPanel()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] font-bold">Refresh</button>
+          </div>
+          <p class="text-[10px] text-slate-500 mb-3">Review content and remove anything that violates the group/platform rules.</p>
+          <div id="adminContentList" class="space-y-2 max-h-[32rem] overflow-y-auto"></div>
         </div>
         <div class="glass p-4 rounded-2xl">
-          <h3 class="font-bold text-sm mb-3">All Platform Users</h3>
-          <div id="adminUsersList" class="space-y-2 max-h-96 overflow-y-auto"></div>
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <h3 class="font-bold text-sm">Platform Users Control</h3>
+            <button onclick="loadAdminUsers()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] font-bold">Refresh</button>
+          </div>
+          <p class="text-[10px] text-slate-500 mb-3">Send notices, manage accounts, or remove users who violate the rules.</p>
+          <div id="adminUsersList" class="space-y-2 max-h-[32rem] overflow-y-auto"></div>
+        </div>
+      </div>
+      <div class="glass p-4 rounded-2xl border border-amber-500/20">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h3 class="font-bold text-sm"><i class="fa-regular fa-bell text-amber-400"></i> Admin Notifications</h3>
+            <p class="text-[10px] text-slate-500 mt-1">Write a notification and send it to one user or everyone.</p>
+          </div>
+          <button onclick="openAdminNotificationComposer()" class="px-4 py-2 rounded-xl bg-amber-500 text-slate-950 text-xs font-black hover:bg-amber-400">
+            <i class="fa-solid fa-pen-to-square"></i> Write Notification
+          </button>
+        </div>
+      </div>
+      <div class="glass p-4 rounded-2xl border border-sky-500/20">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h3 class="font-bold text-sm"><i class="fa-solid fa-headset text-sky-400"></i> Call Center</h3>
+            <p class="text-[10px] text-slate-500 mt-1">Support: +250 789 562 272</p>
+          </div>
+          <div class="flex gap-2">
+            <a href="tel:+250789562272" class="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold"><i class="fa-solid fa-phone"></i> Call</a>
+            <a href="https://wa.me/250789562272" target="_blank" rel="noopener" class="px-4 py-2 rounded-xl bg-green-600 text-white text-xs font-bold"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+          </div>
         </div>
       </div>
     </section>
@@ -334,6 +365,32 @@
 </div>
 
 
+<!-- ADMIN NOTIFICATION COMPOSER -->
+<div id="adminNotificationModal" class="fixed inset-0 z-[96] hidden bg-slate-950/90 flex items-center justify-center p-4">
+  <div class="glass rounded-3xl p-6 max-w-lg w-full space-y-4 border border-amber-500/20">
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="font-bold text-sm">Write Notification</h3>
+        <p class="text-[10px] text-slate-500">Send an in-app notice to one user or all users.</p>
+      </div>
+      <button onclick="closeAdminNotificationComposer()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <input id="adminNotifTitle" maxlength="120" placeholder="Notification title" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs focus:outline-none focus:border-amber-500">
+    <textarea id="adminNotifMessage" maxlength="1000" rows="5" placeholder="Write your notification..." class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs focus:outline-none focus:border-amber-500"></textarea>
+    <select id="adminNotifTarget" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs"><option value="all">All users</option></select>
+    <div class="flex gap-2">
+      <button onclick="closeAdminNotificationComposer()" class="flex-1 py-2.5 rounded-xl bg-slate-800 text-xs font-bold">Cancel</button>
+      <button onclick="sendAdminNotification()" class="flex-1 py-2.5 rounded-xl bg-amber-500 text-slate-950 text-xs font-black"><i class="fa-solid fa-paper-plane"></i> Send Notification</button>
+    </div>
+  </div>
+</div>
+
+<!-- GLOBAL CALL CENTER -->
+<div class="fixed bottom-5 right-5 z-[70] flex flex-col gap-2">
+  <a href="https://wa.me/250789562272" target="_blank" rel="noopener" class="w-12 h-12 rounded-full bg-green-600 hover:bg-green-500 text-white flex items-center justify-center shadow-2xl" title="WhatsApp Call Center"><i class="fa-brands fa-whatsapp text-xl"></i></a>
+  <a href="tel:+250789562272" class="w-12 h-12 rounded-full bg-sky-600 hover:bg-sky-500 text-white flex items-center justify-center shadow-2xl" title="Call Center"><i class="fa-solid fa-phone"></i></a>
+</div>
+
 <!-- GLOBAL AUDIO PLAYER -->
 <div id="globalAudioPlayer" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[90] hidden w-[min(94vw,560px)] glass border border-slate-700 rounded-2xl p-3 shadow-2xl">
   <div class="flex items-center gap-3">
@@ -436,7 +493,6 @@ async function boot(s){
   session = s; if(!session) return;
   const {data} = await sb.from('profiles').select('*').eq('id', session.user.id).single();
   profile = data || { id: session.user.id, role: 'client', full_name: 'User' };
-  
   document.getElementById('authOverlay').classList.add('hidden');
   document.getElementById('mainApp').classList.remove('hidden');
   document.getElementById('myAvatar').src = profile.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${profile.id}`;
@@ -450,6 +506,7 @@ async function boot(s){
   document.getElementById('nav-admin').classList.toggle('hidden', !isAdmin);
 
   await loadMedia();
+  await loadMyNotifications();
 }
 
 
@@ -1437,6 +1494,172 @@ async function deleteCreatorMedia(mediaId){
   toast('Content deleted successfully!');
 }
 
+
+/* =========================================================
+   ADMIN PANEL: CONTENT / USERS / NOTIFICATIONS
+   ========================================================= */
+
+function isCurrentAdmin(){
+  return !!(session?.user?.id && profile?.role === 'admin');
+}
+
+async function loadAdminPanel(){
+  if(!isCurrentAdmin()) return toast('Admin access required.', false);
+  const contentBox=document.getElementById('adminContentList');
+  if(contentBox) contentBox.innerHTML='<p class="text-xs text-slate-500">Loading content...</p>';
+
+  const {data: rows,error}=await sb.from('media')
+    .select('id,title,type,status,file_url,creator_id,created_at,profiles!media_creator_id_fkey(full_name)')
+    .order('created_at',{ascending:false});
+
+  if(error){
+    console.error('Admin content load:',error);
+    if(contentBox) contentBox.innerHTML=`<p class="text-xs text-rose-400">${esc(error.message)}</p>`;
+  }else if(contentBox){
+    contentBox.innerHTML=(rows||[]).map(m=>`
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-3">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-xs font-bold truncate">${esc(m.title||'Untitled')}</p>
+            <p class="text-[10px] text-slate-500 mt-1">${esc(m.type||'media')} • ${esc(m.status||'published')} • ${esc(m.profiles?.full_name||'Unknown user')}</p>
+            <p class="text-[9px] text-slate-600 mt-1">${m.created_at?new Date(m.created_at).toLocaleString():''}</p>
+          </div>
+          <button onclick="adminDeleteContent('${m.id}')" class="shrink-0 px-3 py-2 rounded-lg bg-rose-600/20 text-rose-400 hover:bg-rose-600 hover:text-white text-[10px] font-bold"><i class="fa-solid fa-trash"></i> Delete</button>
+        </div>
+        <a href="${esc(m.file_url||'#')}" target="_blank" rel="noopener" class="inline-flex mt-2 text-[10px] text-sky-400 hover:text-sky-300">Open content</a>
+      </div>
+    `).join('')||'<p class="text-xs text-slate-500">No content found.</p>';
+  }
+  await loadAdminUsers();
+}
+
+async function loadAdminUsers(){
+  if(!isCurrentAdmin()) return toast('Admin access required.', false);
+  const box=document.getElementById('adminUsersList');
+  if(box) box.innerHTML='<p class="text-xs text-slate-500">Loading users...</p>';
+
+  const {data:users,error}=await sb.from('profiles')
+    .select('id,full_name,avatar_url,role,updated_at').order('full_name',{ascending:true});
+
+  if(error){
+    console.error('Admin users load:',error);
+    if(box) box.innerHTML=`<p class="text-xs text-rose-400">${esc(error.message)}</p>`;
+    return;
+  }
+
+  const select=document.getElementById('adminNotifTarget');
+  if(select){
+    const current=select.value||'all';
+    select.innerHTML='<option value="all">All users</option>'+(users||[]).filter(u=>u.id!==session.user.id)
+      .map(u=>`<option value="${esc(u.id)}">${esc(u.full_name||'User')} — ${esc(u.role||'client')}</option>`).join('');
+    select.value=[...select.options].some(o=>o.value===current)?current:'all';
+  }
+
+  if(box){
+    box.innerHTML=(users||[]).map(u=>`
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-3">
+        <div class="flex items-center gap-3">
+          <img src="${esc(u.avatar_url||`https://api.dicebear.com/7.x/bottts/svg?seed=${u.id}`)}" class="w-9 h-9 rounded-full object-cover">
+          <div class="min-w-0 flex-1">
+            <p class="text-xs font-bold truncate">${esc(u.full_name||'User')}</p>
+            <p class="text-[10px] text-slate-500 capitalize">${esc(u.role||'client')}</p>
+          </div>
+          <div class="flex gap-1.5">
+            <button onclick="openAdminNotificationComposer('${u.id}')" class="px-2.5 py-2 rounded-lg bg-amber-500/20 text-amber-400 text-[9px] font-bold" title="Notify"><i class="fa-regular fa-bell"></i></button>
+            ${u.id!==session.user.id?`<button onclick="adminDeleteUser('${u.id}')" class="px-2.5 py-2 rounded-lg bg-rose-600/20 text-rose-400 hover:bg-rose-600 hover:text-white text-[9px] font-bold" title="Delete user"><i class="fa-solid fa-user-xmark"></i></button>`:''}
+          </div>
+        </div>
+      </div>
+    `).join('')||'<p class="text-xs text-slate-500">No users found.</p>';
+  }
+}
+
+async function adminDeleteContent(mediaId){
+  if(!isCurrentAdmin()) return toast('Admin access required.',false);
+  if(!confirm('Delete this content because it violates the group/platform rules?')) return;
+  const {error}=await sb.rpc('admin_delete_media',{target_media_id:mediaId});
+  if(error){
+    console.error('Admin delete content:',error);
+    return toast('Delete failed. Run the supplied SQL fix in Supabase.',false);
+  }
+  await loadAdminPanel(); await loadMedia();
+  toast('Content removed successfully.');
+}
+
+async function adminDeleteUser(userId){
+  if(!isCurrentAdmin()) return toast('Admin access required.',false);
+  if(userId===session.user.id) return toast('You cannot delete your own admin account here.',false);
+  if(!confirm('Delete this user account and remove their profile/content? This cannot be undone.')) return;
+
+  const {error}=await sb.rpc('admin_delete_user',{target_user_id:userId});
+  if(error){
+    console.error('Admin delete user:',error);
+    return toast('User deletion is not enabled yet. Run the supplied SQL fix in Supabase.',false);
+  }
+  await loadAdminUsers(); await loadMedia();
+  toast('User account removed.');
+}
+
+function openAdminNotificationComposer(targetId='all'){
+  if(!isCurrentAdmin()) return toast('Admin access required.',false);
+  const modal=document.getElementById('adminNotificationModal');
+  if(!modal) return;
+  modal.classList.remove('hidden');
+  const select=document.getElementById('adminNotifTarget');
+  if(select) select.value=targetId||'all';
+  document.getElementById('adminNotifTitle')?.focus();
+}
+function closeAdminNotificationComposer(){document.getElementById('adminNotificationModal')?.classList.add('hidden');}
+
+async function sendAdminNotification(){
+  if(!isCurrentAdmin()) return toast('Admin access required.',false);
+  const title=document.getElementById('adminNotifTitle')?.value.trim();
+  const message=document.getElementById('adminNotifMessage')?.value.trim();
+  const target=document.getElementById('adminNotifTarget')?.value||'all';
+  if(!title||!message) return toast('Write both a title and message.',false);
+
+  const {error}=await sb.rpc('admin_send_notification',{
+    target_user_id:target==='all'?null:target,
+    notification_title:title,
+    notification_message:message
+  });
+  if(error){
+    console.error('Admin notification:',error);
+    return toast('Notification failed. Run the supplied SQL fix first.',false);
+  }
+  document.getElementById('adminNotifTitle').value='';
+  document.getElementById('adminNotifMessage').value='';
+  closeAdminNotificationComposer();
+  toast('Notification sent successfully.');
+}
+
+async function loadMyNotifications(){
+  if(!session?.user?.id) return;
+  const list=document.getElementById('notifList'),badge=document.getElementById('notifBadge');
+  if(!list) return;
+  const {data,error}=await sb.from('notifications')
+    .select('id,title,message,created_at,read_at').eq('user_id',session.user.id)
+    .order('created_at',{ascending:false}).limit(30);
+  if(error){console.warn('Notifications unavailable:',error.message);return;}
+  if(badge) badge.classList.toggle('hidden',!(data||[]).some(n=>!n.read_at));
+  list.innerHTML=(data||[]).map(n=>`
+    <button onclick="markNotificationRead('${n.id}')" class="w-full text-left rounded-xl p-3 border ${n.read_at?'border-slate-800 bg-slate-900/50':'border-amber-500/30 bg-amber-500/5'}">
+      <p class="font-bold text-[11px]">${esc(n.title||'Notification')}</p>
+      <p class="text-[10px] text-slate-300 mt-1 whitespace-pre-wrap">${esc(n.message||'')}</p>
+      <p class="text-[9px] text-slate-600 mt-1">${n.created_at?new Date(n.created_at).toLocaleString():''}</p>
+    </button>`).join('')||'<p class="text-slate-500">No notifications.</p>';
+}
+async function markNotificationRead(id){
+  if(!session?.user?.id||!id) return;
+  await sb.from('notifications').update({read_at:new Date().toISOString()}).eq('id',id).eq('user_id',session.user.id);
+  await loadMyNotifications();
+}
+function toggleNotifications(){
+  const panel=document.getElementById('notifPanel'); if(!panel) return;
+  panel.classList.toggle('hidden');
+  if(!panel.classList.contains('hidden')) loadMyNotifications();
+}
+
 /* COMMUNITY CHAT */
 
 async function loadPublicMessages(){
@@ -1681,6 +1904,10 @@ go = function(tab, push=true){
 
 /* Refresh both chat areas when Supabase Realtime is available */
 try{
+  sb.channel('notifications-live')
+    .on('postgres_changes',{event:'*',schema:'public',table:'notifications'},()=>loadMyNotifications())
+    .subscribe();
+
   sb.channel('community-messages-live')
     .on('postgres_changes',
       { event:'*', schema:'public', table:'community_messages' },
