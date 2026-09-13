@@ -107,7 +107,7 @@
         </button>
 
         <!-- Profile Avatar -->
-        <button onclick="go('settings')" class="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 overflow-hidden">
+        <button onclick="openOwnProfile()" class="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 overflow-hidden" title="My Profile">
           <img id="myAvatar" src="" class="w-full h-full object-cover">
         </button>
       </div>
@@ -183,16 +183,20 @@
     <section id="view-profile" class="hidden space-y-4">
       <div class="glass p-6 rounded-3xl flex items-center gap-4">
         <img id="profAvatar" src="" class="w-20 h-20 rounded-full border-2 border-rose-500 object-cover">
-        <div>
-          <h2 id="profName" class="text-xl font-bold">--</h2>
+        <div class="min-w-0">
+          <h2 id="profName" class="text-xl font-bold truncate">--</h2>
           <p id="profRole" class="text-xs text-rose-400 capitalize">--</p>
+          <div class="flex gap-4 mt-3 text-xs">
+            <div><b id="profFollowersCount">0</b> <span class="text-slate-500">Followers</span></div>
+            <div><b id="profFollowingCount">0</b> <span class="text-slate-500">Following</span></div>
+          </div>
           <div class="flex gap-2 mt-3">
             <button id="profFollowBtn" onclick="toggleFollowCurrentProfile()" class="px-4 py-1.5 rounded-full bg-rose-600 text-xs font-bold flex items-center gap-1.5"><i class="fa-solid fa-user-plus"></i> <span id="profFollowText">Follow</span></button>
             <button id="profMsgBtn" onclick="startDirectChat()" class="px-4 py-1.5 rounded-full bg-slate-800 text-xs font-bold"><i class="fa-solid fa-envelope"></i> Message</button>
           </div>
         </div>
       </div>
-      <h3 class="font-bold text-sm text-slate-300">Creator Uploaded Content</h3>
+      <h3 id="profContentTitle" class="font-bold text-sm text-slate-300">Creator Uploaded Content</h3>
       <div id="profMediaGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-4"></div>
     </section>
 
@@ -326,6 +330,30 @@
       <input id="upFile" type="file" accept="video/*,audio/*" required class="w-full text-xs">
       <button class="w-full py-3 rounded-xl bg-rose-600 text-xs font-bold">Publish Now</button>
     </form>
+  </div>
+</div>
+
+
+<!-- GLOBAL AUDIO PLAYER -->
+<div id="globalAudioPlayer" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[90] hidden w-[min(94vw,560px)] glass border border-slate-700 rounded-2xl p-3 shadow-2xl">
+  <div class="flex items-center gap-3">
+    <button onclick="audioPrevious()" class="w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center" title="Previous">
+      <i class="fa-solid fa-backward-step"></i>
+    </button>
+    <button id="globalAudioPlayBtn" onclick="audioPlayPause()" class="w-10 h-10 rounded-full bg-rose-600 hover:bg-rose-500 flex items-center justify-center" title="Play / Stop">
+      <i class="fa-solid fa-play"></i>
+    </button>
+    <button onclick="audioNext()" class="w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center" title="Next">
+      <i class="fa-solid fa-forward-step"></i>
+    </button>
+    <div class="min-w-0 flex-1">
+      <p id="globalAudioTitle" class="text-xs font-bold truncate">Audio</p>
+      <p id="globalAudioCreator" class="text-[10px] text-slate-500 truncate">Creator</p>
+      <audio id="globalAudioElement" class="w-full h-8 mt-1" preload="metadata"></audio>
+    </div>
+    <button onclick="closeGlobalAudio()" class="w-8 h-8 rounded-full bg-slate-900 text-slate-400 hover:text-white flex items-center justify-center" title="Close">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
   </div>
 </div>
 
@@ -514,6 +542,7 @@ function stopLiveStream(){
 async function loadMedia(){
   const {data} = await sb.from('media').select('*, profiles!media_creator_id_fkey(*)').eq('status','published').order('created_at', {ascending:false});
   media = data || [];
+  buildAudioQueue();
   renderMedia();
 }
 
@@ -541,7 +570,15 @@ async function renderMedia(){
         <h4 class="font-bold text-sm truncate">${esc(m.title)}</h4>
         ${m.type==='video'? 
           `<video controls onplay="incrementView('${m.id}')" class="w-full h-48 rounded-xl object-cover mt-2 bg-black" src="${esc(m.file_url)}"></video>` : 
-          `<audio controls onplay="incrementView('${m.id}')" class="w-full mt-2" src="${esc(m.file_url)}"></audio>`}
+          `<button onclick="playAudioById('${m.id}')" class="w-full mt-2 p-3 rounded-xl bg-slate-900 border border-slate-800 text-left hover:border-rose-500 transition">
+            <span class="flex items-center gap-3">
+              <span class="w-10 h-10 rounded-full bg-rose-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-play"></i></span>
+              <span class="min-w-0">
+                <span class="block text-xs font-bold truncate">${esc(m.title)}</span>
+                <span class="block text-[10px] text-slate-500">Tap to play • Previous / Play / Next</span>
+              </span>
+            </span>
+          </button>`}
       </div>
 
       <div class="flex items-center justify-between text-slate-400 text-xs pt-2 border-t border-slate-800">
@@ -584,18 +621,459 @@ async function incrementDownload(id){
 }
 
 async function toggleFollow(creatorId, btnEl){
-  const {data} = await sb.from('follows').select('*').eq('follower_id', session.user.id).eq('following_id', creatorId).maybeSingle();
+  if(!session?.user?.id) return toast('Please sign in first.', false);
+  if(!creatorId) return;
+  if(creatorId === session.user.id) return toast('You cannot follow yourself.', false);
+
+  const {data, error: checkError} = await sb.from('follows')
+    .select('follower_id')
+    .eq('follower_id', session.user.id)
+    .eq('following_id', creatorId)
+    .maybeSingle();
+
+  if(checkError) return toast('Could not check follow status: ' + checkError.message, false);
+
   if(data){
-    await sb.from('follows').delete().eq('follower_id', session.user.id).eq('following_id', creatorId);
+    const {error} = await sb.from('follows')
+      .delete()
+      .eq('follower_id', session.user.id)
+      .eq('following_id', creatorId);
+
+    if(error) return toast('Unfollow failed: ' + error.message, false);
+
     btnEl.innerHTML = `<i class="fa-solid fa-user-plus"></i>`;
     btnEl.classList.remove('bg-emerald-600');
     toast('Unfollowed');
   } else {
-    await sb.from('follows').insert({ follower_id: session.user.id, following_id: creatorId });
+    const {error} = await sb.from('follows')
+      .insert({ follower_id: session.user.id, following_id: creatorId });
+
+    if(error) return toast('Follow failed: ' + error.message, false);
+
     btnEl.innerHTML = `<i class="fa-solid fa-check text-xs"></i>`;
     btnEl.classList.add('bg-emerald-600');
-    toast('Followed successfully');
+    toast('Following successfully');
   }
+
+  await renderMedia();
+}
+
+
+/* =========================================================
+   FOLLOWING + PROFILE
+   ========================================================= */
+
+async function getFollowCounts(userId){
+  if(!userId) return {followers:0, following:0};
+
+  const [{count: followers}, {count: following}] = await Promise.all([
+    sb.from('follows').select('*', {count:'exact', head:true}).eq('following_id', userId),
+    sb.from('follows').select('*', {count:'exact', head:true}).eq('follower_id', userId)
+  ]);
+
+  return {
+    followers: followers || 0,
+    following: following || 0
+  };
+}
+
+async function updateProfileFollowCounts(userId){
+  const counts = await getFollowCounts(userId);
+  const followersEl = document.getElementById('profFollowersCount');
+  const followingEl = document.getElementById('profFollowingCount');
+  if(followersEl) followersEl.textContent = counts.followers;
+  if(followingEl) followingEl.textContent = counts.following;
+}
+
+async function openOwnProfile(){
+  if(!session?.user?.id) return toast('Please sign in first.', false);
+
+  currentViewedUserId = session.user.id;
+  go('profile');
+
+  document.getElementById('profAvatar').src =
+    profile?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${profile.id}`;
+  document.getElementById('profName').textContent = profile?.full_name || 'My Profile';
+  document.getElementById('profRole').textContent = profile?.role || 'client';
+  document.getElementById('profContentTitle').textContent =
+    profile?.role === 'creator' || profile?.role === 'admin'
+      ? 'My Uploaded Content'
+      : 'My Profile';
+
+  const followBtn = document.getElementById('profFollowBtn');
+  const msgBtn = document.getElementById('profMsgBtn');
+  if(followBtn) followBtn.classList.add('hidden');
+  if(msgBtn) msgBtn.classList.add('hidden');
+
+  await updateProfileFollowCounts(session.user.id);
+
+  const grid = document.getElementById('profMediaGrid');
+  if(!grid) return;
+
+  if(!['creator','admin'].includes(profile?.role)){
+    grid.innerHTML = '<p class="text-xs text-slate-500">You have no creator content.</p>';
+    return;
+  }
+
+  const {data, error} = await sb.from('media')
+    .select('*')
+    .eq('creator_id', session.user.id)
+    .order('created_at', {ascending:false});
+
+  if(error){
+    console.error('Own profile content error:', error);
+    grid.innerHTML = '<p class="text-xs text-rose-400">Unable to load your content.</p>';
+    return;
+  }
+
+  grid.innerHTML = (data || []).map(m => `
+    <div class="glass p-3 rounded-2xl border border-slate-800">
+      <p class="text-xs font-bold truncate">${esc(m.title || 'Untitled')}</p>
+      <p class="text-[10px] text-slate-500 mt-1">${esc(m.status || 'published')}</p>
+      ${m.type === 'video'
+        ? `<video controls class="w-full mt-2 rounded-xl bg-black" src="${esc(m.file_url)}"></video>`
+        : `<button onclick="playAudioById('${m.id}')" class="w-full mt-2 p-3 rounded-xl bg-slate-900 text-left text-xs"><i class="fa-solid fa-play mr-2 text-rose-500"></i> Play audio</button>`}
+    </div>
+  `).join('') || '<p class="text-xs text-slate-500">No uploaded content.</p>';
+}
+
+async function openUserProfile(userId){
+  if(!userId) return;
+  if(session?.user?.id === userId) return openOwnProfile();
+
+  currentViewedUserId = userId;
+  go('profile');
+
+  const {data: user, error} = await sb.from('profiles')
+    .select('id, full_name, avatar_url, role')
+    .eq('id', userId)
+    .single();
+
+  if(error || !user){
+    return toast('Unable to open this profile.', false);
+  }
+
+  document.getElementById('profAvatar').src =
+    user.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.id}`;
+  document.getElementById('profName').textContent = user.full_name || 'User';
+  document.getElementById('profRole').textContent = user.role || 'client';
+  document.getElementById('profContentTitle').textContent =
+    ['creator','admin'].includes(user.role) ? 'Creator Uploaded Content' : 'Uploaded Content';
+
+  const followBtn = document.getElementById('profFollowBtn');
+  const msgBtn = document.getElementById('profMsgBtn');
+  if(followBtn) followBtn.classList.remove('hidden');
+  if(msgBtn) msgBtn.classList.remove('hidden');
+
+  await updateProfileFollowCounts(user.id);
+  await updateCurrentProfileFollowButton();
+
+  const {data: rows, error: mediaError} = await sb.from('media')
+    .select('*')
+    .eq('creator_id', user.id)
+    .eq('status', 'published')
+    .order('created_at', {ascending:false});
+
+  const grid = document.getElementById('profMediaGrid');
+  if(!grid) return;
+
+  if(mediaError){
+    console.error('Profile media error:', mediaError);
+    grid.innerHTML = '<p class="text-xs text-rose-400">Unable to load content.</p>';
+    return;
+  }
+
+  grid.innerHTML = (rows || []).map(m => `
+    <div class="glass p-3 rounded-2xl border border-slate-800">
+      <p class="text-xs font-bold truncate">${esc(m.title || 'Untitled')}</p>
+      ${m.type === 'video'
+        ? `<video controls onplay="incrementView('${m.id}')" class="w-full mt-2 rounded-xl bg-black" src="${esc(m.file_url)}"></video>`
+        : `<button onclick="playAudioById('${m.id}')" class="w-full mt-2 p-3 rounded-xl bg-slate-900 text-left text-xs"><i class="fa-solid fa-play mr-2 text-rose-500"></i> Play audio</button>`}
+    </div>
+  `).join('') || '<p class="text-xs text-slate-500">This creator has not published content yet.</p>';
+}
+
+async function updateCurrentProfileFollowButton(){
+  const btn = document.getElementById('profFollowBtn');
+  const text = document.getElementById('profFollowText');
+  if(!btn || !text || !currentViewedUserId || !session?.user?.id) return;
+
+  if(currentViewedUserId === session.user.id){
+    btn.classList.add('hidden');
+    return;
+  }
+
+  const {data, error} = await sb.from('follows')
+    .select('follower_id')
+    .eq('follower_id', session.user.id)
+    .eq('following_id', currentViewedUserId)
+    .maybeSingle();
+
+  if(error) console.error('Follow status error:', error);
+
+  if(data){
+    text.textContent = 'Following';
+    btn.classList.remove('bg-rose-600');
+    btn.classList.add('bg-emerald-600');
+  }else{
+    text.textContent = 'Follow';
+    btn.classList.add('bg-rose-600');
+    btn.classList.remove('bg-emerald-600');
+  }
+}
+
+async function toggleFollowCurrentProfile(){
+  if(!session?.user?.id) return toast('Please sign in first.', false);
+  if(!currentViewedUserId) return;
+  if(currentViewedUserId === session.user.id) return toast('You cannot follow yourself.', false);
+
+  const {data, error: checkError} = await sb.from('follows')
+    .select('follower_id')
+    .eq('follower_id', session.user.id)
+    .eq('following_id', currentViewedUserId)
+    .maybeSingle();
+
+  if(checkError) return toast('Could not check follow status: ' + checkError.message, false);
+
+  if(data){
+    const {error} = await sb.from('follows')
+      .delete()
+      .eq('follower_id', session.user.id)
+      .eq('following_id', currentViewedUserId);
+
+    if(error) return toast('Unfollow failed: ' + error.message, false);
+    toast('Unfollowed');
+  }else{
+    const {error} = await sb.from('follows')
+      .insert({follower_id: session.user.id, following_id: currentViewedUserId});
+
+    if(error) return toast('Follow failed: ' + error.message, false);
+    toast('Following successfully');
+  }
+
+  await updateCurrentProfileFollowButton();
+  await updateProfileFollowCounts(currentViewedUserId);
+  await renderMedia();
+}
+
+/* =========================================================
+   COMMENTS
+   ========================================================= */
+
+let currentCommentMediaId = null;
+
+async function openComments(mediaId){
+  if(!mediaId) return;
+
+  currentCommentMediaId = mediaId;
+  const modal = document.getElementById('commentModal');
+  const list = document.getElementById('commentList');
+  const input = document.getElementById('commentInput');
+
+  if(!modal || !list) return;
+
+  modal.classList.remove('hidden');
+  if(input) input.value = '';
+  list.innerHTML = '<p class="text-center text-xs text-slate-500">Loading comments...</p>';
+
+  const {data: comments, error} = await sb.from('comments')
+    .select('id, user_id, comment, created_at')
+    .eq('media_id', mediaId)
+    .order('created_at', {ascending:true});
+
+  if(error){
+    console.error('Comments load error:', error);
+    list.innerHTML = `<p class="text-center text-xs text-rose-400">Unable to load comments.<br>${esc(error.message)}</p>`;
+    return;
+  }
+
+  const rows = comments || [];
+  const userIds = [...new Set(rows.map(c => c.user_id).filter(Boolean))];
+  let users = {};
+
+  if(userIds.length){
+    const {data: profilesData} = await sb.from('profiles')
+      .select('id, full_name, avatar_url')
+      .in('id', userIds);
+
+    (profilesData || []).forEach(u => users[u.id] = u);
+  }
+
+  if(!rows.length){
+    list.innerHTML = '<p class="text-center text-xs text-slate-500 mt-8">No comments yet. Be the first to share what you think.</p>';
+    return;
+  }
+
+  list.innerHTML = rows.map(c => {
+    const u = users[c.user_id] || {};
+    const avatar = u.avatar_url ||
+      `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(c.user_id || 'user')}`;
+
+    return `
+      <div class="flex gap-2 items-start">
+        <img src="${esc(avatar)}" class="w-8 h-8 rounded-full object-cover shrink-0">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl px-3 py-2 flex-1">
+          <p class="text-[10px] font-bold text-rose-400">${esc(u.full_name || 'User')}</p>
+          <p class="text-xs text-slate-200 whitespace-pre-wrap break-words">${esc(c.comment || '')}</p>
+          <p class="text-[9px] text-slate-600 mt-1">${c.created_at ? new Date(c.created_at).toLocaleString() : ''}</p>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  list.scrollTop = list.scrollHeight;
+}
+
+function closeComments(){
+  const modal = document.getElementById('commentModal');
+  if(modal) modal.classList.add('hidden');
+  currentCommentMediaId = null;
+}
+
+async function postComment(e){
+  e.preventDefault();
+
+  if(!session?.user?.id) return toast('Please sign in to comment.', false);
+  if(!currentCommentMediaId) return toast('No content selected.', false);
+
+  const input = document.getElementById('commentInput');
+  const text = input?.value.trim();
+  if(!text) return;
+
+  const button = e.submitter;
+  if(button) button.disabled = true;
+
+  const {error} = await sb.from('comments').insert({
+    media_id: currentCommentMediaId,
+    user_id: session.user.id,
+    comment: text
+  });
+
+  if(button) button.disabled = false;
+
+  if(error){
+    console.error('Comment insert error:', error);
+    return toast('Comment failed: ' + error.message, false);
+  }
+
+  input.value = '';
+  await openComments(currentCommentMediaId);
+  toast('Comment posted!');
+}
+
+/* =========================================================
+   SIMPLE AUDIO QUEUE
+   ========================================================= */
+
+let audioQueue = [];
+let audioQueueIndex = -1;
+let audioViewCounted = new Set();
+
+function buildAudioQueue(){
+  audioQueue = (media || []).filter(m => m.type === 'audio' && m.status === 'published');
+}
+
+function updateGlobalAudioPlayer(){
+  const player = document.getElementById('globalAudioPlayer');
+  const el = document.getElementById('globalAudioElement');
+  const playBtn = document.getElementById('globalAudioPlayBtn');
+  const title = document.getElementById('globalAudioTitle');
+  const creator = document.getElementById('globalAudioCreator');
+
+  if(!player || !el) return;
+
+  const item = audioQueue[audioQueueIndex];
+  if(!item){
+    player.classList.add('hidden');
+    return;
+  }
+
+  player.classList.remove('hidden');
+  el.src = item.file_url;
+  if(title) title.textContent = item.title || 'Audio';
+  if(creator) creator.textContent = item.profiles?.full_name || 'Creator';
+
+  el.onplay = () => {
+    if(!audioViewCounted.has(item.id)){
+      audioViewCounted.add(item.id);
+      incrementView(item.id);
+    }
+    if(playBtn) playBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+  };
+
+  el.onpause = () => {
+    if(playBtn) playBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+  };
+
+  el.onended = () => {
+    audioNext(true);
+  };
+}
+
+async function playAudioById(mediaId){
+  buildAudioQueue();
+
+  const index = audioQueue.findIndex(m => m.id === mediaId);
+  if(index < 0) return toast('Audio not found.', false);
+
+  audioQueueIndex = index;
+  updateGlobalAudioPlayer();
+
+  const el = document.getElementById('globalAudioElement');
+  if(!el) return;
+
+  try{
+    await el.play();
+  }catch(error){
+    console.error('Audio play error:', error);
+    toast('Tap the Play button to start the audio.', false);
+  }
+}
+
+async function audioPlayPause(){
+  const el = document.getElementById('globalAudioElement');
+  if(!el || audioQueueIndex < 0) return;
+
+  if(el.paused){
+    try{ await el.play(); }catch(e){ console.error(e); }
+  }else{
+    el.pause();
+  }
+}
+
+async function audioPrevious(){
+  buildAudioQueue();
+  if(!audioQueue.length) return;
+
+  if(audioQueueIndex <= 0) audioQueueIndex = audioQueue.length - 1;
+  else audioQueueIndex--;
+
+  updateGlobalAudioPlayer();
+  const el = document.getElementById('globalAudioElement');
+  try{ await el.play(); }catch(e){ console.error(e); }
+}
+
+async function audioNext(auto=false){
+  buildAudioQueue();
+  if(!audioQueue.length) return;
+
+  if(audioQueueIndex < 0) audioQueueIndex = 0;
+  else audioQueueIndex = (audioQueueIndex + 1) % audioQueue.length;
+
+  updateGlobalAudioPlayer();
+  const el = document.getElementById('globalAudioElement');
+  try{ await el.play(); }catch(e){ console.error(e); }
+}
+
+function closeGlobalAudio(){
+  const el = document.getElementById('globalAudioElement');
+  if(el){
+    el.pause();
+    el.removeAttribute('src');
+    el.load();
+  }
+  const player = document.getElementById('globalAudioPlayer');
+  if(player) player.classList.add('hidden');
 }
 
 /* REELS */
