@@ -630,6 +630,393 @@ function scrollReel(dir){
   const container = document.getElementById('reelsContainer');
   container.scrollBy({ top: dir * container.clientHeight, behavior: 'smooth' });
 }
+
+/* =========================================================
+   FIXES: UPLOAD + COMMUNITY CHAT + PRIVATE INBOX
+   ========================================================= */
+
+function openUpload(){
+  const modal = document.getElementById('uploadModal');
+  if(!modal) return;
+  modal.classList.remove('hidden');
+  const file = document.getElementById('upFile');
+  if(file) file.value = '';
+}
+
+function closeUpload(){
+  const modal = document.getElementById('uploadModal');
+  if(modal) modal.classList.add('hidden');
+}
+
+async function uploadContent(e){
+  e.preventDefault();
+
+  if(!session?.user?.id){
+    return toast('Please sign in first.', false);
+  }
+
+  if(!profile || !['creator','admin'].includes(profile.role)){
+    return toast('Only a Content Creator can upload content.', false);
+  }
+
+  const title = document.getElementById('upTitle').value.trim();
+  const type = document.getElementById('upType').value;
+  const input = document.getElementById('upFile');
+
+  if(!title) return toast('Please enter a title.', false);
+  if(!input.files || input.files.length === 0){
+    return toast('Please choose a video or audio file from your device.', false);
+  }
+
+  const file = input.files[0];
+
+  if(type === 'video' && !file.type.startsWith('video/')){
+    return toast('Please select a video file.', false);
+  }
+
+  if(type === 'audio' && !file.type.startsWith('audio/')){
+    return toast('Please select an audio file.', false);
+  }
+
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const filePath = `content/${session.user.id}/${Date.now()}-${safeName}`;
+
+  toast('Uploading content...', true);
+
+  try{
+    const { error: storageError } = await sb.storage
+      .from('media')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType: file.type
+      });
+
+    if(storageError){
+      console.error('Storage upload error:', storageError);
+      return toast('Upload failed: ' + storageError.message, false);
+    }
+
+    const { data: publicData } = sb.storage
+      .from('media')
+      .getPublicUrl(filePath);
+
+    const fileUrl = publicData?.publicUrl;
+
+    if(!fileUrl){
+      return toast('Could not create the public file URL.', false);
+    }
+
+    const { data: savedMedia, error: dbError } = await sb
+      .from('media')
+      .insert({
+        creator_id: session.user.id,
+        title: title,
+        type: type,
+        file_url: fileUrl,
+        status: 'published',
+        likes_count: 0,
+        downloads_count: 0,
+        views_count: 0
+      })
+      .select()
+      .single();
+
+    if(dbError){
+      console.error('Media database error:', dbError);
+      // Remove the uploaded file if the database insert failed.
+      await sb.storage.from('media').remove([filePath]);
+      return toast('Content was not saved: ' + dbError.message, false);
+    }
+
+    document.getElementById('upTitle').value = '';
+    input.value = '';
+    closeUpload();
+
+    await loadMedia();
+    renderCreator();
+
+    toast('Content uploaded and published successfully!');
+  }catch(err){
+    console.error(err);
+    toast('Unexpected upload error: ' + (err.message || err), false);
+  }
+}
+
+/* COMMUNITY CHAT */
+
+async function loadPublicMessages(){
+  const box = document.getElementById('pubMessages');
+  if(!box) return;
+
+  box.innerHTML = '<p class="text-center text-xs text-slate-500">Loading messages...</p>';
+
+  const { data, error } = await sb
+    .from('community_messages')
+    .select('id, user_id, message, created_at, profiles!community_messages_user_id_fkey(full_name, avatar_url)')
+    .order('created_at', { ascending: true })
+    .limit(100);
+
+  if(error){
+    console.error('Community load error:', error);
+    box.innerHTML = `<p class="text-center text-xs text-rose-400">Unable to load messages.</p>`;
+    return;
+  }
+
+  renderPublicMessages(data || []);
+}
+
+function renderPublicMessages(rows){
+  const box = document.getElementById('pubMessages');
+  if(!box) return;
+
+  if(!rows.length){
+    box.innerHTML = '<p class="text-center text-xs text-slate-500 mt-10">No messages yet. Be the first to write!</p>';
+    return;
+  }
+
+  box.innerHTML = rows.map(m => {
+    const name = m.profiles?.full_name || 'User';
+    const avatar = m.profiles?.avatar_url ||
+      `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(m.user_id)}`;
+
+    return `
+      <div class="flex items-start gap-2">
+        <img src="${esc(avatar)}" class="w-8 h-8 rounded-full object-cover shrink-0">
+        <div class="max-w-[85%]">
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl px-3 py-2">
+            <p class="text-[10px] font-bold text-rose-400">${esc(name)}</p>
+            <p class="text-xs text-slate-200 break-words">${esc(m.message)}</p>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  box.scrollTop = box.scrollHeight;
+}
+
+async function sendPublicMessage(e){
+  e.preventDefault();
+
+  if(!session?.user?.id){
+    return toast('Please sign in first.', false);
+  }
+
+  const input = document.getElementById('pubInput');
+  const message = input?.value.trim();
+
+  if(!message) return;
+
+  const button = e.submitter;
+  if(button) button.disabled = true;
+
+  const { error } = await sb
+    .from('community_messages')
+    .insert({
+      user_id: session.user.id,
+      message: message
+    });
+
+  if(button) button.disabled = false;
+
+  if(error){
+    console.error('Community send error:', error);
+    return toast('Message failed: ' + error.message, false);
+  }
+
+  input.value = '';
+  await loadPublicMessages();
+}
+
+/* PRIVATE INBOX */
+
+async function loadInboxList(){
+  const box = document.getElementById('inboxUsersList');
+  if(!box || !session?.user?.id) return;
+
+  box.innerHTML = '<p class="text-xs text-slate-500">Loading users...</p>';
+
+  const { data: users, error } = await sb
+    .from('profiles')
+    .select('id, full_name, avatar_url, role')
+    .neq('id', session.user.id)
+    .order('full_name', { ascending: true });
+
+  if(error){
+    console.error('Inbox users error:', error);
+    box.innerHTML = '<p class="text-xs text-rose-400">Unable to load users.</p>';
+    return;
+  }
+
+  if(!users?.length){
+    box.innerHTML = '<p class="text-xs text-slate-500">No other users yet.</p>';
+    return;
+  }
+
+  box.innerHTML = users.map(u => `
+    <button onclick="selectPrivateChat('${u.id}')"
+      class="w-full flex items-center gap-2 p-2 rounded-xl hover:bg-slate-800 text-left transition">
+      <img src="${esc(u.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${u.id}`)}"
+        class="w-9 h-9 rounded-full object-cover shrink-0">
+      <span class="min-w-0">
+        <span class="block text-xs font-bold truncate">${esc(u.full_name || 'User')}</span>
+        <span class="block text-[10px] text-slate-500 capitalize">${esc(u.role || 'client')}</span>
+      </span>
+    </button>
+  `).join('');
+}
+
+async function selectPrivateChat(userId){
+  if(!session?.user?.id || !userId) return;
+
+  const { data: target, error } = await sb
+    .from('profiles')
+    .select('id, full_name, avatar_url, role')
+    .eq('id', userId)
+    .single();
+
+  if(error || !target){
+    return toast('Could not open this conversation.', false);
+  }
+
+  currentChatTarget = target;
+
+  document.getElementById('chatTargetName').textContent =
+    target.full_name || 'User';
+
+  await loadPrivateMessages();
+  document.getElementById('privateInput')?.focus();
+}
+
+async function loadPrivateMessages(){
+  const box = document.getElementById('privateMessagesList');
+  if(!box || !session?.user?.id || !currentChatTarget?.id) return;
+
+  box.innerHTML = '<p class="text-center text-xs text-slate-500">Loading...</p>';
+
+  const me = session.user.id;
+  const other = currentChatTarget.id;
+
+  const { data, error } = await sb
+    .from('private_messages')
+    .select('id, sender_id, receiver_id, message, created_at')
+    .or(`and(sender_id.eq.${me},receiver_id.eq.${other}),and(sender_id.eq.${other},receiver_id.eq.${me})`)
+    .order('created_at', { ascending: true })
+    .limit(200);
+
+  if(error){
+    console.error('Private messages load error:', error);
+    box.innerHTML = '<p class="text-center text-xs text-rose-400">Unable to load messages.</p>';
+    return;
+  }
+
+  if(!data?.length){
+    box.innerHTML = '<p class="text-center text-xs text-slate-500 mt-10">No messages yet. Start the conversation.</p>';
+    return;
+  }
+
+  box.innerHTML = data.map(m => {
+    const mine = m.sender_id === me;
+
+    return `
+      <div class="flex ${mine ? 'justify-end' : 'justify-start'}">
+        <div class="max-w-[80%] ${mine ? 'bg-rose-600 text-white' : 'bg-slate-900 border border-slate-800 text-slate-200'} rounded-2xl px-3 py-2">
+          <p class="text-xs break-words">${esc(m.message)}</p>
+          <p class="text-[9px] opacity-60 mt-1">${new Date(m.created_at).toLocaleString()}</p>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  box.scrollTop = box.scrollHeight;
+}
+
+async function sendPrivateMessage(e){
+  e.preventDefault();
+
+  if(!session?.user?.id){
+    return toast('Please sign in first.', false);
+  }
+
+  if(!currentChatTarget?.id){
+    return toast('Select a user first.', false);
+  }
+
+  const input = document.getElementById('privateInput');
+  const message = input?.value.trim();
+
+  if(!message) return;
+
+  const button = e.submitter;
+  if(button) button.disabled = true;
+
+  const { error } = await sb
+    .from('private_messages')
+    .insert({
+      sender_id: session.user.id,
+      receiver_id: currentChatTarget.id,
+      message: message
+    });
+
+  if(button) button.disabled = false;
+
+  if(error){
+    console.error('Private send error:', error);
+    return toast('Message failed: ' + error.message, false);
+  }
+
+  input.value = '';
+  await loadPrivateMessages();
+}
+
+/* Open a private chat from a creator/user profile */
+function startDirectChat(){
+  if(!currentViewedUserId) return toast('User not found.', false);
+  go('inbox');
+  setTimeout(() => selectPrivateChat(currentViewedUserId), 0);
+}
+
+/* Load public chat whenever the Community tab is opened */
+const originalGo = go;
+go = function(tab, push=true){
+  originalGo(tab, push);
+  if(tab === 'chat') loadPublicMessages();
+  if(tab === 'inbox') loadInboxList();
+};
+
+/* Refresh both chat areas when Supabase Realtime is available */
+try{
+  sb.channel('community-messages-live')
+    .on('postgres_changes',
+      { event:'*', schema:'public', table:'community_messages' },
+      () => loadPublicMessages()
+    )
+    .subscribe();
+
+  sb.channel('private-messages-live')
+    .on('postgres_changes',
+      { event:'*', schema:'public', table:'private_messages' },
+      payload => {
+        if(!currentChatTarget) return;
+
+        const me = session?.user?.id;
+        const other = currentChatTarget.id;
+        const row = payload.new || payload.old;
+
+        if(row && (
+          (row.sender_id === me && row.receiver_id === other) ||
+          (row.sender_id === other && row.receiver_id === me)
+        )){
+          loadPrivateMessages();
+        }
+      }
+    )
+    .subscribe();
+}catch(err){
+  console.warn('Realtime setup skipped:', err);
+}
+
 </script>
 </body>
 </html>
