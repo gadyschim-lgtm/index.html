@@ -733,14 +733,230 @@ async function uploadContent(e){
     input.value = '';
     closeUpload();
 
-    await loadMedia();
-    renderCreator();
+    try{
+      await loadMedia();
+      await renderCreator();
+    }catch(refreshError){
+      console.warn('Post-upload refresh error:', refreshError);
+    }
 
     toast('Content uploaded and published successfully!');
   }catch(err){
     console.error(err);
     toast('Unexpected upload error: ' + (err.message || err), false);
   }
+}
+
+
+/* =========================================================
+   CREATOR STUDIO MANAGEMENT
+   Shows only the signed-in creator's own uploaded content.
+   Supports preview, edit title, and delete.
+   ========================================================= */
+
+async function renderCreator(){
+  const box = document.getElementById('creatorContent');
+  if(!box) return;
+
+  if(!session?.user?.id){
+    box.innerHTML = '<p class="text-xs text-rose-400">Please sign in first.</p>';
+    return;
+  }
+
+  if(!profile || !['creator','admin'].includes(profile.role)){
+    box.innerHTML = '<p class="text-xs text-slate-500">Creator Studio is available only for content creators.</p>';
+    return;
+  }
+
+  box.innerHTML = `
+    <div class="glass rounded-2xl p-4 border border-slate-800 text-xs text-slate-400">
+      <i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading your content...
+    </div>
+  `;
+
+  const { data: myMedia, error } = await sb
+    .from('media')
+    .select('*')
+    .eq('creator_id', session.user.id)
+    .order('created_at', { ascending: false });
+
+  if(error){
+    console.error('Creator Studio load error:', error);
+    box.innerHTML = `
+      <div class="glass rounded-2xl p-4 border border-rose-500/20">
+        <p class="text-sm font-bold text-rose-400">Unable to load your content.</p>
+        <p class="text-xs text-slate-500 mt-1">${esc(error.message)}</p>
+      </div>
+    `;
+    return;
+  }
+
+  if(!myMedia?.length){
+    box.innerHTML = `
+      <div class="glass rounded-2xl p-8 border border-slate-800 text-center">
+        <i class="fa-solid fa-cloud-arrow-up text-3xl text-slate-600 mb-3"></i>
+        <p class="font-bold text-sm">No content uploaded yet</p>
+        <p class="text-xs text-slate-500 mt-1">Upload your first video or audio from the button above.</p>
+      </div>
+    `;
+    return;
+  }
+
+  box.innerHTML = myMedia.map(m => {
+    const created = m.created_at
+      ? new Date(m.created_at).toLocaleString()
+      : 'Unknown date';
+
+    const status = m.status || 'published';
+    const statusClass =
+      status === 'published'
+        ? 'bg-emerald-600/20 text-emerald-400'
+        : 'bg-amber-600/20 text-amber-400';
+
+    return `
+      <div class="glass rounded-2xl p-4 border border-slate-800 space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div class="min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="px-2 py-1 rounded-full ${statusClass} text-[9px] font-bold uppercase">
+                ${esc(status)}
+              </span>
+              <span class="px-2 py-1 rounded-full bg-slate-800 text-slate-400 text-[9px] font-bold uppercase">
+                ${esc(m.type || 'media')}
+              </span>
+            </div>
+            <h3 class="font-bold text-sm mt-2 break-words">${esc(m.title || 'Untitled')}</h3>
+            <p class="text-[10px] text-slate-500 mt-1">Uploaded: ${esc(created)}</p>
+          </div>
+
+          <div class="flex gap-2 shrink-0">
+            <button
+              onclick="editCreatorMediaTitle('${m.id}')"
+              class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-[10px] font-bold">
+              <i class="fa-solid fa-pen mr-1"></i> Edit
+            </button>
+            <button
+              onclick="deleteCreatorMedia('${m.id}')"
+              class="px-3 py-2 rounded-xl bg-rose-600/20 text-rose-400 hover:bg-rose-600 hover:text-white text-[10px] font-bold">
+              <i class="fa-solid fa-trash mr-1"></i> Delete
+            </button>
+          </div>
+        </div>
+
+        <div class="rounded-xl overflow-hidden bg-black border border-slate-800">
+          ${
+            m.type === 'video'
+              ? `<video controls preload="metadata" class="w-full max-h-80 bg-black" src="${esc(m.file_url)}"></video>`
+              : `<div class="p-4"><audio controls class="w-full" src="${esc(m.file_url)}"></audio></div>`
+          }
+        </div>
+
+        <div class="grid grid-cols-3 gap-2 text-center">
+          <div class="bg-slate-900 rounded-xl p-2">
+            <p class="font-bold text-sm">${Number(m.views_count || 0)}</p>
+            <p class="text-[9px] text-slate-500">Views</p>
+          </div>
+          <div class="bg-slate-900 rounded-xl p-2">
+            <p class="font-bold text-sm">${Number(m.likes_count || 0)}</p>
+            <p class="text-[9px] text-slate-500">Likes</p>
+          </div>
+          <div class="bg-slate-900 rounded-xl p-2">
+            <p class="font-bold text-sm">${Number(m.downloads_count || 0)}</p>
+            <p class="text-[9px] text-slate-500">Downloads</p>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function editCreatorMediaTitle(mediaId){
+  if(!session?.user?.id) return toast('Please sign in first.', false);
+
+  const { data: item, error: findError } = await sb
+    .from('media')
+    .select('id, title')
+    .eq('id', mediaId)
+    .eq('creator_id', session.user.id)
+    .single();
+
+  if(findError || !item){
+    return toast('Content not found or you do not own it.', false);
+  }
+
+  const newTitle = prompt('Enter the new title:', item.title || '');
+  if(newTitle === null) return;
+
+  const title = newTitle.trim();
+  if(!title) return toast('Title cannot be empty.', false);
+
+  const { error } = await sb
+    .from('media')
+    .update({ title })
+    .eq('id', mediaId)
+    .eq('creator_id', session.user.id);
+
+  if(error){
+    console.error('Edit media error:', error);
+    return toast('Could not update title: ' + error.message, false);
+  }
+
+  await loadMedia();
+  await renderCreator();
+  toast('Title updated successfully!');
+}
+
+async function deleteCreatorMedia(mediaId){
+  if(!session?.user?.id) return toast('Please sign in first.', false);
+
+  const { data: item, error: findError } = await sb
+    .from('media')
+    .select('id, title, file_url')
+    .eq('id', mediaId)
+    .eq('creator_id', session.user.id)
+    .single();
+
+  if(findError || !item){
+    return toast('Content not found or you do not own it.', false);
+  }
+
+  const confirmed = confirm(
+    `Delete "${item.title || 'this content'}"?\n\nThis will remove the content from the website.`
+  );
+  if(!confirmed) return;
+
+  const { error: dbError } = await sb
+    .from('media')
+    .delete()
+    .eq('id', mediaId)
+    .eq('creator_id', session.user.id);
+
+  if(dbError){
+    console.error('Delete media database error:', dbError);
+    return toast('Delete failed: ' + dbError.message, false);
+  }
+
+  /* Best-effort removal from Storage.
+     The database record is already removed, so the content disappears
+     from the website even if the storage policy does not allow cleanup. */
+  try{
+    const markerIndex = String(item.file_url || '').indexOf('/content/');
+    if(markerIndex !== -1){
+      const storagePath = String(item.file_url)
+        .substring(markerIndex + '/content/'.length)
+        .split('?')[0];
+
+      if(storagePath){
+        await sb.storage.from('media').remove([`content/${storagePath}`]);
+      }
+    }
+  }catch(storageDeleteError){
+    console.warn('Storage cleanup skipped:', storageDeleteError);
+  }
+
+  await loadMedia();
+  await renderCreator();
+  toast('Content deleted successfully!');
 }
 
 /* COMMUNITY CHAT */
